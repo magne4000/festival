@@ -6,7 +6,7 @@ exports.index = function(req, res) {
 	res.render('index', {
 		title : 'Express'
 	});
-
+	/*
 	var mongoose = require('mongoose');
 	var Kitten = mongoose.model('Kitten');
 	var db = mongoose.connection;
@@ -17,5 +17,12 @@ exports.index = function(req, res) {
 	silence.save();
 	Kitten.find(function(err, kittens) {
 		console.log(kittens);
-	});
+	});*/
+	
+	/*
+	var taglib = require('taglib');
+	taglib.read('/home/magne/music/01 The Business Of Living.mp3', function(err, tag, audioProperties){
+		console.log(tag);
+		console.log(audioProperties);
+	});*/
 };

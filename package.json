@@ -8,6 +8,7 @@
   "dependencies": {
     "express": "3.3.*",
     "jade": "*",
-    "mongoose": "*"
+    "mongoose": "*",
+    "taglib": "git://github.com/nikhilm/node-taglib.git"
   }
 }
