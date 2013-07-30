@@ -1,0 +1,392 @@
+@font-face {
+	font-family: GoodDog;
+	src: url(../fonts/GoodDog.woff) format("woff"),
+		url(../fonts/GoodDog.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: EHSMB;
+	src: url(../fonts/EHSMB.TTF) format("truetype");
+}
+
+html,body {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	background-color: #888;
+	height: 100%;
+	font-size: 0.9em;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+	background-color: #ccc;
+}
+
+a,a:visited {
+	color: white;
+	text-decoration: none;
+}
+
+header {
+	position: relative;
+	padding: 4px 0 0 20px;
+	width: auto;
+	height: 36px;
+	top: 5px;
+	background-color: #202020;
+	font-family: EHSMB, Arial, Helvetica, sans-serif;
+	color: white;
+	font-size: 2.6em;
+	z-index: 3;
+}
+
+#body {
+	position: relative;
+	width: auto;
+	margin: 0 auto -50px;
+	height: 100%;
+}
+
+#left_pane,#right_pane {
+	position: absolute;
+	top: 0px;
+	bottom: 48px;
+	width: 250px;
+	padding-top: 51px;
+	z-index: 2;
+}
+
+#left_pane {
+	left: 5px;
+}
+
+#right_pane {
+	right: 5px;
+}
+
+.wrapper ul {
+	width: auto;
+	list-style: none;
+	padding: 0 5px;
+}
+
+.wrapper ul li {
+	position: relative;
+	cursor: default;
+	padding: 2px 40px 2px 2px;
+	height: 16px;
+	min-height: 16px;
+	max-height: 16px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.wrapper ul li.ui-selecting,#tabs-albums .ui-selecting,.wrapper ul>li:hover,.album_list_element:hover
+	{
+	background: #444;
+}
+
+.wrapper ul li.ui-selected,#tabs-albums .ui-selected {
+	background: #666;
+}
+
+.album_list_element:hover,#tabs-albums .ui-selecting {
+	box-shadow: 0 0 9px #bbb;
+}
+
+#tabs-albums .ui-selected {
+	box-shadow: 0 0 10px #ddd;
+}
+
+.wrapper ul>li:first-child
+	{
+	border-radius: 4px 4px 0 0;
+}
+
+.wrapper ul>li:last-child
+	{
+	border-radius: 0 0 4px 4px;
+}
+
+.wrapper ul>li:only-child
+	{
+	border-radius: 4px;
+}
+
+.wrapper {
+	overflow-y: auto;
+	overflow-x: hidden;
+	position: absolute;
+	top: 130px;
+	bottom: 4px;
+	right: 4px;
+	left: 0px;
+}
+
+#body2 {
+	border-top: 1px solid white;
+	position: absolute;
+	top: 50px;
+	bottom: 48px;
+	right: 0px;
+	left: 0px;
+	background-color: #333333;
+	padding: 5px 261px 10px 261px;
+	z-index: 1;
+}
+
+#body2.admin {
+	padding: 5px 3px 10px 3px;
+}
+
+#body2_wrapper {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+#tabs-playlist table {
+	height: auto;
+	width: 100%;
+	margin: 5px 0;
+	border-radius: 15px;
+	padding: 1px 9px;
+	overflow-y: auto;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	position: relative;
+	background-color: rgba(255, 255, 255, 0.08);
+	border-radius: 5px;
+}
+
+#tabs-playlist table tr {
+	height: 30px;
+}
+
+#tabs-playlist table thead {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+#tabs-playlist table thead th:first-child {
+	border-top-left-radius: 5px;
+}
+
+#tabs-playlist table thead th:last-child {
+	border-top-right-radius: 5px;
+}
+
+#tabs-playlist table thead th {
+	text-align: left;
+}
+
+#tabs-playlist table thead th,#tabs-playlist table tbody td {
+	padding-left: 7px;
+}
+
+#tabs-playlist table tbody td:first-child div.text {
+	padding-right: 40px;
+	width: 100%;
+	position: relative;
+}
+
+#tabs-playlist table .handle {
+	width: 20px;
+	height: 20px;
+	background: url(../images/order.png);
+	float: left;
+	margin-right: 4px;
+	cursor: pointer;
+}
+
+#tabs-playlist table tbody tr:hover {
+	background: rgba(255, 255, 255, 0.05);
+}
+
+#search {
+	color: white;
+	margin-right: 5px;
+	padding: 0 5px;
+}
+
+#search input {
+	width: 100%;
+	background-color: #f5f5f5;
+	border: 1px solid #202020;
+}
+
+footer {
+	width: 100%;
+	height: 50px;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+/* Tabs */
+.pane {
+	height: 100%;
+	position: relative;
+}
+
+.pane>div {
+	position: absolute;
+	bottom: 0;
+	top: 40px;
+	left: 0;
+	right: 0;
+	margin: 5px 5px 0 5px;
+	overflow: auto;
+}
+
+.album_list_element {
+	float: left;
+	margin: 10px;
+	height: 152px;
+	width: 152px;
+	display: inline-block;
+	position: relative;
+	text-align: center;
+	border: 1px solid #777;
+	padding: 1px;
+}
+
+.album_list_element img {
+	max-height: 150px;
+	max-width: 150px;
+	margin: 0;
+}
+
+.album_list_element div.caption {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: 0;
+	text-align: center;
+	background: rgba(0, 0, 0, 0.7);
+	border-radius: 3px 3px 0 0;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+	width: 10px;
+}
+
+::-webkit-scrollbar-track {
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+	border-radius: 3px;
+	background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #666;
+}
+
+/* Actions */
+.actionhandler {
+	background: url(../images/action.png) no-repeat;
+	display: none;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	opacity: 0.5;
+}
+
+.actionhandler.active_hover,.actionhandler.active {
+	display: block;
+}
+
+.wrapper .actionhandler.active,#body2_wrapper .actionhandler.active,.wrapper .actionhandler:hover,#body2_wrapper .actionhandler:hover
+	{
+	opacity: 1;
+	border: 1px solid white;
+}
+
+.wrapper .actionhandler {
+	position: absolute;
+	right: 2px;
+	top: 2px;
+}
+
+.wrapper .actionhandler.active,.wrapper .actionhandler:hover {
+	right: 1px;
+	top: 1px;
+}
+
+#tabs-albums .actionhandler {
+	position: absolute;
+	right: 2px;
+	bottom: 18px;
+}
+
+#tabs-albums .actionhandler.active,#tabs-albums .actionhandler:hover {
+	right: 1px;
+	bottom: 17px;
+}
+
+#tabs-playlist .actionhandler {
+	position: absolute;
+	right: 40px;
+	bottom: -3px;
+}
+
+#tabs-playlist .actionhandler.active,#tabs-playlist .actionhandler:hover
+	{
+	right: 39px;
+	bottom: -4px;
+}
+
+pre {
+	background: #fefefe;
+	color: #333;
+	border-radius: 3px;
+	padding: 5px;
+	bottom: 0;
+	left: 10px;
+	right: 10px;
+	top: 80px;
+	position: absolute;
+	overflow: auto;
+}
+
+.error>div {
+	padding: 0 12px;
+	margin: 3px;
+}
+
+legend {
+	font-size: 1.1em;
+	font-weight: bold;
+}
+
+fieldset label {
+	display: inline-block;
+	width: 45%;
+	text-align: right;
+	padding: 2px 5px;
+}
+
+fieldset .ui-button {
+	margin-left: 45%;
+	left: 12px;
+}
+
+fieldset .line {
+	height: 30px;
+	width: 100%;
+}
+
+/* Context menu */
+
+.ui-menu {
+	z-index: 9999;
+}
+
+.ui-menu .ui-state-disabled {
+    margin: 0;
+}
