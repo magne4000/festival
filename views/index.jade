@@ -1,5 +1,68 @@
-extends layout
-
-block content
-  h1= title
-  p Welcome to #{title}
+!!! 5
+html(lang='fr')
+head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    link(rel='shortcut icon', type='image/png', href='images/favicon.png')
+    link(rel='stylesheet', type='text/css', href='stylesheets/jquery-ui-1.10.3.custom.min.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/jquery.loadmask.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/jquery.jgrowl.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/opentip.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/global.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/player.css')
+    script(type='text/javascript', src='js/jquery.min.js')
+    script(type='text/javascript', src='js/jquery-ui-1.10.3.custom.min.js')
+    script(type='text/javascript', src='js/utils.js')
+    script(type='text/javascript', src='js/jquery.store.js')
+    script(type='text/javascript', src='js/jquery.playlist.div.js')
+    script(type='text/javascript', src='js/jquery.playlist.js')
+    script(type='text/javascript', src='js/jquery.player.js')
+    script(type='text/javascript', src='js/jquery.recipient.js')
+    script(type='text/javascript', src='js/jquery.loadmask.min.js')
+    script(type='text/javascript', src='js/jquery.easy.notification.js')
+    script(type='text/javascript', src='js/jquery.ui-contextmenu.js')
+    script(type='text/javascript', src='js/jquery.fastsearch.js')
+    script(type='text/javascript', src='js/jquery.hotkeys.js')
+    script(type='text/javascript', src='js/opentip-jquery.js')
+    if debug
+      script(type='text/javascript', src='js/soundmanager2-jsmin.js')
+    else
+      script(type='text/javascript', src='js/soundmanager2-nodebug-jsmin.js')
+    script(type='text/javascript')
+      //<![CDATA[
+      soundManager.url = '#{soundmanager.url}';
+      soundManager.flashVersion = '#{soundmanager.flashVersion}';
+      soundManager.useFlashBlock = #{soundmanager.useFlashBlock};
+      soundManager.useHTML5Audio = #{soundmanager.useHTML5Audio};
+      soundManager.preferFlash = #{soundmanager.preferFlash};
+      //]]>
+    script(type='text/javascript', src='js/menu.js')
+    script(type='text/javascript', src='js/ajax.js')
+    script(type='text/javascript', src='js/init.js')
+    title Webmusic
+  body
+    #body
+      header
+        | Webmusic
+      #left_pane.ui-widget.ui-widget-content
+        #search
+          p
+            input#input_artist(type='search', placeholder='Quick artist search', autocomplete='off', autofocus='autofocus')
+        .wrapper
+        script(type='text/javascript')
+          //<![CDATA[
+          loadAjaxMenu();
+          //]]>
+      #body2
+        #body2_wrapper
+          .pane
+            ul
+              li
+                a(href='#tabs-albums') Albums
+            #tabs-albums
+              .container
+      #right_pane.ui-widget.ui-widget-content
+        .wrapper
+          ul
+      .push
+    footer
+  
