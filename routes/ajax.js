@@ -9,8 +9,10 @@ exports.menu = function(req, res) {
 	if (i == 2) {
 		res.send("0");
 	} else {
-		res.render("menu", {
-			artists : ["Dagoba", "Adept"]
+		exports.listartists(req, res, function(list){
+			res.render("menu", {
+				artists: list
+			});
 		});
 	}
 };
@@ -49,7 +51,7 @@ exports.listalbums = function(req, res){
 /**
  * JSON list of artists
  */
-exports.listartists = function(req, res){
+exports.listartists = function(req, res, callback){
 	var filters = req.query.filters?JSON.parse(req.query.filters):{},
 		Track = mongoose.model('track');
 	Track.aggregate(
@@ -60,7 +62,11 @@ exports.listartists = function(req, res){
 		if (err){
 			console.error(err);
 		}else{
-			res.json(docs);
+			if (callback){
+				callback(docs);
+			}else{
+				res.json(docs);
+			}
 		}
 	});
 };
