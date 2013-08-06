@@ -4,6 +4,7 @@ var mongoose = require('mongoose'),
 var trackSchema = new Schema({
 	path: {type: String, 'default': '', trim: true, required: true, unique: true},
 	genre: {type: String, 'default': '', trim: true},
+	artist: {type: String, 'default': '', trim: true},
 	album: {type: String, 'default': '', trim: true},
 	name: {type: String, 'default': '', trim: true, required: true},
 	duration: {type: Number},
