@@ -10,10 +10,7 @@ exports.menu = function(req, res) {
 		res.send("0");
 	} else {
 		res.render("menu", {
-			artists : [ {
-				name : "test",
-				id : "1"
-			} ]
+			artists : ["artist 1", "artist 2"]
 		});
 	}
 };
