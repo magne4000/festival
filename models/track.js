@@ -14,9 +14,4 @@ var trackSchema = new Schema({
 	last_updated: {type: Date, 'default': Date.now}
 });
 
-trackSchema.pre('save', function(next) {
-	this.last_updated = Date.now();
-	next();
-});
-
 mongoose.model('track', trackSchema);
