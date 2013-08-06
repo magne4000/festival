@@ -28,15 +28,14 @@ head
     else
       script(type='text/javascript', src='js/soundmanager2-nodebug-jsmin.js')
     script(type='text/javascript')
-      //<![CDATA[
       soundManager.url = '#{soundmanager.url}';
       soundManager.flashVersion = '#{soundmanager.flashVersion}';
       soundManager.useFlashBlock = #{soundmanager.useFlashBlock};
       soundManager.useHTML5Audio = #{soundmanager.useHTML5Audio};
       soundManager.preferFlash = #{soundmanager.preferFlash};
-      //]]>
     script(type='text/javascript', src='js/menu.js')
     script(type='text/javascript', src='js/ajax.js')
+    //TODO Load plugins
     script(type='text/javascript', src='js/init.js')
     title Webmusic
   body
@@ -50,9 +49,7 @@ head
         .wrapper
           ul
         script(type='text/javascript')
-          //<![CDATA[
           loadAjaxMenu();
-          //]]>
       #body2
         #body2_wrapper
           .pane
