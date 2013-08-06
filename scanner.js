@@ -18,10 +18,12 @@ var fs = require('fs'),
  */
 function merge(filepath, mtime, tag, audioProperties){
 	var Track = mongoose.model('track');
+	console.log(tag);
 	var track = {
 			path: filepath,
 			genre: tag.genre,
 			album: tag.album,
+			artist: tag.artist,
 			name: tag.title,
 			duration: audioProperties.length,
 			year: tag.year,

@@ -13,29 +13,23 @@ function getList(mode, objs, callback, $applyOn){
 	switch(mode){
 		case MODES.TRACKS_BY_ARTISTS:
 			retrieve = 'tracks';
-			filter = [{elements : [], type : 'artist'}];
+			filter = {artist: {$in: []}};
 			objs.each(function(){
-				filter[0].elements.push({
-					id: $(this).data('artist').id
-				});
+				filter.artist.$in.push($(this).data('artist').id);
 			});
 			break;
 		case MODES.ALBUMS_BY_ARTISTS:
 			retrieve = 'albums';
-			filter = [{elements : [], type : 'artist'}];
+			filter = {artist: {$in: []}};
 			objs.each(function(){
-				filter[0].elements.push({
-					id: $(this).data('artist').id
-				});
+				filter.artist.$in.push($(this).data('artist').id);
 			});
 			break;
 		case MODES.TRACKS_BY_ALBUMS:
 			retrieve = 'tracks';
-			filter = [{elements : [], type : 'album'}];
+			filter = {album: {$in: []}};
 			objs.each(function(){
-				filter[0].elements.push({
-					id: $(this).data('album').id
-				});
+				filter.album.$in.push($(this).data('album').id);
 			});
 			break;
 		default:
@@ -43,9 +37,8 @@ function getList(mode, objs, callback, $applyOn){
 	}
 	clearTimeout(postTimeout[retrieve]);
 	postTimeout[retrieve] = setTimeout(function(){
-        $.post('ajax/getJSONlist.php',{
-            filters : filter,
-            mode : retrieve
+        $.get('list/'+retrieve,{
+            filters : JSON.stringify(filter)
         }, function(objs){
             $applyOn.empty();
             callback(objs, $applyOn);

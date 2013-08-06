@@ -35,7 +35,7 @@ $(document).ready(function() {
     
     /* Fastsearch */
     $('#input_artist').fastsearch({
-        source: "ajax/search.php?type=artist",
+        source: "ajax/search/artist",
         minLength: 2,
         recipient: "#left_pane .wrapper",
         delay: 300,

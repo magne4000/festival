@@ -70,10 +70,6 @@ function len(obj) {
     return length;
 }
 
-function sendMail(textStatus, responseText){
-    $.post("ajax/sendMail.php", {textStatus : textStatus, responseText : responseText}, function(){});
-}
-
 function array_flip(trans) {
     var key = null, tmp_ar = {};
     for (key in trans) {

@@ -36,7 +36,7 @@ var ULMenu = function(){
 ulMenu = new ULMenu();
 
 function loadAjaxMenuTimer(i){
-	$.post("ajax/getMenu.php", {i : i}, function(html) {
+	$.post("ajax/menu", {i : i}, function(html) {
 		if (html != '0'){
 			ulMenu.get().append(html);
 			i+=1;
