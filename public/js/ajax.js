@@ -37,7 +37,7 @@ function getList(mode, objs, callback, $applyOn){
 	}
 	clearTimeout(postTimeout[retrieve]);
 	postTimeout[retrieve] = setTimeout(function(){
-        $.get('list/'+retrieve,{
+        $.get('ajax/list/'+retrieve,{
             filters : JSON.stringify(filter)
         }, function(objs){
             $applyOn.empty();

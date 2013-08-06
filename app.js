@@ -35,9 +35,9 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 app.post('/ajax/menu', ajax.menu);
 app.get('/music/:id', music.index);
-app.get('/list/tracks', ajax.listtracks);
-app.get('/list/albums', ajax.listalbums);
-app.get('/list/artists', ajax.listartists);
+app.get('/ajax/list/tracks', ajax.listtracks);
+app.get('/ajax/list/albums', ajax.listalbums);
+app.get('/ajax/list/artists', ajax.listartists);
 
 mongoose.connect(config.mongodb.url);
 
