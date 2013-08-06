@@ -1,9 +1,7 @@
 /*
  * GET home page.
  */
-var mongoose = require('mongoose'),
-	db = mongoose.connection,
-	settings = require('../settings.json');
+var settings = require('../settings.json');
 
 exports.index = function(req, res) {
 	res.render('index', {
