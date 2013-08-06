@@ -1,6 +1,7 @@
 var mongoose = require('mongoose'),
 	db = mongoose.connection,
 	fs = require('fs'),
+	path = require('path'),
 	settings = require('../settings.json');
 
 exports.index = function(req, res){
@@ -11,7 +12,8 @@ exports.index = function(req, res){
 			console.error(err);
 		} else if (track) {
 			fs.exists(track.path, function(exists){
-				if (exists && settings.scanner.path.indexOf(track.path) === 0){
+				var relativepath = path.relative(settings.scanner.path, track.path);
+				if (exists && relativepath.indexOf('..') !== 0){
 					res.sendfile(track.path);
 				}else{ 
 					console.warn('Path "'+track.path+'" invalid for track '+id);
