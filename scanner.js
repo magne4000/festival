@@ -7,8 +7,15 @@ var fs = require('fs'),
 	scanTimeout = null,
 	progressTimeout = null,
 	scanInProgess = false,
-	t = 1000;
+	t = 10000;
 
+/**
+ * Add or update track to database
+ * @param filepath
+ * @param mtime
+ * @param tag
+ * @param audioProperties
+ */
 function merge(filepath, mtime, tag, audioProperties){
 	var Track = mongoose.model('track');
 	var track = {
@@ -29,6 +36,10 @@ function merge(filepath, mtime, tag, audioProperties){
 	});
 }
 
+/**
+ * Delete files that are not on the filesystem anymore
+ * @param files
+ */
 function cleanold(files){
 	var Track = mongoose.model('track'),
 		filesToDelete = [];
@@ -39,6 +50,9 @@ function cleanold(files){
 	clearProgressTimeout();
 }
 
+/**
+ * Update the scanInProgess boolean
+ */
 function clearProgressTimeout(){
 	clearTimeout(progressTimeout);
 	progressTimeout = setTimeout(function(){
@@ -46,6 +60,10 @@ function clearProgressTimeout(){
 	}, t);
 }
 
+/**
+ * Walk through folder defined in settings.json in order
+ * to retrieve music files
+ */
 exports.scan = function(){
 	var Track = mongoose.model('track');
 	if (!scanInProgess){
@@ -83,6 +101,10 @@ exports.scan = function(){
 	}
 };
 
+/**
+ * Watch folder defined in settings.json and then call scan()
+ * if an event is triggered
+ */
 exports.watch = function(){
 	fs.watch(settings.scanner.path, function(event, filename){
 		console.log("File " + filename + "; event " + event);
