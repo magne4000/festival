@@ -9,6 +9,7 @@
     "express": "3.3.*",
     "jade": "*",
     "mongoose": "*",
-    "taglib": "git://github.com/nikhilm/node-taglib.git"
+    "taglib": "git://github.com/nikhilm/node-taglib.git",
+    "walk": "2.2.*"
   }
 }
