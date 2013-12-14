@@ -70,3 +70,34 @@ exports.listartists = function(req, res, callback){
 		}
 	});
 };
+
+exports.fileinfo = function(req, res){
+	var id = req.query.id?req.query.id:null,
+		ids = req.query.ids?JSON.parse(req.query.ids):null,
+		Track = mongoose.model('track');
+	console.log(id);
+	console.log(ids);
+	if (id !== null){
+		Track.findOne({ _id : id }, function (err, track) {
+			if (err) {
+				console.error(err);
+			} else if (track) {
+				res.send(track);
+			} else {
+				res.send(500);
+			}
+		});
+	}else if (ids !== null){
+		Track.find({ _id : {$in: ids.ids}}, function (err, tracks) {
+			if (err) {
+				console.error(err);
+			} else if (tracks) {
+				res.send(tracks);
+			} else {
+				res.send(500);
+			}
+		});
+	}else{
+		res.send(500);
+	}
+};

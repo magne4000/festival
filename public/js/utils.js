@@ -126,9 +126,9 @@ function fillTracksList(objs, $applyOn){
     for (obj in objs){
         $('<li></li>')
         .data('track', {
-            id: objs[obj].t_id
+            id: objs[obj]._id
         })
-        .attr('title', 'Artist: ' + objs[obj].ar_artist + '\nAlbum: ' + objs[obj].al_album + '\nName: ' + objs[obj].t_name)
+        .attr('title', 'Artist: ' + objs[obj].artist + '\nAlbum: ' + objs[obj].album + '\nName: ' + objs[obj].name)
         .text(getTrackNameWithTrackNumberIfAvailable(objs[obj]))
         .append('<div class="actionhandler"></div>')
         .appendTo($applyOn);
@@ -142,11 +142,8 @@ function fillAlbumsList(objs, $applyOn){
     for (obj in objs){
         var div = $('<div></div>')
         .addClass('album_list_element')
-        .data('album', {
-            id: objs[obj].id,
-            path: objs[obj].albumpath
-        })
-        .html($('<div></div>').addClass('caption').text(objs[obj].name))
+        .data('album', objs[obj])
+        .html($('<div></div>').addClass('caption').text(objs[obj].album))
         .append('<div class="actionhandler"></div>');
         if (!!objs[obj].year){
             div.attr('title', 'Year: ' + objs[obj].year);
