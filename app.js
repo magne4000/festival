@@ -39,7 +39,7 @@ app.get('/ajax/list/tracks', ajax.listtracks);
 app.get('/ajax/list/albums', ajax.listalbums);
 app.get('/ajax/list/artists', ajax.listartists);
 app.get('/ajax/fileinfo', ajax.fileinfo);
-//TODO app.get('/ajax/albumart', ajax.albumart);
+app.get('/ajax/albumart', ajax.albumart);
 
 mongoose.connect(config.mongodb.url);
 

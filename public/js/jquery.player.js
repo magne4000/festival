@@ -73,8 +73,8 @@
                 
                 data.$info.recipient();
                 data.$info.recipient('addListener', 'playlistbeforeload', function(track){
-                    $(this).attr('title', 'Artist: ' + track.Album.Artist.name + '\nAlbum: ' + track.Album.name + '\nTrack: ' + track.name)
-                    .html(track.Album.Artist.name + ' — ' + track.name);
+                    $(this).attr('title', 'Artist: ' + track.artist + '\nAlbum: ' + track.album + '\nTrack: ' + track.name)
+                    .html(track.artist + ' — ' + track.album + ' — ' + track.name);
                 });
                 
                 $this.trigger('playercreate');
@@ -153,9 +153,10 @@
                         if (uniqid !== null) {
                             $this.trigger('playernext');
                             data.playlist.playlist('setCurrent', uniqid,
-                                    function() {
-                                        $this.player('play');
-                                    });
+                                function() {
+                                    $this.player('play');
+                                }
+                            );
                         }
                     });
         },
@@ -168,9 +169,10 @@
                         if (uniqid !== null) {
                             $this.trigger('playerprev');
                             data.playlist.playlist('setCurrent', uniqid,
-                                    function() {
-                                        $this.player('play');
-                                    });
+                                function() {
+                                    $this.player('play');
+                                }
+                            );
                         }
                     });
         },

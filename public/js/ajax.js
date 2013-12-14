@@ -52,7 +52,6 @@ function getList(mode, objs, callback, $applyOn){
 
 function getFileInformations(options, callback){
 	$.get('ajax/fileinfo', {ids: JSON.stringify(options)}, function(obj){
-		console.log(obj);
 		callback(obj);
 	}, "json")
 	.fail(function(jqXHR, textStatus){
@@ -62,7 +61,7 @@ function getFileInformations(options, callback){
 }
 
 function getAlbumArt(elt){
-	$.get('ajax/getAlbumArt.php', {albumpath:elt.data('album').path}, function(obj){
+	$.get('ajax/albumart', {albumpath:elt.data('album').path}, function(obj){
 		if (!!obj.path){
 			elt.prepend('<img src="' + obj.path + '" />');
 		}

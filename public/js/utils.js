@@ -113,12 +113,10 @@ function loadAlbumArts(root){
 }
 
 function getTrackNameWithTrackNumberIfAvailable(track){
-    var trackno = track.trackno?track.trackno:track.t_trackno,
-        name = track.name?track.name:track.t_name;
-    if (trackno != '0'){
-        return trackno + ' - ' + name;
+    if (track.trackno && track.name){
+        return track.trackno + ' - ' + track.name;
     }
-    return name;
+    return track.name;
 }
 
 function fillTracksList(objs, $applyOn){

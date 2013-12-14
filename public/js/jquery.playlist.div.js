@@ -46,27 +46,27 @@
         add : function(track, uniqidhead) {
             return this.each(function() {
                 var $this = $(this), s = '', elt, end = false, nbtracks = len(track);
-                if (!!track.id) {
+                if (!!track._id) {
                     s = $('<tr></tr>')
                         .append('<td><div class="text"><div class="handle"></div>' + getTrackNameWithTrackNumberIfAvailable(track) + '<div class="actionhandler"></div></div></td>')
-                        .append('<td>' + track.Album.Artist.name + '</td>')
-                        .append('<td>' + track.Album.name + '</td>')
+                        .append('<td>' + track.name + '</td>')
+                        .append('<td>' + track.album + '</td>')
                         .append('<td>' + track.year + '</td>')
                         .append('<td>' + formatDuration(track.duration) + '</td>')
-                        .data('track', {id : track.id})
-                        .attr('id', track.uniqid);
+                        .data('track', {id : track._id})
+                        .attr('id', track._id);
                     $this.find('tbody').append(s);
                 }else{
                     elt = track[uniqidhead];
                     while (!end) {
                         s = $('<tr></tr>')
                         .append('<td><div class="text"><div class="handle"></div>' + getTrackNameWithTrackNumberIfAvailable(elt) + '<div class="actionhandler"></div></div></td>')
-                        .append('<td>' + elt.Album.Artist.name + '</td>')
-                        .append('<td>' + elt.Album.name + '</td>')
+                        .append('<td>' + elt.artist + '</td>')
+                        .append('<td>' + elt.album + '</td>')
                         .append('<td>' + elt.year + '</td>')
                         .append('<td>' + formatDuration(elt.duration) + '</td>')
-                        .data('track', {id : elt.id})
-                        .attr('id', elt.uniqid);
+                        .data('track', {id : elt._id})
+                        .attr('id', elt._id);
                         $this.find('tbody').append(s);
                         nbtracks--;
                         if (elt.next === null || nbtracks === 0){
