@@ -58,7 +58,7 @@
         add : function(track, callback) {
             return this.each(function() {
                 var $this = $(this), data = $this.data('playlist'), tracks = $.store('getTracks');
-                if (!!track.id){
+                if (!!track._id){
                     track.uniqid = uniqid('track_');
                     data.uniqids.push(track.uniqid);
                     if (data.shuffle){
@@ -162,8 +162,8 @@
                     clearTimeout(data.timer);
                     data.timer = setTimeout(function(){
                         data.current = soundManager.createSound({
-                            id: tracks[data.currentuniqid].id,
-                            url: tracks[data.currentuniqid].uripath,
+                            id: tracks[data.currentuniqid]._id,
+                            url: 'music/' + tracks[data.currentuniqid]._id,
                             autoLoad: true,
                             autoPlay: false,
                             whileplaying: function(){
@@ -179,7 +179,7 @@
                             volume: 100
                         });
                         $this.trigger('playlistbeforeload', [tracks[data.currentuniqid]]);
-                        data.loadedSID.push(tracks[data.currentuniqid].id);
+                        data.loadedSID.push(tracks[data.currentuniqid]._id);
                         if (typeof callback == 'function'){
                             callback();
                         }
