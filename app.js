@@ -3,16 +3,16 @@
  */
 
 var express =
-	require('express'),
-	routes = require('./routes'),
-	ajax = require('./routes/ajax'),
-	music = require('./routes/music'),
-	scanner = require('./scanner'),
-	http = require('http'),
-	path = require('path'),
-	config = require('./settings'),
-	mongoose = require('mongoose'),
-	fs = require('fs');
+require('express'),
+    routes = require('./routes'),
+    ajax = require('./routes/ajax'),
+    music = require('./routes/music'),
+    scanner = require('./scanner'),
+    http = require('http'),
+    path = require('path'),
+    config = require('./settings'),
+    mongoose = require('mongoose'),
+    fs = require('fs');
 
 var app = express();
 
@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
 if ('development' == app.get('env')) {
-	app.use(express.errorHandler());
+    app.use(express.errorHandler());
 }
 
 app.get('/', routes.index);
@@ -46,14 +46,17 @@ mongoose.connect(config.mongodb.url);
 //Bootstrap models
 var models_path = __dirname + '/models';
 fs.readdirSync(models_path).forEach(function(file) {
-	if (~file.indexOf('.js')) {
-		require(models_path + '/' + file);
-	}
+    if (~file.indexOf('.js')) {
+        require(models_path + '/' + file);
+    }
 });
 
 //Watcher
 scanner.watch();
 
+//launch a first scan
+scanner.scan();
+
 http.createServer(app).listen(app.get('port'), function() {
-	console.log('Express server listening on port ' + app.get('port'));
+    console.log('Express server listening on port ' + app.get('port'));
 });

@@ -6,7 +6,8 @@ module.exports = {
         port: 3000
     },
     scanner: {
-        path: '/path/to/music'
+        path: '/path/to/music',
+        exts: 'mp3,ogg'
     },
     debug: {
         debug: true
