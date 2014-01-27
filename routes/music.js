@@ -2,7 +2,7 @@ var mongoose = require('mongoose'),
 	db = mongoose.connection,
 	fs = require('fs'),
 	path = require('path'),
-	settings = require('../settings.json');
+	settings = require('../settings');
 
 exports.index = function(req, res){
 	var id = req.params.id,

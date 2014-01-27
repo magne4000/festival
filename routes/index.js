@@ -1,7 +1,7 @@
 /*
  * GET home page.
  */
-var settings = require('../settings.json');
+var settings = require('../settings');
 
 exports.index = function(req, res) {
 	res.render('index', {

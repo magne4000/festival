@@ -1,5 +1,5 @@
 var fs = require('fs'),
-	settings = require('./settings.json'),
+	settings = require('./settings'),
 	walk = require('walk'),
 	taglib = require('taglib'),
 	path = require('path'),

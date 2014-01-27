@@ -10,7 +10,7 @@ var express =
 	scanner = require('./scanner'),
 	http = require('http'),
 	path = require('path'),
-	config = require('./settings.json'),
+	config = require('./settings'),
 	mongoose = require('mongoose'),
 	fs = require('fs');
 
