@@ -1,4 +1,6 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose'),
+    path = require('path'),
+    fs = require('fs');
 
 /**
  * Send HTML artist list
@@ -91,7 +93,37 @@ exports.fileinfo = function(req, res){
 };
 
 exports.albumart = function(req, res){
-    var album = req.query.album?JSON.parse(req.query.album):null;
-    //TODO
-    res.send(404);
+    var id = req.query.id?req.query.id:null,
+        Albumart = mongoose.model('albumart');
+
+    Albumart.findOne({_id: id}).exec(function(err, cover) {
+        res.sendfile(cover.path);
+    });
+};
+
+exports.hasalbumart = function(req, res){
+    var album = req.query.album?JSON.parse(req.query.album):null,
+        Track = mongoose.model('track'),
+        Albumart = mongoose.model('albumart');
+    var query = Track.findOne({$and: [{album: album.album}, {artist: album.artist}]});
+    query.exec(function (err, doc) {
+        if (err){
+            console.error(err);
+            res.send(false);
+        }else{
+            if (doc){
+                var albumdir = path.dirname(doc.path);
+                Albumart.findOne({dir: albumdir}).exec(function(err2, cover) {
+                    if (err2 || !cover) {
+                        if (err2) console.log(err2);
+                        res.send(false);
+                    } else {
+                        res.send(cover._id);
+                    }
+                });
+            }else{
+                res.send(false);
+            }
+        }
+    });
 };

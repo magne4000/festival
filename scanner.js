@@ -70,22 +70,28 @@ function clearProgressTimeout(){
 }
 
 /**
- * Extract extension from filepath
- */
-function ext(filepath){
-    var i = filepath.lastIndexOf('.');
-    return (i < 0) ? null : filepath.substr(i+1).toLowerCase();
-}
-
-/**
  * Test if filepath is a music file.
  * Based on extensions from settings.js file
  */
 function isMusicFile(filepath){
     var exts = settings.scanner.exts.split(','),
-        fileext = ext(filepath);
+        fileext = path.extname(filepath);
     for (var key in exts){
-        if (exts[key].trim().toLowerCase() == fileext){
+        if (exts[key].trim().toLowerCase() === fileext){
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Test if filepath is a cover file.
+ */
+function isCoverFile(filepath){
+    var exts = ['.png', '.jpg', '.jpeg', '.gif'],
+        fileext = path.extname(filepath);
+    for (var key in exts){
+        if (exts[key].trim().toLowerCase() === fileext){
             return true;
         }
     }
@@ -97,7 +103,8 @@ function isMusicFile(filepath){
  * to retrieve music files
  */
 var scan = function(){
-    var Track = mongoose.model('track');
+    var Track = mongoose.model('track'),
+        Albumart = mongoose.model('albumart');
     if (!scanInProgess){
         scanInProgess = true;
         Track.find(
@@ -118,6 +125,10 @@ var scan = function(){
                             taglib.read(filepath, function(err, tag, audioProperties){
                                 merge(filepath, fileStats.mtime, tag, audioProperties);
                                 next();
+                            });
+                        }else if(isCoverFile(filepath)){
+                            Albumart.update({ dir: root }, {path: filepath, dir: root}, {upsert: true}, function(err, a, b){
+                                console.log(filepath + ' : albumart updated');
                             });
                         }else{
                             delete files[filepath];

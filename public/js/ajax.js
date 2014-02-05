@@ -64,9 +64,9 @@ function getFileInformations(options, callback){
 }
 
 function getAlbumArt(elt){
-    $.get('ajax/albumart', {album: JSON.stringify(elt.data('album'))}, function(obj){
-        if (!!obj.path){
-            elt.prepend('<img src="' + obj.path + '" />');
+    $.get('ajax/hasalbumart', {album: JSON.stringify(elt.data('album'))}, function(id){
+        if (!!id){
+            elt.prepend('<img src="ajax/albumart?id=' + id + '" />');
         }
     }, "json")
     .error(function(jqXHR, textStatus){
