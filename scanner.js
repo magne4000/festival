@@ -113,13 +113,14 @@ var scan = function(){
                     walker = walk.walk(settings.scanner.path);
                     walker.on("file", function(root, fileStats, next) {
                         var filepath = path.join(root, fileStats.name);
-                        delete files[filepath];
                         if (isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
+                            delete files[filepath];
                             taglib.read(filepath, function(err, tag, audioProperties){
                                 merge(filepath, fileStats.mtime, tag, audioProperties);
                                 next();
                             });
                         }else{
+                            delete files[filepath];
                             next();
                         }
                     });
