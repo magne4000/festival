@@ -5,18 +5,16 @@ var mongoose = require('mongoose'),
 /**
  * Send HTML artist list
  */
-exports.menu = function(req, res) {
-    // TODO
-    var i = req.body.i;
-    if (i == 2) {
-        res.send("0");
-    } else {
-        exports.listartists(req, res, function(list){
-            res.render("menu", {
-                artists: list
-            });
-        });
+exports.searchartists = function(req, res) {
+    var term = req.body.term?req.body.term:null;
+    if (term !== null) {
+        req.query.filters = JSON.stringify({artist : {$regex: '.*'+term+'.*', $options: 'i'}});
     }
+    exports.listartists(req, res, function(list){
+        res.render("menu", {
+            artists: list
+        });
+    });
 };
 
 /**

@@ -33,8 +33,8 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.post('/ajax/menu', ajax.menu);
 app.get('/music/:id', music.index);
+app.post('/ajax/search/artists', ajax.searchartists);
 app.get('/ajax/list/tracks', ajax.listtracks);
 app.get('/ajax/list/albums', ajax.listalbums);
 app.get('/ajax/list/artists', ajax.listartists);

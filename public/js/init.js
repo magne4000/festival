@@ -35,12 +35,12 @@ $(document).ready(function() {
     
     /* Fastsearch */
     $('#input_artist').fastsearch({
-        source: "ajax/search/artist",
-        minLength: 2,
+        source: "ajax/search/artists",
+        minLength: 1,
         recipient: "#left_pane .wrapper",
-        delay: 300,
-        restoreCallback: function(){loadAjaxMenu();}
-    });
+        delay: 300
+    }).fastsearch('search', ''); //init with all artists
+
     
     /* Recipients */
     var $recipient_body2_wrapper = $("#tabs-albums .container").recipient(),

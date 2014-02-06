@@ -27,13 +27,12 @@ head
       script(type='text/javascript', src='js/soundmanager2-jsmin.js')
     else
       script(type='text/javascript', src='js/soundmanager2-nodebug-jsmin.js')
-    script(type='text/javascript')
+    script(type='text/javascript').
       soundManager.url = '#{soundmanager.url}';
       soundManager.flashVersion = '#{soundmanager.flashVersion}';
       soundManager.useFlashBlock = #{soundmanager.useFlashBlock};
       soundManager.useHTML5Audio = #{soundmanager.useHTML5Audio};
       soundManager.preferFlash = #{soundmanager.preferFlash};
-    script(type='text/javascript', src='js/menu.js')
     script(type='text/javascript', src='js/ajax.js')
     //TODO Load plugins
     script(type='text/javascript', src='js/init.js')
@@ -48,8 +47,6 @@ head
             input#input_artist(type='search', placeholder='Quick artist search', autocomplete='off', autofocus='autofocus')
         .wrapper
           ul
-        script(type='text/javascript').
-          loadAjaxMenu();
       #body2
         #body2_wrapper
           .pane

@@ -79,8 +79,7 @@
                 function( items ) {
                     $this.fastsearch('_render', items);
                     $this.trigger('fastsearchchanged', value);
-                },
-                "json"
+                }
             );
         },
         _render: function( items ) {
@@ -95,15 +94,10 @@
             }
             ul.empty();
             span.remove();
-            if (items.length === 0){
+            if (!items){
                 data.$recipient.prepend('<span>No results match your search.</span>');
             }else{
-                $.each( items, function( index, item ) {
-                    $( "<li></li>" )
-                    .data( "artist", {id: item.id} )
-                    .html( item.name + "<div class=\"actionhandler\"></div>" )
-                    .appendTo( ul );
-                });
+                ul.append(items);
             }
         }
     };
