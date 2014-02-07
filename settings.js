@@ -12,9 +12,6 @@ module.exports = {
     debug: {
         debug: true
     },
-    cache: {
-        maxitems: 1000
-    },
     soundmanager: {
         url: 'swf/',
         flashVersion: 9,

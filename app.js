@@ -3,7 +3,7 @@
  */
 
 var express =
-require('express'),
+    require('express'),
     routes = require('./routes'),
     ajax = require('./routes/ajax'),
     music = require('./routes/music'),
