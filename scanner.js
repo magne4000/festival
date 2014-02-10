@@ -22,8 +22,8 @@ function merge(filepath, mtime, tag, audioProperties){
         path: filepath,
         last_updated: mtime
     };
-    if (tag == null){
-        console.log(filepath + ' : tag is null')
+    if (tag === null){
+        console.log(filepath + ' : tag is null');
     } else {
         track.genre = tag.genre;
         track.album = tag.album;
@@ -32,8 +32,8 @@ function merge(filepath, mtime, tag, audioProperties){
         track.year = tag.year;
         track.trackno = tag.track;
     }
-    if (audioProperties == null){
-        console.log(filepath + ' : enable to retrieve audio properties')
+    if (audioProperties === null){
+        console.log(filepath + ' : enable to retrieve audio properties');
     }else{
         track.duration = audioProperties.length;
         track.bitrate = audioProperties.bitrate;
@@ -49,13 +49,24 @@ function merge(filepath, mtime, tag, audioProperties){
  * Delete files that are not on the filesystem anymore
  * @param files
  */
-function cleanold(files){
+function cleanold(files, albumarts){
     var Track = mongoose.model('track'),
+        Albumart = mongoose.model('albumart'),
+        albumartsToDelete = [],
         filesToDelete = [];
+    
+    // Clean old tracks
     Object.keys(files).forEach(function(element) {
         filesToDelete.push(element);
     });
     Track.remove({path: {$in: filesToDelete}}).exec();
+    
+    // Clean old covers
+    Object.keys(albumarts).forEach(function(element) {
+        albumartsToDelete.push(element);
+    });
+    Albumart.remove({path: {$in: albumartsToDelete}}).exec();
+    
     clearProgressTimeout();
 }
 
@@ -108,39 +119,55 @@ var scan = function(){
     if (!scanInProgess){
         scanInProgess = true;
         Track.find(
-                {},
-                "path last_updated",
-                function(err, docs) {
-                    var files = {};
-                    for (var i in docs) {
-                        if (docs.hasOwnProperty(i)) {
-                            files[docs[i].path] = docs[i].last_updated;
-                        }
+            {},
+            "path last_updated",
+            function(err, docs) {
+                var files = {};
+                for (var i in docs) {
+                    if (docs.hasOwnProperty(i)) {
+                        files[docs[i].path] = docs[i].last_updated;
                     }
-                    walker = walk.walk(settings.scanner.path);
-                    walker.on("file", function(root, fileStats, next) {
-                        var filepath = path.join(root, fileStats.name);
-                        if (isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
-                            delete files[filepath];
-                            taglib.read(filepath, function(err, tag, audioProperties){
-                                merge(filepath, fileStats.mtime, tag, audioProperties);
-                                next();
-                            });
-                        }else if(isCoverFile(filepath)){
-                            Albumart.update({ dir: root }, {path: filepath, dir: root}, {upsert: true}, function(err, a, b){
-                                console.log(filepath + ' : albumart updated');
-                            });
-                        }else{
-                            delete files[filepath];
-                            next();
-                        }
-                    });
-
-                    walker.on("end", function () {
-                        console.log('cleanold', files);
-                        cleanold(files);
-                    });
                 }
+                
+                Albumart.find(
+                    {},
+                    "path dir",
+                    function(err2, docs2) {
+                        var albumarts = {};
+                        for (var i in docs2) {
+                            if (docs2.hasOwnProperty(i)) {
+                                albumarts[docs2[i].path] = docs2[i].dir;
+                            }
+                        }
+                        
+                        var walker = walk.walk(settings.scanner.path);
+                        walker.on("file", function(root, fileStats, next) {
+                            var filepath = path.join(root, fileStats.name);
+                            if (isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
+                                delete files[filepath];
+                                taglib.read(filepath, function(err, tag, audioProperties){
+                                    merge(filepath, fileStats.mtime, tag, audioProperties);
+                                    next();
+                                });
+                            }else if(isCoverFile(filepath)){
+                                if (albumarts[filepath]){
+                                    delete albumarts[filepath];
+                                }else{
+                                    Albumart.insert({path: filepath, dir: root});
+                                }
+                            }else{
+                                delete files[filepath];
+                                next();
+                            }
+                        });
+        
+                        walker.on("end", function () {
+                            console.log('cleanold', files, albumarts);
+                            cleanold(files);
+                        });
+                    }
+                );
+            }
         );
     }
 };
