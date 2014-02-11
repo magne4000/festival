@@ -1,17 +1,15 @@
-#player.ui-widget
-  #controls
-    a#play.play(title='Play', href='javascript:void(0);')
-    a#prev(title='Previous track', href='javascript:void(0);')
-    a#next(title='Next track', href='javascript:void(0);')
-  .duration.elapsed-time 00:00
-  #loader
-    #info.ui-corner-all
+.player
+  .controls
+    a.control.play(title='Play', href='javascript:void(0);')
+    a.control.prev(title='Previous track', href='javascript:void(0);')
+    a.control.next(title='Next track', href='javascript:void(0);')
+  .loader
+    .info
+      .elapsed-time 00:00
       span Waiting for a track
-    #bar
-  .duration.total-time 00:00
-  #controls2
-    a#loop.control(title='Loop', href='javascript:void(0);')
-    a#shuffle.control(title='Shuffle', href='javascript:void(0);')
-    #volume.control(title='Volume')
-    #volume-wrapper
-      #volume-max
+      .total-time 00:00
+  .controls
+    a.control.loop(title='Loop', href='javascript:void(0);')
+    a.control.random(title='Random', href='javascript:void(0);')
+    a.control.volume(title='Volume')
+    .volume-wrapper

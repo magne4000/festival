@@ -1,0 +1,13 @@
+.albums
+  ul
+    if artists
+      each artist in artists
+        li.artist
+          h3= artist.name
+          ul
+            if artist.albums
+              each album in artist.albums
+                li.album
+                  h4= album.name
+                  if album.albumart
+                    img(src=album.albumart, alt=album.name)

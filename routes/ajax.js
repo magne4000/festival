@@ -19,12 +19,16 @@ exports.searchartists = function(req, res) {
 /**
  * JSON list of tracks
  */
-exports.listtracks = function(req, res){
+exports.listtracks = function(req, res, callback){
     var filters = req.query.filters?JSON.parse(req.query.filters):{},
         Track = mongoose.model('track');
     var query = Track.find(filters);
     query.exec(function (err, docs) {
-        res.json(docs);
+        if (callback){
+            callback(docs);
+        }else{
+            res.json(docs);
+        }
     });
 };
 
@@ -117,6 +121,7 @@ exports.listartists = function(req, res, callback){
     {$match: filters},
     {$group: {_id: {artist: '$artist'}}},
     {$project: {_id: 0, artist: '$_id.artist'}},
+    {$sort: {artist: 1}},
     function(err, docs) {
         if (err){
             console.error(err);

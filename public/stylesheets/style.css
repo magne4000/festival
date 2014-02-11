@@ -1,8 +1,42 @@
 body {
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
   color: #00B7FF;
+}
+
+html, body {
+    height:100%;
+    overflow: hidden;
+    position: relative;
+}
+
+main {
+    position: absolute;
+    bottom: 0;
+    top: 50px;
+    width: 100%;
+}
+
+.container {
+    height:100%;
+}
+
+.fill .wrapper, .fill .panel, .fill .list-group {
+    height:100%;
+}
+
+.fill .wrapper {
+    position: relative;
+}
+
+.fill>.search{
+    position: absolute;
+    top: 40px;
+    bottom: 5px;
+}
+
+.fill .list-group {
+    overflow: auto;
 }

@@ -1,12 +1,16 @@
 /*
  * GET home page.
  */
-var settings = require('../settings');
+var settings = require('../settings'),
+    ajax = require('./ajax');
 
 exports.index = function(req, res) {
-    res.render('index', {
-        title : 'Webmusic',
-        soundmanager: settings.soundmanager,
-        debug: settings.debug
+    ajax.listartists(req, res, function(docs){
+        res.render('index', {
+            title : 'Webmusic',
+            soundmanager: settings.soundmanager,
+            debug: settings.debug,
+            artists: docs
+        });
     });
 };

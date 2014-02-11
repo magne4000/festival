@@ -1,0 +1,6 @@
+.searchbox
+input.form-control(type="search", placeholder="Search an artist")
+if artists
+  div.list-group
+    each artist in artists
+      a.list-group-item(href='#', data-artist='{"id": "#{artist.artist}"}') #{artist.artist}

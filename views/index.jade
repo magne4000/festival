@@ -2,27 +2,19 @@ doctype html
 html(lang='fr')
 head
     meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    meta(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no")
     link(rel='shortcut icon', type='image/png', href='images/favicon.png')
-    link(rel='stylesheet', type='text/css', href='stylesheets/jquery-ui-1.10.3.custom.min.css')
-    link(rel='stylesheet', type='text/css', href='stylesheets/jquery.loadmask.css')
-    link(rel='stylesheet', type='text/css', href='stylesheets/jquery.jgrowl.css')
-    link(rel='stylesheet', type='text/css', href='stylesheets/opentip.css')
-    link(rel='stylesheet', type='text/css', href='stylesheets/global.css')
-    link(rel='stylesheet', type='text/css', href='stylesheets/player.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/bootstrap.min.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/style.css')
     script(type='text/javascript', src='js/jquery.min.js')
-    script(type='text/javascript', src='js/jquery-ui-1.10.3.custom.min.js')
     script(type='text/javascript', src='js/utils.js')
     script(type='text/javascript', src='js/jquery.store.js')
     script(type='text/javascript', src='js/jquery.playlist.div.js')
     script(type='text/javascript', src='js/jquery.playlist.js')
     script(type='text/javascript', src='js/jquery.player.js')
     script(type='text/javascript', src='js/jquery.recipient.js')
-    script(type='text/javascript', src='js/jquery.loadmask.min.js')
-    script(type='text/javascript', src='js/jquery.easy.notification.js')
-    script(type='text/javascript', src='js/jquery.ui-contextmenu.js')
     script(type='text/javascript', src='js/jquery.fastsearch.js')
     script(type='text/javascript', src='js/jquery.hotkeys.js')
-    script(type='text/javascript', src='js/opentip-jquery.js')
     if debug
       script(type='text/javascript', src='js/soundmanager2-jsmin.js')
     else
@@ -38,26 +30,28 @@ head
     script(type='text/javascript', src='js/init.js')
     title Webmusic
   body
-    #body
-      header
-        | Webmusic
-      #left_pane.ui-widget.ui-widget-content
-        #search
-          p
-            input#input_artist(type='search', placeholder='Quick artist search', autocomplete='off', autofocus='autofocus')
-        .wrapper
-          ul
-      #body2
-        #body2_wrapper
-          .pane
-            ul
-              li
-                a(href='#tabs-albums') Albums
-            #tabs-albums
-              .container
-      #right_pane.ui-widget.ui-widget-content
-        .wrapper
-          ul
-      .push
-    footer
+    header.container-fluid
       include player
+    main.container-fluid
+      .tabs
+        .search
+        .artists
+        .albums
+        .genres
+        .playlists
+      .row.fill
+        .wrapper
+          .col-xd-12.col-md-3.search
+            include tab/search
+        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-6
+          .panel.albums
+            .panel-body.
+              b
+        .wrapper.hidden-xs.hidden-sm.hidden.col-xd-12.col-md-6
+          .panel.genres
+            .panel-body.
+              c
+        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-3
+          .panel.playlists
+            .panel-body.
+              d
