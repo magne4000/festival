@@ -1,6 +1,5 @@
 var mongoose = require('mongoose'),
-    path = require('path'),
-    fs = require('fs');
+    path = require('path');
 
 /**
  * Send HTML artist list
@@ -30,6 +29,65 @@ exports.listtracks = function(req, res){
 };
 
 /**
+ * JSON list of albums by artists.
+ * e.g.
+ *   [{
+ *     name: "artist1 name",
+ *     albums: [
+ *       {name: "album1 name", albumart: "http://mydomain.com/album1/art"},
+ *       {name: "album2 name"},
+ *     ]
+ *   }, ...]
+ */
+exports.listalbumsbyartists = function(req, res){
+    var filters = req.query.filters?JSON.parse(req.query.filters):{},
+        Track = mongoose.model('track'),
+        Albumart = mongoose.model('albumart'),
+        albumsByArtists = [],
+        lastArtist = null;
+    
+    // Fetch covers info
+    Albumart.find({}).exec(function(err2, docs2) {
+        var covers = {};
+        for (var i=0; i<docs2.length; i++){
+            covers[docs2[i].dir] = docs2[i]._id;
+        }
+        
+        // Fetch tracks info
+        Track.aggregate(
+        {$match: filters},
+        {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}, first_path: {$first: '$path'}}},
+        {$sort: {artist: 1, album: 1}},
+        {$project: {_id: 0, artist: 1, year: 1, first_path: 1, album: '$_id.album'}},
+        function(err, docs) {
+            if (err){
+                console.error(err);
+            }else{
+                for (var i=0; i<docs.length; i++){
+                    var albumdir = path.dirname(docs[i].first_path),
+                        album = {name: docs[i].album},
+                        artist = docs[i].artist;
+                    if (covers[albumdir]){
+                        album.albumart = '/ajax/albumart/?id=' + covers[albumdir];
+                    }
+                    if (artist !== null){
+                        if (lastArtist !== artist){
+                            // add artist with first album
+                            albumsByArtists.push({name: artist, albums: [album]});
+                            lastArtist = artist;
+                        } else {
+                            // artist already exists, so only add album to it
+                            albumsByArtists[albumsByArtists.length-1].albums.push(album);
+                        }
+                    }
+                }
+                res.json(albumsByArtists);
+            }
+        });
+    });
+};
+
+/**
  * JSON list of albums
  */
 exports.listalbums = function(req, res){
@@ -38,6 +96,7 @@ exports.listalbums = function(req, res){
     Track.aggregate(
     {$match: filters},
     {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}}},
+    {$sort: {artist: 1, album: 1}},
     {$project: {_id: 0, artist: 1, year: 1, album: '$_id.album'}},
     function(err, docs) {
         if (err){

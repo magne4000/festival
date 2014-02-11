@@ -38,6 +38,7 @@ app.post('/ajax/search/artists', ajax.searchartists);
 app.get('/ajax/list/tracks', ajax.listtracks);
 app.get('/ajax/list/albums', ajax.listalbums);
 app.get('/ajax/list/artists', ajax.listartists);
+app.get('/ajax/list/albumsbyartists', ajax.listalbumsbyartists);
 app.get('/ajax/fileinfo', ajax.fileinfo);
 app.get('/ajax/albumart', ajax.albumart);
 app.get('/ajax/hasalbumart', ajax.hasalbumart);
