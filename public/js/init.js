@@ -1,48 +1,21 @@
 $(document).ready(function() {
+    /* Fastsearch */
+    $('#search').fastsearch({
+        source: "ajax/search/artists",
+        recipient: ".search .list-group",
+        delay: 300
+    });
+    
+    /* Dropdown events */
+    $(document).on('click', "[data-player-role='play']", function(e){
+        console.log($(e.target).data("playerArtist"));
+    });
+    
+    /*
     $tabs = $('#body2_wrapper .pane').tabs();
     
-    /* Resizable */
-    $('#left_pane').resizable({
-        handles: 'e',
-        minWidth: 200,
-        maxWidth: 600,
-        resize: function(event, ui){
-            $(this).css({
-                'height': '',
-                'left': '5px'
-            });
-            $('#body2').css({
-                'padding-left': $(this).width() + 11
-            });
-        }
-    });
     
-    $('#right_pane').resizable({
-        handles: 'w',
-//        minWidth: 200,
-        maxWidth: 600,
-        resize: function(event, ui){
-            $(this).css({
-                'height': '',
-                'left': '',
-                'right': '5px'
-            });
-            $('#body2').css({
-                'padding-right': $(this).width() + 11
-            });
-        }
-    });
-    
-    /* Fastsearch */
-    $('#input_artist').fastsearch({
-        source: "ajax/search/artists",
-        minLength: 1,
-        recipient: "#left_pane .wrapper",
-        delay: 300
-    }).fastsearch('search', ''); //init with all artists
-
-    
-    /* Recipients */
+    /* Recipients *
     var $recipient_body2_wrapper = $("#tabs-albums .container").recipient(),
     $recipient_right_pane = $("#right_pane .wrapper ul").recipient(),
     $left_pane_ul = $('#left_pane .wrapper ul'),
@@ -144,113 +117,8 @@ $(document).ready(function() {
         });
     });
     
-    /* Selectables */
-    $left_pane_ul.selectable({ filter: '>li', cancel: '.actionhandler' });
-    $recipient_right_pane.selectable({ filter: '>li', cancel: '.actionhandler' });
-    $recipient_body2_wrapper.selectable({ filter: '>div', cancel: '.actionhandler' });
+    /* Selectables *
     
-    $left_pane_ul.on('selectablestop', function(){
-        var $this = $(this), selected = [$this.find('.ui-selected')];
-        clearTimeout(timer);
-        timer = setTimeout(function(){
-            $this.trigger('artistClicked', selected);
-        }, 100);
-    });
-    
-    $playlist = $('body').playlist();
-    $player = $('body').player({
-        playlist : $playlist
-    });
-    
-    /* Context menus */
-    
-    var cmenu = [
-        {title: 'Play', cmd: 'playTracks'},
-        {title: 'Add to playlist', cmd: 'addTracks'}
-    ],
-    showEffect = {delay: 100, duration: 1},
-    menuPosition = function(event, ui){
-        if ($(event.target).data('actionhandler')){
-            var actionhandler = $(event.target).data('actionhandler');
-            $(event.target).data('actionhandler', false);
-            if (actionhandler){
-                return {my: "left top", at: "left bottom", of: $(event.target).find('.actionhandler'), collision: "fit"};
-            }
-        }
-        return {my: "left top", at: "center", of: event, collision: "fit"};
-    },
-    menuPositionTrack = function(event, ui){
-        if ($(event.target).data('actionhandler')){
-            var actionhandler = $(event.target).data('actionhandler');
-            $(event.target).data('actionhandler', false);
-            if (actionhandler){
-                return {my: "right top", at: "right bottom", of: $(event.target).find('.actionhandler'), collision: "fit"};
-            }
-        }
-        return {my: "left top", at: "center", of: event, collision: "fit"};
-    };
-    $('#tabs-albums').contextmenu({
-        delegate: '.album_list_element',
-        menu: cmenu,
-        show: showEffect,
-        hide: false,
-        position: menuPosition,
-        select: function(event, ui) {
-            $recipient_right_pane.trigger(ui.cmd, ['#right_pane ul li']);
-        },
-        beforeOpen: function(event, ui){
-            var target = $(event.currentTarget);
-            if (!target.hasClass('ui-selected')){
-                target.siblings('.ui-selected').removeClass('ui-selected');
-                target.addClass('ui-selected');
-                target.addClass('active');
-                target.parent().trigger('selectablestop');
-            }
-        }
-    });
-    $('#left_pane').contextmenu({
-        delegate: 'li',
-        menu: cmenu,
-        show: showEffect,
-        hide: false,
-        position: menuPosition,
-        select: function(event, ui) {
-            if ($('#tabs-albums').find('.ui-selected')){
-                $(document).one('tracklistupdated', function(){
-                    $recipient_right_pane.trigger(ui.cmd, ['#right_pane ul li']);
-                });
-                ui.target.parent().trigger('selectablestop');
-            }else{
-                $recipient_right_pane.trigger(ui.cmd, ['#right_pane ul li']);
-            }
-        },
-        beforeOpen: function(event, ui){
-            if (!ui.target.hasClass('ui-selected')){
-                ui.target.siblings('.ui-selected').removeClass('ui-selected');
-                ui.target.addClass('ui-selected');
-                ui.target.addClass('active');
-                ui.target.parent().trigger('selectablestop');
-            }
-        }
-    });
-    $('#right_pane').contextmenu({
-        delegate: 'li',
-        menu: cmenu,
-        show: showEffect,
-        hide: false,
-        position: menuPositionTrack,
-        select: function(event, ui) {
-            $recipient_right_pane.trigger(ui.cmd, ['#right_pane ul li.ui-selected']);
-        },
-        beforeOpen: function(event, ui){
-            if (!ui.target.hasClass('ui-selected')){
-                ui.target.siblings('.ui-selected').removeClass('ui-selected');
-                ui.target.addClass('ui-selected');
-                ui.target.addClass('active');
-                ui.target.parent().trigger('selectablestop');
-            }
-        }
-    });
     $("#tabs-albums,#left_pane,#right_pane").recipient();
     $("#tabs-albums,#left_pane,#right_pane").recipient('addListener', 'tracklistupdated', function(target){
         $(this).contextmenu('enableEntry', 'playTracks', true);
@@ -289,7 +157,7 @@ $(document).ready(function() {
         });
     });
     
-    /* Player */
+    /* Player *
     
     // Tooltip
     Opentip.styles.myStyle = {
@@ -317,7 +185,7 @@ $(document).ready(function() {
         tooltipBar.setContent(txt);
     });
     
-    /* Volume */
+    /* Volume *
     $('#volume-max').slider({
         orientation: "vertical",
         range: "min",
@@ -351,7 +219,7 @@ $(document).ready(function() {
         var cursorPositionRelative = Math.round((e.pageY - $('#volume-max').offset().top)),
             cursorPosition = 100 - Math.floor((cursorPositionRelative/$('#volume-max').height()) * 100);
         tooltipVol.setContent(cursorPosition);
-        /*Position*/
+        /*Position*
         $('.tooltip-volume').position({
             my: "right-15 top+" + (cursorPositionRelative - 8),
             at: "left top",
@@ -360,12 +228,12 @@ $(document).ready(function() {
         });
     });
     
-    /* Actions */
+    /* Actions *
     $(document).on('mouseenter mouseleave', '.wrapper li, .album_list_element, #tabs-playlist tr', function(){
         $(this).find('.actionhandler').toggleClass('active_hover');
     });
     
-    /* Shortcuts */
+    /* Shortcuts *
     $(document).on('keydown.space', function() {
         $player.player('togglePlayPause');
     });
@@ -375,4 +243,5 @@ $(document).ready(function() {
     $(document).on('keydown.ctrl_left', function() {
         $player.player('prev');
     });
+    */
 });

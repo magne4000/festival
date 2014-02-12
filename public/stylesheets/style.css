@@ -19,11 +19,11 @@ main {
     width: 100%;
 }
 
-.container {
+.container, .fill .list-group {
     height:100%;
 }
 
-.fill, .fill .wrapper, .fill .panel, .fill .list-group {
+.fill, .fill .wrapper, .fill .panel {
     height:100%;
     padding: 0 5px;
 }
@@ -48,4 +48,10 @@ main {
 
 .fill .list-group {
     overflow: auto;
+}
+
+.dropdown-menu {
+    right: 15px;
+    left: auto;
+    min-width: 100px;
 }

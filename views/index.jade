@@ -7,14 +7,17 @@ head
     link(rel='stylesheet', type='text/css', href='stylesheets/bootstrap.min.css')
     link(rel='stylesheet', type='text/css', href='stylesheets/style.css')
     script(type='text/javascript', src='js/jquery.min.js')
+    script(type='text/javascript', src='js/bootstrap.min.js')
     script(type='text/javascript', src='js/utils.js')
-    script(type='text/javascript', src='js/jquery.store.js')
-    script(type='text/javascript', src='js/jquery.playlist.div.js')
-    script(type='text/javascript', src='js/jquery.playlist.js')
-    script(type='text/javascript', src='js/jquery.player.js')
-    script(type='text/javascript', src='js/jquery.recipient.js')
     script(type='text/javascript', src='js/jquery.fastsearch.js')
-    script(type='text/javascript', src='js/jquery.hotkeys.js')
+    script(type='text/javascript', src='js/init.js')
+//    script(type='text/javascript', src='js/jquery.store.js')
+    //script(type='text/javascript', src='js/jquery.playlist.div.js')
+    //script(type='text/javascript', src='js/jquery.playlist.js')
+    //script(type='text/javascript', src='js/jquery.player.js')
+    //script(type='text/javascript', src='js/jquery.recipient.js')
+    
+    //script(type='text/javascript', src='js/jquery.hotkeys.js')
     if debug
       script(type='text/javascript', src='js/soundmanager2-jsmin.js')
     else
@@ -27,7 +30,7 @@ head
       soundManager.preferFlash = #{soundmanager.preferFlash};
     script(type='text/javascript', src='js/ajax.js')
     //TODO Load plugins
-    script(type='text/javascript', src='js/init.js')
+    
     title Webmusic
   body
     header.container-fluid
@@ -42,7 +45,12 @@ head
       .row.fill
         .wrapper.col-xd-12.col-md-3
           .search
-            include tab/search
+            .input-group
+              span.input-group-addon
+                span.glyphicon.glyphicon-search
+              input#search.form-control(type="search", placeholder="Search an artist")
+            div.list-group
+              include tab/search
         .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-6
           .panel.albums
             .panel-body.

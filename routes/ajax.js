@@ -5,12 +5,13 @@ var mongoose = require('mongoose'),
  * Send HTML artist list
  */
 exports.searchartists = function(req, res) {
-    var term = req.body.term?req.body.term:null;
-    if (term !== null) {
+    var term = req.body.term?req.body.term:null,
+        render = req.query.render?req.query.render:null;
+    if (term !== null && term !== '') {
         req.query.filters = JSON.stringify({artist : {$regex: '.*'+term+'.*', $options: 'i'}});
     }
     exports.listartists(req, res, function(list){
-        res.render("menu", {
+        res.render("tab/search", {
             artists: list
         });
     });

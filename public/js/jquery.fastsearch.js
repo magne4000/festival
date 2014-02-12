@@ -10,10 +10,7 @@
                         source: options.source,
                         target: $this,
                         delay: options.delay || 200,
-                        minLength: options.minLength || 1,
-                        term: "",
-                        ulcache: null,
-                        spancache: null
+                        term: ""
                     });
                     data = $this.data('fastsearch');
                 }
@@ -26,23 +23,22 @@
                     }
                 });
                 $this.on( "keyup", function( event ) {
-                    var keyCode = $.ui.keyCode;
+                    var keyCode = utils.keyCode;
                     switch( event.which ) {
                         case keyCode.TAB:
                             break;
                         case keyCode.ENTER:
                         case keyCode.NUMPAD_ENTER:
                             event.preventDefault();
+                            //no break;
                         case keyCode.ESCAPE:
                             $this.val( data.term );
                             break;
                         default:
                             clearTimeout( data.searching );
                             data.searching = setTimeout(function() {
-                                if ( data.term !== $this.val() && $this.val().length >= data.minLength) {
+                                if ( data.term !== $this.val()) {
                                     $this.fastsearch('search', null);
-                                }else if ($this.val().length === 0 && data.term.length !== 0){
-                                    $this.fastsearch('restore');
                                 }
                                 data.term = $this.val();
                             }, data.delay );
@@ -56,17 +52,6 @@
                 var $this = $(this);
                 $this.off('.fastsearch');
                 $this.removeData('fastsearch');
-            });
-        },
-        restore: function(){
-            return this.each(function() {
-                var $this = $(this), data = $this.data('fastsearch');
-                data.$recipient.find('ul').html(data.ulcache);
-                data.$recipient.find('span').remove();
-                if (!!data.spancache){
-                    data.$recipient.prepend(data.spancache);
-                }
-                $this.trigger('fastsearchchanged', null);
             });
         },
         search: function(value) {
@@ -83,21 +68,12 @@
             );
         },
         _render: function( items ) {
-            var $this = this, data = $this.data('fastsearch'), ul, span;
-            ul = data.$recipient.find('ul');
-            span = data.$recipient.find('span');
-            if (data.ulcache === null){
-                data.ulcache = ul.html();
-                if (span.length > 0){
-                    data.spancache = span;
-                }
-            }
-            ul.empty();
-            span.remove();
+            var $this = this, data = $this.data('fastsearch');
+            data.$recipient.empty();
             if (!items){
-                data.$recipient.prepend('<span>No results match your search.</span>');
+                data.$recipient.html('<span>No results match your search.</span>');
             }else{
-                ul.append(items);
+                data.$recipient.html(items);
             }
         }
     };
