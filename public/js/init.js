@@ -8,17 +8,28 @@ $(document).ready(function() {
     
     /* Events */
     $(document).on('click', "[data-role='play']", function(e){
-        var artist = $(e.currentTarget).data("artist");
-        if (artist){
-            console.log(artist);
+        var artist = $(e.currentTarget).data("artist"),
+            trackId = $(e.currentTarget).data("trackId"),
+            album = $(e.currentTarget).data("album");
+        if (!artist && !album){
+            //TODO $("#player").player('play', trackId);
+        }else{
+            // Set in "Now playing" tab
+            showNowPlaying(artist, album, trackId, function(){
+                if (trackId){
+                    // Play
+                    //TODO $("#player").player('play', trackId);
+                }
+            });
         }
     });
     
     $(document).on('click', "[data-role='add']", function(e){
-        var artist = $(e.currentTarget).data("artist");
-        if (artist){
-            console.log(artist);
-        }
+        var artist = $(e.currentTarget).data("artist"),
+            trackId = $(e.currentTarget).data("trackId"),
+            album = $(e.currentTarget).data("album");
+        // Set in "Now playing" tab
+        addNowPlaying(artist, album, trackId);
     });
     
     $(document).on('click', "[data-role='show-tracks']", function(e){

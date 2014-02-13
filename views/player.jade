@@ -1,13 +1,16 @@
-.player
+#player
   .controls
     a.control.play(title='Play', href='javascript:void(0);')
+      span.btn.btn-lg.btn-default.glyphicon.glyphicon-play
     a.control.prev(title='Previous track', href='javascript:void(0);')
+      span.btn.btn-lg.btn-default.glyphicon.glyphicon-step-backward
     a.control.next(title='Next track', href='javascript:void(0);')
+      span.btn.btn-lg.btn-default.glyphicon.glyphicon-step-forward
   .loader
     .info
-      .elapsed-time 00:00
+      span.elapsed-time 00:00
       span Waiting for a track
-      .total-time 00:00
+      span.total-time 00:00
   .controls
     a.control.loop(title='Loop', href='javascript:void(0);')
     a.control.random(title='Random', href='javascript:void(0);')

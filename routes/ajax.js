@@ -23,12 +23,15 @@ exports.searchartists = function(req, res) {
 exports.listtracks = function(req, res){
     var filters = req.query.filters?JSON.parse(req.query.filters):{},
         render = req.query.render?req.query.render:null,
+        playing = req.query.playing?req.query.playing:false,
         Track = mongoose.model('track');
     var query = Track.find(filters);
     query.exec(function (err, docs) {
         if (render){
             res.render("tab/playlist", {
-                tracks: docs
+                tracks: docs,
+                filters: filters,
+                playing: playing
             });
         } else {
             res.json(docs);

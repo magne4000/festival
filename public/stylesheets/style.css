@@ -109,3 +109,7 @@ li.album .btn:last-child {
 li.album .btn:first-child {
     border-top-left-radius: 0;
 }
+
+#player .controls, #player .loader, #player .loader .info>span {
+    display: inline-block;
+}
