@@ -37,15 +37,9 @@ head
     header.container-fluid
       include player
     main.container-fluid
-      .tabs
-        .search
-        .artists
-        .albums
-        .genres
-        .playlists
       .row.fill
         .wrapper.col-xd-12.col-md-3
-          .search
+          .search.wrapped
             .input-group
               span.input-group-addon
                 span.glyphicon.glyphicon-search
@@ -53,11 +47,16 @@ head
             div.list-group
               include tab/search
         .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-6
-          .panel.albums
+          .panel.wrapped.albums
             .panel-body
         .wrapper.hidden-xs.hidden-sm.hidden.col-xd-12.col-md-6
-          .panel.genres
+          .panel.wrapped.genres
             .panel-body
         .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-3
+          ul.nav.nav-tabs
+            li.playing.active
+              a(href="#playing", data-toggle="tab") Now playing
           .panel.playlists
-            .panel-body
+            .panel-body.tab-content
+              #playing.tab-pane.active
+                include tab/playlist

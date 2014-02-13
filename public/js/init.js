@@ -8,174 +8,34 @@ $(document).ready(function() {
     
     /* Events */
     $(document).on('click', "[data-role='play']", function(e){
-        var artist = $(e.target).data("artist");
+        var artist = $(e.currentTarget).data("artist");
         if (artist){
             console.log(artist);
         }
     });
     
     $(document).on('click', "[data-role='add']", function(e){
-        var artist = $(e.target).data("artist");
+        var artist = $(e.currentTarget).data("artist");
+        if (artist){
+            console.log(artist);
+        }
+    });
+    
+    $(document).on('click', "[data-role='show-tracks']", function(e){
+        var artist = $(e.currentTarget).data("artist");
         if (artist){
             console.log(artist);
         }
     });
     
     $(document).on('click', "[data-role='show-albums']", function(e){
-        var artist = $(e.target).data("artist");
+        var artist = $(e.currentTarget).data("artist");
         if (artist){
             showAlbumsByArtist(artist);
         }
     });
     
     /*
-    $tabs = $('#body2_wrapper .pane').tabs();
-    
-    
-    /* Recipients *
-    var $recipient_body2_wrapper = $("#tabs-albums .container").recipient(),
-    $recipient_right_pane = $("#right_pane .wrapper ul").recipient(),
-    $left_pane_ul = $('#left_pane .wrapper ul'),
-    timer = null;
-    
-    $left_pane_ul.recipient();
-    $left_pane_ul.recipient('addListener', 'artistClick', function(ids){
-        var $this = $(this), modified = false;
-        $('[data-artist].ui-selected,:data(artist).ui-selected').removeClass('ui-selected');
-        $('[data-artist],:data(artist)').each(function(){
-            if ($.inArray($(this).data('artist').id, ids) >= 0){
-                $(this).addClass('ui-selected');
-                modified = true;
-            }
-        });
-        if (modified){
-            $this.trigger('selectablestop');
-        }
-    });
-    
-    $recipient_body2_wrapper.recipient('addListener', 'artistClicked', function(target){
-        $tabs.tabs("option", "active", 0);
-        var $this = $(this);
-        getList(MODES.ALBUMS_BY_ARTISTS, target, fillAlbumsList, $this);
-        
-    });
-    
-    $recipient_body2_wrapper.on('selectablestop', function(){
-        var $this = $(this), subelts = $this.find('.album_list_element.ui-selected'), selected;
-        clearTimeout(timer);
-        if (subelts.size() === 0){
-            selected = [$('#left_pane ul .ui-selected')];
-            //If no album is selected, trigger an artistClicked event to mimic the default behaviour
-            timer = setTimeout(function(){
-                $this.trigger('artistClicked', selected);
-            }, 100);
-        }else{
-            selected = [subelts];
-            timer = setTimeout(function(){
-                $this.trigger('albumClicked', selected);
-            }, 100);
-        }
-    })
-    .recipient('addListener', 'albumClick', function(ids){
-        var $this = $(this), modified = false;
-        $(':data(album).ui-selected').removeClass('ui-selected');
-        $(':data(album)').each(function(){
-            if ($.inArray($(this).data('album').id, ids) >= 0){
-                $(this).addClass('ui-selected');
-                modified = true;
-            }
-        });
-        if (modified){
-            $this.trigger('selectablestop');
-        }
-    });
-    
-    $recipient_right_pane
-    .recipient('addListener', 'artistClicked', function(target){
-        var $this = $(this);
-        getList(MODES.TRACKS_BY_ARTISTS, target, fillTracksList, $this);
-    })
-    .recipient('addListener', 'albumClicked', function(target){
-        var $this = $(this);
-        getList(MODES.TRACKS_BY_ALBUMS, target, fillTracksList, $this);
-    })
-    .recipient('addListener', 'trackClick', function(ids){
-        $(':data(track).ui-selected').removeClass('ui-selected');
-        $(':data(track)').each(function(){
-            var $this = $(this);
-            if ($.inArray($this.data('track').id, ids) >= 0){
-                $this.addClass('ui-selected');
-            }
-        });
-    });
-    
-    $('#player').recipient()
-    .recipient('addListener', 'playTracks', function(target){
-        var ids = [], $target = $(target);
-        show_playlist_tab($playlist);
-        $target.each(function(){
-            ids.push($(this).data('track').id);
-        });
-        $playlist.playlist('empty');
-        getFileInformations({ids : ids}, function(tracks){
-            $playlist.playlist('add', tracks, function(){
-                $player.player('play');
-            });
-        });
-    })
-    .recipient('addListener', 'addTracks', function(target){
-        var ids = [], $target = $(target);
-        show_playlist_tab($playlist);
-        $target.each(function(){
-            ids.push($(this).data('track').id);
-        });
-        getFileInformations({ids : ids}, function(tracks){
-            $playlist.playlist('add', tracks);
-        });
-    });
-    
-    /* Selectables *
-    
-    $("#tabs-albums,#left_pane,#right_pane").recipient();
-    $("#tabs-albums,#left_pane,#right_pane").recipient('addListener', 'tracklistupdated', function(target){
-        $(this).contextmenu('enableEntry', 'playTracks', true);
-        $(this).contextmenu('enableEntry', 'addTracks', true);
-    });
-    $("#tabs-albums,#left_pane,#right_pane").recipient('addListener', 'artistClicked albumClicked', function(target){
-        $(this).contextmenu('enableEntry', 'playTracks', false);
-        $(this).contextmenu('enableEntry', 'addTracks', false);
-    });
-    
-    $(document).one('playlisttabcreated', function(){
-        $("#tabs-albums,#left_pane,#right_pane,#tabs-playlist").on('click', '.actionhandler', function(e){
-            $(this).parent().data('actionhandler', true);
-            $(e.delegateTarget).contextmenu('open', $(this).parent());
-        });
-        $('#tabs-playlist').contextmenu({
-            delegate: 'tbody tr',
-            menu: [
-                {title: 'Play', cmd: 'play'},
-                {title: 'Remove', cmd: 'remove'}
-            ],
-            show: showEffect,
-            hide: false,
-            position: menuPosition,
-            select: function(event, ui) {
-                var trackid = ui.target.parents('tr').attr('id');
-                switch(ui.cmd){
-                case 'remove':
-                    $playlist.playlist('remove', trackid);
-                    break;
-                case 'play':
-                    $player.player('play', trackid);
-                    break;
-                }
-            }
-        });
-    });
-    
-    /* Player *
-    
     // Tooltip
     Opentip.styles.myStyle = {
         extends: "dark",

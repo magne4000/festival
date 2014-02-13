@@ -19,25 +19,34 @@ main {
     width: 100%;
 }
 
-.container, .fill .list-group {
+.container {
     height:100%;
 }
 
-.fill, .fill .wrapper, .fill .panel {
+.fill, .fill .wrapper {
     height:100%;
     padding: 0 5px;
+}
+
+.fill .search .list-group, .fill .playlists {
+    position: absolute;
+    overflow: auto;
+    top: 40px;
+    bottom: 1px;
+    right: 0;
+    left: 0;
+    margin-bottom: 0;
 }
 
 .fill .wrapper {
     position: relative;
 }
 
-.fill .wrapper>div {
-    position: absolute;
-    top: 0;
-    bottom: 40px;
-    left: 0;
+.fill .wrapper .wrapped {
+    position: relative;
+    height: 100%;
     width: 99%;
+    overflow: auto;
 }
 
 .fill>.search{
@@ -46,22 +55,47 @@ main {
     bottom: 5px;
 }
 
-.fill .list-group {
-    overflow: auto;
-}
-
 .list-group-item {
-  display: inline-block;
-  width: calc(100% - 39px);
-  height: 39px;
+    display: inline-block;
+    width: calc(100% - 39px);
+    height: 39px;
 }
 
 .dropdown-toggle {
-  width: 39px;
-  float: right;
-  padding: 11px 12px;
+    width: 39px;
+    float: right;
+    padding: 11px 11px;
 }
 
 .dropdown-toggle a {
     color: #C8C8C8;
+}
+
+.list-inline > li {
+    padding: 0;
+}
+
+li.album {
+    width: 142px;
+    margin-right: 15px;
+}
+
+li.album img {
+    width: 141px;
+    height: auto;
+    border-top: 1px solid #000000;
+    border-left: 1px solid #000000;
+    border-right: 1px solid #000000;
+}
+
+li.album .btn {
+    width: 71px;
+}
+
+li.album .btn:last-child {
+    border-top-right-radius: 0;
+}
+
+li.album .btn:first-child {
+    border-top-left-radius: 0;
 }

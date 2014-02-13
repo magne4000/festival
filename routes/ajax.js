@@ -75,6 +75,9 @@ exports.listalbumsbyartists = function(req, res){
                         artist = docs[i].artist;
                     if (covers[albumdir]){
                         album.albumart = '/ajax/albumart/?id=' + covers[albumdir];
+                    }else{
+                        // Default cover when none found
+                        album.albumart = '/images/nocover.jpg';
                     }
                     if (artist !== null){
                         if (lastArtist !== artist){
@@ -165,7 +168,6 @@ exports.fileinfo = function(req, res){
 exports.albumart = function(req, res){
     var id = req.query.id?req.query.id:null,
         Albumart = mongoose.model('albumart');
-
     Albumart.findOne({_id: id}).exec(function(err, cover) {
         res.sendfile(cover.path);
     });
