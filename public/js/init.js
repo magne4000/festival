@@ -6,13 +6,26 @@ $(document).ready(function() {
         delay: 300
     });
     
-    /* Dropdown events */
-    $(document).on('click', "[data-player-role='play']", function(e){
-        console.log($(e.target).data("playerArtist"));
+    /* Events */
+    $(document).on('click', "[data-role='play']", function(e){
+        var artist = $(e.target).data("artist");
+        if (artist){
+            console.log(artist);
+        }
     });
     
-    $(document).on('click', "[data-player-role='add']", function(e){
-        console.log($(e.target).data("playerArtist"));
+    $(document).on('click', "[data-role='add']", function(e){
+        var artist = $(e.target).data("artist");
+        if (artist){
+            console.log(artist);
+        }
+    });
+    
+    $(document).on('click', "[data-role='show-albums']", function(e){
+        var artist = $(e.target).data("artist");
+        if (artist){
+            showAlbumsByArtist(artist);
+        }
     });
     
     /*

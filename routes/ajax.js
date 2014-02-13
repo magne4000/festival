@@ -46,6 +46,7 @@ exports.listtracks = function(req, res, callback){
  */
 exports.listalbumsbyartists = function(req, res){
     var filters = req.query.filters?JSON.parse(req.query.filters):{},
+        render = req.query.render?req.query.render:null,
         Track = mongoose.model('track'),
         Albumart = mongoose.model('albumart'),
         albumsByArtists = [],
@@ -86,7 +87,13 @@ exports.listalbumsbyartists = function(req, res){
                         }
                     }
                 }
-                res.json(albumsByArtists);
+                if (render !== null){
+                    res.render("tab/albums", {
+                        artists: albumsByArtists
+                    });
+                }else{
+                    res.json(albumsByArtists);
+                }
             }
         });
     });
