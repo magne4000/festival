@@ -55,10 +55,20 @@ main {
     bottom: 5px;
 }
 
-.list-group-item {
-    display: inline-block;
-    width: calc(100% - 39px);
+.search a.list-group-item {
+    right: 38px;
     height: 39px;
+    margin-left: 38px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.search div.list-group-item {
+    right: 0;
+    height: 39px;
+    margin-top: -38px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .dropdown-toggle {

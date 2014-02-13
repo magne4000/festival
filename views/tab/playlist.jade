@@ -1,4 +1,4 @@
-ul
+.list-group
   if tracks
     each track in tracks
-      li.track #{track.name}
+      a.list-group-item.track(href="#") #{track.name}
