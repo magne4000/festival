@@ -50,8 +50,18 @@ main {
     overflow: auto;
 }
 
-.dropdown-menu {
-    right: 15px;
-    left: auto;
-    min-width: 100px;
+.list-group-item {
+  display: inline-block;
+  width: calc(100% - 39px);
+  height: 39px;
+}
+
+.dropdown-toggle {
+  width: 39px;
+  float: right;
+  padding: 11px 12px;
+}
+
+.dropdown-toggle a {
+    color: #C8C8C8;
 }

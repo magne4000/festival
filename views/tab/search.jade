@@ -1,11 +1,11 @@
 if artists
   each artist in artists
-    .list-group-item.dropdown(data-artist='{"id": "#{artist.artist}"}')
-      span #{artist.artist}
-        a.btn.btn-default.pull-right(data-toggle="dropdown")
-          span.caret.pull-right
-        ul.dropdown-menu(role="menu", aria-labelledby="dLabel")
-          li(role="presentation")
-            a(data-player-role="play", data-player-artist="#{artist.artist}", href="#", role="menuitem", tabindex="-1") Play
-          li(role="presentation")
-            a(data-player-role="add", data-player-artist="#{artist.artist}", href="#", role="menuitem", tabindex="-1") Add
+    a(href="#").list-group-item.dropdown(data-artist='{"id": "#{artist.artist}"}') #{artist.artist}
+    .list-group-item.dropdown-toggle
+      a.full(href="#", data-toggle="dropdown")
+        span.glyphicon.glyphicon-chevron-down
+      ul.dropdown-menu.dropdown-menu-right(role="menu", aria-labelledby="dLabel")
+        li(role="presentation")
+          a(data-player-role="play", data-player-artist="#{artist.artist}", href="#", role="menuitem", tabindex="-1") Play
+        li(role="presentation")
+          a(data-player-role="add", data-player-artist="#{artist.artist}", href="#", role="menuitem", tabindex="-1") Add

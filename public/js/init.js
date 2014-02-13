@@ -11,6 +11,10 @@ $(document).ready(function() {
         console.log($(e.target).data("playerArtist"));
     });
     
+    $(document).on('click', "[data-player-role='add']", function(e){
+        console.log($(e.target).data("playerArtist"));
+    });
+    
     /*
     $tabs = $('#body2_wrapper .pane').tabs();
     
