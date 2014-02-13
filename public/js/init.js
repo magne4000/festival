@@ -22,10 +22,9 @@ $(document).ready(function() {
     });
     
     $(document).on('click', "[data-role='show-tracks']", function(e){
-        var artist = $(e.currentTarget).data("artist");
-        if (artist){
-            console.log(artist);
-        }
+        var artist = $(e.currentTarget).data("artist"),
+            album = $(e.currentTarget).data("album");
+        showTracks(artist, album);
     });
     
     $(document).on('click', "[data-role='show-albums']", function(e){

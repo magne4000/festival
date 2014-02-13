@@ -53,10 +53,14 @@ head
           .panel.wrapped.genres
             .panel-body
         .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-3
-          ul.nav.nav-tabs
+          ul.nav.nav-tabs.playlists-tabs
             li.playing.active
               a(href="#playing", data-toggle="tab") Now playing
+            li.selection
+              a(href="#selection", data-toggle="tab") Selection
           .panel.playlists
             .panel-body.tab-content
               #playing.tab-pane.active
+                include tab/playlist
+              #selection.tab-pane
                 include tab/playlist
