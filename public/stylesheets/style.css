@@ -23,6 +23,10 @@ main {
     height:100%;
 }
 
+.container-fluid {
+    padding: 0;
+}
+
 .fill, .fill .wrapper {
     height:100%;
     padding: 0 5px;
@@ -110,6 +114,56 @@ li.album .btn:first-child {
     border-top-left-radius: 0;
 }
 
-#player .controls, #player .loader, #player .loader .info>span {
+#player {
+    position: relative;
+}
+
+#player .controls, #player .loader, #player .loader .info>span, #player .controls .control {
     display: inline-block;
+}
+
+#player .controls .control {
+    width: 52px;
+}
+
+#player .loader {
+    left: 180px;
+    position: absolute;
+    right: 180px;
+    height: 100%;
+    top: 0;
+}
+
+#player .loader .info {
+    text-align: center;
+}
+
+@media (max-width: 991px) {
+    #player .loader {
+        left: 51px;
+        right: 0px;
+    }
+    
+    #player .loader .progress {
+        height: 30px;
+    }
+    
+    #player .loader .info {
+        top: 0;
+        width: 100%;
+    }
+    
+    #player .controls .next, #player .controls .prev {
+        display: none;
+    }
+}
+
+#player .loader .total-time {
+    position: absolute;
+    right: 5px;
+}
+
+#player .loader .elapsed-time {
+    position: absolute;
+    left: 5px;
 }
