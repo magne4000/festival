@@ -39,11 +39,25 @@ $(document).ready(function() {
     });
     
     $(document).hammer().on('tap', "[data-role='show-albums']", function(e){
-        console.log(e);
         var artist = $(e.currentTarget).data("artist");
         if (artist){
             showAlbumsByArtist(artist);
         }
+    });
+    
+    /* Swipe */
+    $("body").hammer().on('swipeleft', function(e){
+        var current = $(".wrapper:visible");
+        current
+            .addClass("hidden-xs hidden-sm")
+            .next(":not(.hidden)")
+            .removeClass("hidden-xs hidden-sm");
+    }).on('swiperight', function(e){
+        var current = $(".wrapper:visible");
+        current
+            .addClass("hidden-xs hidden-sm")
+            .prev(":not(.hidden)")
+            .removeClass("hidden-xs hidden-sm");
     });
     
     /* Progress bar */
