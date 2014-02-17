@@ -11,11 +11,8 @@
       span.elapsed-time 00:00
       span Waiting for a track
       span.total-time 00:00
-    .progress
-      .progress-bar.playing-bar.progress-bar-success(style="width: 25%")
-        span.sr-only
-      .progress-bar.loading-bar.progress-bar-warning(style="width: 25%")
-        span.sr-only
+    .progressbar
+      input.hidden(data-slider-id='progress', data-slider-handle="slim", data-slider-min="0", data-slider-max="100", data-slider-step="1", data-slider-value="14")
   .controls
     a.control.loop(title='Loop', href='javascript:void(0);')
     a.control.random(title='Random', href='javascript:void(0);')

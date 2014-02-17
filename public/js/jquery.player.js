@@ -9,15 +9,15 @@
                     $this.data('player', {
                         target : $this,
                         volume : options.volume || 100,
-                        $play : $(options.playselector || '.play'),
-                        $next : $(options.nextselector || '.next'),
-                        $prev : $(options.prevselector || '.prev'),
-                        $loop : $(options.loopselector || '.loop'),
-                        $random : $(options.randomselector || '.random'),
-                        $volume : $(options.volumeselector || '.volume'),
-                        $bar : $(options.barselector || '.bar'),
-                        $info : $(options.infoselector || '#info span'),
-                        $volumewrapper : $(options.volumewrapperselector || '#volume-wrapper')
+                        $play : $this.find(options.playselector || '.play'),
+                        $next : $this.find(options.nextselector || '.next'),
+                        $prev : $this.find(options.prevselector || '.prev'),
+                        $loop : $this.find(options.loopselector || '.loop'),
+                        $random : $this.find(options.randomselector || '.random'),
+                        $volume : $this.find(options.volumeselector || '.volume'),
+                        $bar : $this.find(options.barselector || '.bar'),
+                        $info : $this.find(options.infoselector || '#info span'),
+                        $volumewrapper : $this.find(options.volumewrapperselector || '#volume-wrapper')
                     });
 
                     data = $this.data('player');

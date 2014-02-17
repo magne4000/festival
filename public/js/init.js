@@ -45,6 +45,18 @@ $(document).ready(function() {
         }
     });
     
+    /* Progress bar */
+    $('.progressbar input').slider({
+        formater: function(value) {
+            return value;
+        }
+    })
+    .removeClass("hidden")
+    .on('slide', function(e){
+        console.log($(this).slider('getValue'));
+        //$(this).slider('setValue', 10)
+    });
+    
     /*
     // Tooltip
     Opentip.styles.myStyle = {

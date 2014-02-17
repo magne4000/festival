@@ -136,15 +136,24 @@ li.album .btn:first-child {
 
 #player .loader .info {
     text-align: center;
+    height: 21px;
+}
+
+#player .loader .progressbar {
+    padding: 0 10px;
+}
+
+.slider.slider-horizontal {
+    width: 100%;
 }
 
 @media (max-width: 991px) {
     #player .loader {
         left: 51px;
-        right: 0px;
+        right: 0;
     }
     
-    #player .loader .progress {
+    #player .loader .progressbar {
         height: 30px;
     }
     
