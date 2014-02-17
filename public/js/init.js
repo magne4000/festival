@@ -48,16 +48,18 @@ $(document).ready(function() {
     /* Swipe */
     $("body").hammer().on('swipeleft', function(e){
         var current = $(".wrapper:visible");
-        current
-            .addClass("hidden-xs hidden-sm")
-            .next(":not(.hidden)")
-            .removeClass("hidden-xs hidden-sm");
+        var next = current.nextAll(":not(.hidden)").first();
+        if (next){
+            current.addClass("hidden-xs hidden-sm");
+            next.removeClass("hidden-xs hidden-sm");
+        }
     }).on('swiperight', function(e){
         var current = $(".wrapper:visible");
-        current
-            .addClass("hidden-xs hidden-sm")
-            .prev(":not(.hidden)")
-            .removeClass("hidden-xs hidden-sm");
+        var prev = current.prevAll(":not(.hidden)").first();
+        if (prev){
+            current.addClass("hidden-xs hidden-sm");
+            prev.removeClass("hidden-xs hidden-sm");
+        }
     });
     
     /* Progress bar */
