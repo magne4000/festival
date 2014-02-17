@@ -7,7 +7,7 @@ $(document).ready(function() {
     });
     
     /* Events */
-    $(document).on('tap', "[data-role='play']", function(e){
+    $(document).hammer().on('tap', "[data-role='play']", function(e){
         var artist = $(e.currentTarget).data("artist"),
             trackId = $(e.currentTarget).data("trackId"),
             album = $(e.currentTarget).data("album");
@@ -24,7 +24,7 @@ $(document).ready(function() {
         }
     });
     
-    $(document).on('tap', "[data-role='add']", function(e){
+    $(document).hammer().on('tap', "[data-role='add']", function(e){
         var artist = $(e.currentTarget).data("artist"),
             trackId = $(e.currentTarget).data("trackId"),
             album = $(e.currentTarget).data("album");
@@ -32,13 +32,14 @@ $(document).ready(function() {
         addNowPlaying(artist, album, trackId);
     });
     
-    $(document).on('tap', "[data-role='show-tracks']", function(e){
+    $(document).hammer().on('tap', "[data-role='show-tracks']", function(e){
         var artist = $(e.currentTarget).data("artist"),
             album = $(e.currentTarget).data("album");
         showTracks(artist, album);
     });
     
-    $(document).on('tap', "[data-role='show-albums']", function(e){
+    $(document).hammer().on('tap', "[data-role='show-albums']", function(e){
+        console.log(e);
         var artist = $(e.currentTarget).data("artist");
         if (artist){
             showAlbumsByArtist(artist);
