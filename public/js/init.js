@@ -48,17 +48,21 @@ $(document).ready(function() {
     /* Swipe */
     $("body").hammer().on('swipeleft', function(e){
         var current = $(".wrapper:visible");
-        var next = current.nextAll(":not(.hidden)").first();
-        if (next){
-            current.addClass("hidden-xs hidden-sm");
-            next.removeClass("hidden-xs hidden-sm");
+        if (current.length === 1) { // mobile devices
+            var next = current.nextAll(":not(.hidden)").first();
+            if (next){
+                current.addClass("hidden-xs hidden-sm").removeClass("current left right");
+                next.removeClass("hidden-xs hidden-sm").addClass("current left");
+            }
         }
     }).on('swiperight', function(e){
         var current = $(".wrapper:visible");
-        var prev = current.prevAll(":not(.hidden)").first();
-        if (prev){
-            current.addClass("hidden-xs hidden-sm");
-            prev.removeClass("hidden-xs hidden-sm");
+        if (current.length === 1) { // mobile devices
+            var prev = current.prevAll(":not(.hidden)").first();
+            if (prev){
+                current.addClass("hidden-xs hidden-sm").removeClass("current left right");
+                prev.removeClass("hidden-xs hidden-sm").addClass("current right");
+            }
         }
     });
     

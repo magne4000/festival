@@ -176,3 +176,33 @@ li.album .btn:first-child {
     position: absolute;
     left: 5px;
 }
+
+.current.right {
+    animation-duration: 0.5s;
+    animation-name: slideright;
+}
+
+.current.left {
+    animation-duration: 0.5s;
+    animation-name: slideleft;
+}
+
+@keyframes slideright {
+    from {
+        left: -100%;
+    }
+
+    to {
+        left: 0;
+    }
+}
+
+@keyframes slideleft {
+    from {
+        left: 100%;
+    }
+
+    to {
+        left: 0;
+    }
+}
