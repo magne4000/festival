@@ -7,6 +7,9 @@
                 $.store('get', 'tracks', true);
                 $.store('get', 'head', true);
                 $.store('get', 'tail', true);
+                $.store('get', 'volume', true);
+                $.store('get', 'shuffle', true);
+                $.store('get', 'loop', true);
             }else{
                 $.store('empty');
                 $.store('set', 'version', version);
@@ -60,7 +63,7 @@
             }
             return this;
         },
-        add: function(track, loop){
+        add: function(track){
             var pl = $.store('get', 'tracks'), head = $.store('get', 'head'), tail = $.store('get', 'tail');
             track.prev = null; // init
             track.next = null; // init
@@ -71,49 +74,38 @@
                 track.prev = pl[tail].uniqid;
                 pl[tail].next = track.uniqid;
             }
-            if(len(pl) > 0){
-                if (pl[head].prev !== null){ // Loop ON
-                    pl[head].prev = track.uniqid;
-                    track.next = pl[head].uniqid;
-                }
-            }else{
-                if (!!loop){
-                    track.next = track.uniqid;
-                    track.prev = track.uniqid;
-                }
-            }
             $.store('set', 'tail', track.uniqid);
             pl[track.uniqid] = track;
             $.store('set', 'tracks', pl);
             $.store('persist');
             return this;
         },
-        move : function(id, after){
+        move : function(uniqid, after){
             var pl = $.store('get', 'tracks'), oldhead = $.store('get', 'head');
 
-            if (pl[id].prev !== null){
-                pl[pl[id].prev].next = pl[id].next;
+            if (pl[uniqid].prev !== null){
+                pl[pl[uniqid].prev].next = pl[uniqid].next;
             }else{
-                $.store('set', 'head', pl[id].next);
+                $.store('set', 'head', pl[uniqid].next);
             }
-            if (pl[id].next !== null){
-                pl[pl[id].next].prev = pl[id].prev;
+            if (pl[uniqid].next !== null){
+                pl[pl[uniqid].next].prev = pl[uniqid].prev;
             }
 
             if (after !== null){
-                pl[id].prev = after;
-                pl[id].next = pl[after].next;
+                pl[uniqid].prev = after;
+                pl[uniqid].next = pl[after].next;
                 if (pl[after].next !== null){
-                    pl[pl[after].next].prev = id;
+                    pl[pl[after].next].prev = uniqid;
                 }else{ // Put in last place
-                    $.store('set', 'tail', id);
+                    $.store('set', 'tail', uniqid);
                 }
-                pl[after].next = id;
+                pl[after].next = uniqid;
             }else{ // Put in first place
-                pl[oldhead].prev = id;
-                pl[id].prev = null;
-                pl[id].next = pl[oldhead].uniqid;
-                $.store('set', 'head', id);
+                pl[oldhead].prev = uniqid;
+                pl[uniqid].prev = null;
+                pl[uniqid].next = pl[oldhead].uniqid;
+                $.store('set', 'head', uniqid);
             }
             $.store('set', 'tracks', pl);
             $.store('persist');
@@ -126,39 +118,22 @@
             $.store('persist');
             return this;
         },
-        remove : function(id){
+        remove : function(uniqid){
             var pl = $.store('get', 'tracks');
-            if(pl[id].next !== null){
-                pl[pl[id].next].prev = pl[id].prev;
+            if(pl[uniqid].next !== null){
+                pl[pl[uniqid].next].prev = pl[uniqid].prev;
             }else{
-                $.store('set', 'tail', pl[id].prev);
+                $.store('set', 'tail', pl[uniqid].prev);
             }
-            if(pl[id].prev !== null){
-                pl[pl[id].prev].next = pl[id].next;
+            if(pl[uniqid].prev !== null){
+                pl[pl[uniqid].prev].next = pl[uniqid].next;
             }else{
-                $.store('set', 'head', pl[id].next);
+                $.store('set', 'head', pl[uniqid].next);
             }
-            delete pl[id];
+            delete pl[uniqid];
             $.store('set', 'tracks', pl);
             $.store('persist');
             return this;
-        },
-        toggleLoop : function(){
-            var pl = $.store('get', 'tracks'), head = $.store('get', 'head'), tail = $.store('get', 'tail');
-            if (pl[head].prev !== null){ // Loop ON, switch it OFF
-                pl[head].prev = null;
-                pl[tail].next = null;
-            }else{ // Loop OFF, switch it ON
-                pl[head].prev = pl[tail].uniqid;
-                pl[tail].next = pl[head].uniqid;
-            }
-            $.store('set', 'tracks', pl);
-            $.store('persist');
-        },
-        getLoopState : function() {
-            var pl = $.store('get', 'tracks');
-            if (len(pl) === 0) return null;
-            return pl[$.store('get', 'head')].prev !== null;
         }
     };
     
