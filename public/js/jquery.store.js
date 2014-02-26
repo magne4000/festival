@@ -2,41 +2,70 @@
     var version = "1.0",
         methods = {
         init : function(options) {
-            $.store.tracks = {};
-            $.store.uniqidhead = null;
-            $.store.uniqidtail = null;
-            try {
-                $.store.localstorage = !!localStorage.getItem;
-            } catch(e) {
-                $.store.localstorage = false;
-            }
-            if ($.store.localstorage === false){
-                return this;
-            }
-            var oldTracks = $.store('_getTracks');
-            $.store.uniqidhead = $.store('_getUniqidHead');
-            $.store.uniqidtail = $.store('_getUniqidTail');
-            if ($.store('_version') == $.store('version') && len(oldTracks) > 0){
-                $.store.tracks = oldTracks;
+            $.store.data = {};
+            if (version === $.store('get', 'version', true)){
+                $.store('get', 'tracks', true);
+                $.store('get', 'head', true);
+                $.store('get', 'tail', true);
             }else{
                 $.store('empty');
-                $.store('_updateVersion');
+                $.store('set', 'version', version);
             }
             return this;
         },
-        setTracks : function(pl){
-            $.store.tracks = pl;
-            if ($.store.localstorage){
-                localStorage.tracks = JSON.stringify(pl);
+        _createCookie : function(name, value, days){
+            var expires = "";
+            if (!!days) {
+                var date = new Date();
+                date.setTime(date.getTime()+(days*24*60*60*1000));
+                expires = "; expires="+date.toGMTString();
+            }
+            document.cookie = name+"="+value+expires+"; path=/";
+        },
+        _readCookie: function(name) {
+            var nameEQ = name + "=",
+                ca = document.cookie.split(';'),
+                c = null;
+            for(var i=0; i<ca.length; i++) {
+                c = ca[i];
+                while (c.charAt(0) === ' '){
+                    c = c.substring(1, c.length);
+                }
+                if (c.indexOf(nameEQ) === 0){
+                    return c.substring(nameEQ.length, c.length);
+                }
+            }
+            return null;
+        },
+        _deleteCookie: function(name){
+            $.store('_createCookie', name, "", -1);
+        },
+        get: function(name, persist){
+            if (!!persist){
+                $.store.data[name] = JSON.parse($.store("_readCookie", name));
+            }
+            return $.store.data[name];
+        },
+        set: function(name, val){
+            $.store.data[name] = val;
+            return this;
+        },
+        persist: function(){
+            for (var name in $.store.data){
+                if ($.store.data[name] === null){
+                    $.store("_deleteCookie", name);
+                }else{
+                    $.store("_createCookie", name, JSON.stringify($.store.data[name]));
+                }
             }
             return this;
         },
-        add : function(track, loop){
-            var pl = $.store('getTracks'), head = $.store('_getUniqidHead'), tail = $.store('_getUniqidTail');
+        add: function(track, loop){
+            var pl = $.store('get', 'tracks'), head = $.store('get', 'head'), tail = $.store('get', 'tail');
             track.prev = null; // init
             track.next = null; // init
             if(len(pl) === 0){
-                $.store('_setUniqidHead', track.uniqid);
+                $.store('set', 'head', track.uniqid);
             }
             if (!is_null(tail)){
                 track.prev = pl[tail].uniqid;
@@ -53,80 +82,69 @@
                     track.prev = track.uniqid;
                 }
             }
-            $.store('_setUniqidTail', track.uniqid);
+            $.store('set', 'tail', track.uniqid);
             pl[track.uniqid] = track;
-            $.store('setTracks', pl);
+            $.store('set', 'tracks', pl);
+            $.store('persist');
             return this;
         },
-        move : function(uniqid, after){
-            var pl = $.store('getTracks'), oldhead = $.store('_getUniqidHead');
+        move : function(id, after){
+            var pl = $.store('get', 'tracks'), oldhead = $.store('get', 'head');
 
-            if (pl[uniqid].prev !== null){
-                pl[pl[uniqid].prev].next = pl[uniqid].next;
+            if (pl[id].prev !== null){
+                pl[pl[id].prev].next = pl[id].next;
             }else{
-                $.store('_setUniqidHead', pl[uniqid].next);
+                $.store('set', 'head', pl[id].next);
             }
-            if (pl[uniqid].next !== null){
-                pl[pl[uniqid].next].prev = pl[uniqid].prev;
+            if (pl[id].next !== null){
+                pl[pl[id].next].prev = pl[id].prev;
             }
 
             if (after !== null){
-                pl[uniqid].prev = after;
-                pl[uniqid].next = pl[after].next;
+                pl[id].prev = after;
+                pl[id].next = pl[after].next;
                 if (pl[after].next !== null){
-                    pl[pl[after].next].prev = uniqid;
+                    pl[pl[after].next].prev = id;
                 }else{ // Put in last place
-                    $.store('_setUniqidTail', uniqid);
+                    $.store('set', 'tail', id);
                 }
-                pl[after].next = uniqid;
+                pl[after].next = id;
             }else{ // Put in first place
-                pl[oldhead].prev = uniqid;
-                pl[uniqid].prev = null;
-                pl[uniqid].next = pl[oldhead].uniqid;
-                $.store('_setUniqidHead', uniqid);
+                pl[oldhead].prev = id;
+                pl[id].prev = null;
+                pl[id].next = pl[oldhead].uniqid;
+                $.store('set', 'head', id);
             }
-            /*Debug
-            var head = $.store('_getUniqidHead'), elt = pl[head], i = 10;
-            console.log('');
-            while (1){
-                console.log(elt.name);
-                if (elt.next == null) break;
-                if (pl[elt.next] == head || i <= 0) {
-                    console.log('loop');
-                    break;
-                }
-                elt = pl[elt.next];
-                i--;
-            }
-            console.log('');
-            //End debug */
-            $.store('setTracks', pl);
+            $.store('set', 'tracks', pl);
+            $.store('persist');
             return this;
         },
         empty : function(){
-            $.store('setTracks', {});
-            $.store('_setUniqidHead', null);
-            $.store('_setUniqidTail', null);
+            $.store('set', 'tracks', null);
+            $.store('set', 'head', null);
+            $.store('set', 'tail', null);
+            $.store('persist');
             return this;
         },
-        remove : function(uniqid){
-            var pl = $.store('getTracks');
-            if(pl[uniqid].next !== null){
-                pl[pl[uniqid].next].prev = pl[uniqid].prev;
+        remove : function(id){
+            var pl = $.store('get', 'tracks');
+            if(pl[id].next !== null){
+                pl[pl[id].next].prev = pl[id].prev;
             }else{
-                $.store('_setUniqidTail', pl[uniqid].prev);
+                $.store('set', 'tail', pl[id].prev);
             }
-            if(pl[uniqid].prev !== null){
-                pl[pl[uniqid].prev].next = pl[uniqid].next;
+            if(pl[id].prev !== null){
+                pl[pl[id].prev].next = pl[id].next;
             }else{
-                $.store('_setUniqidHead', pl[uniqid].next);
+                $.store('set', 'head', pl[id].next);
             }
-            delete pl[uniqid];
-            $.store('setTracks', pl);
+            delete pl[id];
+            $.store('set', 'tracks', pl);
+            $.store('persist');
             return this;
         },
         toggleLoop : function(){
-            var pl = $.store('getTracks'), head = $.store('_getUniqidHead'), tail = $.store('_getUniqidTail');
+            var pl = $.store('get', 'tracks'), head = $.store('get', 'head'), tail = $.store('get', 'tail');
             if (pl[head].prev !== null){ // Loop ON, switch it OFF
                 pl[head].prev = null;
                 pl[tail].next = null;
@@ -134,68 +152,13 @@
                 pl[head].prev = pl[tail].uniqid;
                 pl[tail].next = pl[head].uniqid;
             }
-            $.store('setTracks', pl);
-        },
-        _version : function(){
-            if ($.store.localstorage){
-                var v;
-                try {
-                    v = !!localStorage.version;
-                } catch(e) {
-                    v = false;
-                }
-                if (v !== false){
-                    return localStorage.version;
-                }
-            }
-            return false;
-        },
-        _updateVersion : function(){
-            if ($.store.localstorage){
-                localStorage.version = version;
-            }
-            return this;
-        },
-        version : function(){
-            return version;
-        },
-        _getUniqidHead : function(){
-            if ($.store.localstorage && !!localStorage.uniqidhead){
-                return localStorage.uniqidhead;
-            }
-            return null;
-        },
-        _setUniqidHead : function(uniqidhead){
-            if ($.store.localstorage){
-                localStorage.uniqidhead = uniqidhead;
-            }
-            return this;
-        },
-        _getUniqidTail : function(){
-            if ($.store.localstorage && !!localStorage.uniqidtail){
-                return localStorage.uniqidtail;
-            }
-            return null;
-        },
-        _setUniqidTail : function(uniqidtail){
-            if ($.store.localstorage){
-                localStorage.uniqidtail = uniqidtail;
-            }
-            return this;
-        },
-        _getTracks : function(){
-            if($.store.localstorage && !!localStorage.tracks){
-                return JSON.parse(localStorage.tracks);
-            }
-            return {};
+            $.store('set', 'tracks', pl);
+            $.store('persist');
         },
         getLoopState : function() {
-            var pl = $.store('getTracks');
+            var pl = $.store('get', 'tracks');
             if (len(pl) === 0) return null;
-            return pl[$.store('_getUniqidHead')].prev !== null;
-        },
-        getTracks : function(){
-            return $.store.tracks;
+            return pl[$.store('get', 'head')].prev !== null;
         }
     };
     

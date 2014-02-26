@@ -2,108 +2,79 @@
     var methods = {
         init : function(options) {
             return this.each(function() {
-                var $this = $(this), data = $this.data('player'), loopState;
+                var $this = $(this), data = $this.data('player');
 
                 // If the plugin hasn't been initialized yet
                 if (!data) {
                     $this.data('player', {
                         target : $this,
+                        currentId : null, // MongoDB ID (also use as soundManager Sound ID)
+                        currentSound : null, // SoundManager object
+                        random : options.random || false,
+                        loop : options.loop || false,
                         volume : options.volume || 100,
-                        $play : $this.find(options.playselector || '.play'),
-                        $next : $this.find(options.nextselector || '.next'),
-                        $prev : $this.find(options.prevselector || '.prev'),
-                        $loop : $this.find(options.loopselector || '.loop'),
-                        $random : $this.find(options.randomselector || '.random'),
-                        $volume : $this.find(options.volumeselector || '.volume'),
-                        $bar : $this.find(options.barselector || '.bar'),
-                        $info : $this.find(options.infoselector || '#info span'),
-                        $volumewrapper : $this.find(options.volumewrapperselector || '#volume-wrapper')
+                        timer: null
                     });
-
-                    data = $this.data('player');
-                    data.$play.on('tap', function() {
-                        $this.player('togglePlayPause');
-                    });
-                    data.$next.on('tap', function() {
-                        $this.player('next');
-                    });
-                    data.$prev.on('tap', function() {
-                        $this.player('prev');
-                    });
-                    data.$loop.on('tap', function() {
-                        $this.player('toggleLoop');
-                    });
-                    data.$random.on('tap', function() {
-                        $this.player('toggleRandom');
-                    });
-                    data.$volume.on('tap', function() {
-                        $this.player('toggleVolume');
-                    });
-
-                    loopState = data.playlist.playlist('getLoopState');
-                    if (loopState) {
-                        data.$loop.toggleClass('active');
-                    }
                 }
-                
-                //Playing progress bar
-                data.$bar.slider({
-                    range : "min",
-                    create : function(event, ui) {
-                        data.$bar.find('a').remove();
-                    },
-                    slide : function(event, ui) {
-                        var track = data.playlist.playlist('getCurrentTrack');
-                        if (!!track && track.readyState > 2) {
-                            track.setPosition(ui.value);
-                        }
-                    }
-                });
-                
-                // Info bar
-                $(document).on('playlistbeforeload', function(track){
-                    $this.data.$info.attr('title', 'Artist: ' + track.artist + '\nAlbum: ' + track.album + '\nTrack: ' + track.name)
-                    .html(track.artist + ' — ' + track.album + ' — ' + track.name);
-                });
                 
                 $this.trigger('playercreate');
             });
         },
         destroy : function() {
             return this.each(function() {
-                var $this = $(this);
-                $this.removeData('player');
+                $(this).removeData('player');
+            });
+        },
+        _fetch : function() {
+            return this.each(function() {
+                var $this = $(this), data = $this.data('player'), tracks = $.store('getTracks');
+                if (typeof tracks[data.currentId] !== "undefined"){
+                    clearTimeout(data.timer);
+                    data.timer = setTimeout(function(){
+                        data.currentSound = soundManager.createSound({
+                            id: data.currentId,
+                            url: tracks[data.currentId].url,
+                            autoLoad: true,
+                            autoPlay: false,
+                            whileplaying: function(){
+                                $this.trigger('playerplaying', this);
+                            },
+                            onfinish: function(){
+                                $this.trigger('playerfinish', this);
+                                $this.player('next');
+                            },
+                            onload: function(){
+                                $this.trigger('playerload', this);
+                            },
+                            volume: 100
+                        });
+                        $this.trigger('playerbeforeload', tracks[data.currentId]);
+                    }, 200);
+                }
             });
         },
         togglePlayPause : function() {
             return this.each(function() {
-                var $this = $(this), data = $this.data('player'), current = data.playlist
-                        .playlist('getCurrentTrack');
-                if (!!current) {
+                var $this = $(this), data = $this.data('player');
+                if (!!data.currentSound) {
                     $this.trigger('playertoggleplaypause');
-                    current.togglePause();
-                    data.$play.toggleClass('play pause');
                 }
             });
         },
         setVolume : function(vol) {
             return this.each(function() {
-                var $this = $(this), data = $this.data('player'), current = data.playlist
-                        .playlist('getCurrentTrack');
-                if (!!current) {
-                    current.setVolume(vol);
+                var $this = $(this), data = $this.data('player');
+                if (!!data.currentSound) {
+                    data.currentSound.setVolume(vol);
                 }
             });
         },
         _play : function() {
             return this.each(function() {
-                var $this = $(this), data = $this.data('player'), current = data.playlist
-                        .playlist('getCurrentTrack');
-                if (!!current) {
+                var $this = $(this), data = $this.data('player');
+                if (!!data.currentSound) {
                     $this.trigger('playerplay');
-                    current.play();
-                    data.$play.removeClass('play');
-                    data.$play.addClass('pause');
+                    data.currentSound.play();
                 }
             });
         },
@@ -126,8 +97,6 @@
             if (!!current) {
                 $this.trigger('playerstop');
                 current.stop();
-                data.$play.removeClass('pause');
-                data.$play.addClass('play');
             }
         },
         next : function() {
@@ -162,34 +131,18 @@
         },
         toggleRandom : function() {
             return this.each(function() {
-                var $this = $(this), data = $this.data('player');
+                var $this = $(this), data = $this.data('player'), ind;
                 $this.trigger('playertogglerandom');
-                data.$random.toggleClass('active');
-                data.playlist.playlist('toggleRandom');
+                data.random = !data.random;
+                $.store('toggleRandom', true);
             });
         },
         toggleLoop : function() {
             return this.each(function() {
                 var $this = $(this), data = $this.data('player');
                 $this.trigger('playertoggleloop');
-                data.$loop.toggleClass('active');
-                data.playlist.playlist('toggleLoop');
-            });
-        },
-        toggleVolume : function() {
-            return this.each(function() {
-                var $this = $(this), data = $this.data('player');
-                $this.trigger('playertogglevolume');
-                data.$volume.toggleClass('active');
-                data.$volumewrapper.toggleClass('active');
-            });
-        },
-        hideVolume : function() {
-            return this.each(function() {
-                var $this = $(this), data = $this.data('player');
-                $this.trigger('playerhidevolume');
-                data.$volume.removeClass('active');
-                data.$volumewrapper.removeClass('active');
+                data.loop = !data.loop;
+                $.store('toggleLoop', true);
             });
         }
     };
