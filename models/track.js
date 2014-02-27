@@ -1,5 +1,6 @@
 var mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
+    Schema = mongoose.Schema,
+    uniqid = require('../lib/uniqid');
 
 var trackSchema = new Schema({
     path: {type: String, 'default': '', trim: true, required: true, unique: true},
@@ -14,5 +15,21 @@ var trackSchema = new Schema({
     trackno: {type: Number},
     last_updated: {type: Date, 'default': Date.now}
 });
+
+trackSchema.virtual('uniqid').get(function () {
+  return uniqid();
+});
+
+trackSchema.virtual('url').get(function () {
+  return '/music/'+this._id;
+});
+
+trackSchema.set('toJSON', { virtuals: true });
+trackSchema.set('toObject', { getters: true, virtuals: true });
+
+trackSchema.options.toJSON.transform = function (doc, ret, options) {
+  // remove the path
+  delete ret.path;
+}
 
 mongoose.model('track', trackSchema);

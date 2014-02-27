@@ -4,12 +4,13 @@
         init : function(options) {
             $.store.data = {};
             if (version === $.store('get', 'version', true)){
+                /* not for the moment while in dev
                 $.store('get', 'tracks', true);
                 $.store('get', 'head', true);
                 $.store('get', 'tail', true);
                 $.store('get', 'volume', true);
                 $.store('get', 'shuffle', true);
-                $.store('get', 'loop', true);
+                $.store('get', 'loop', true);*/
             }else{
                 $.store('empty');
                 $.store('set', 'version', version);
@@ -67,10 +68,11 @@
             var pl = $.store('get', 'tracks'), head = $.store('get', 'head'), tail = $.store('get', 'tail');
             track.prev = null; // init
             track.next = null; // init
-            if(len(pl) === 0){
+            if(utils.len(pl) === 0){
                 $.store('set', 'head', track.uniqid);
+                pl = {};
             }
-            if (!is_null(tail)){
+            if (!!tail){
                 track.prev = pl[tail].uniqid;
                 pl[tail].next = track.uniqid;
             }

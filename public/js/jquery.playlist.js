@@ -27,9 +27,6 @@
                     if (loopstorestate !== null){
                         data.loop = loopstorestate;
                     }
-                    if (len($.store('getTracks')) > 0){
-                        show_playlist_tab($this);
-                    }
                 }
                 $this.trigger('playlistcreate');
             });
@@ -38,7 +35,7 @@
             return this.each(function() {
                 var $this = $(this), data = $this.data('playlist'), tracks = $.store('getTracks'), ind = null;
                 data.playlist_div = playlist_div;
-                if(len(tracks) > 0){
+                if(utils.len(tracks) > 0){
                     for (ind in tracks){
                         data.uniqids.push(tracks[ind].uniqid);
                     }
@@ -68,12 +65,12 @@
                     // Only one track
                     $this.trigger('playlistadd', track);
                     $.store('add', track, data.loop);
-                    if (len(tracks) === 0){ // First track, load it !
+                    if (utils.len(tracks) === 0){ // First track, load it !
                         $this.playlist('setCurrent', track.uniqid, callback);
                     }
                 }else{
                     // Multiple tracks
-                    var ind = 0, trackslen = len(tracks);
+                    var ind = 0, trackslen = utils.len(tracks);
                     for (ind in track){
                         track[ind].uniqid = uniqid('track_');
                         data.uniqids.push(track[ind].uniqid);
@@ -101,7 +98,7 @@
         remove : function( uniqid ) {
             return this.each(function() {
                 var $this = $(this), data = $this.data('playlist'), tracks = $.store('getTracks'), x = null;
-                if (len(tracks) === 1) {
+                if (utils.len(tracks) === 1) {
                     // proper clean (freeing memory)
                     $this.playlist('empty');
                     if (data.shuffle){
@@ -281,7 +278,7 @@
         },
         size : function(){
             var data = this.data('playlist'), tracks = $.store('getTracks');
-            return len(tracks);
+            return utils.len(tracks);
         }
     };
 

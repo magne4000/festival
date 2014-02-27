@@ -25,7 +25,7 @@ function showTracks(artist, album){
     }, 200);
 }
 
-function addNowPlaying(artist, album, trackId){
+function addNowPlaying(artist, album, trackId, callback){
     var filter = {artist: artist};
     if (album) {
         filter.album = album;
@@ -47,6 +47,18 @@ function addNowPlaying(artist, album, trackId){
             console.log(textStatus);
             console.log(jqXHR.responseText);
         });
+        
+        if (typeof callback === 'function'){
+            $.get('ajax/list/tracks',{
+                filters: JSON.stringify(filter)
+            }, function(data){
+                callback(data);
+            }, "json")
+            .fail(function(jqXHR, textStatus){
+                console.log(textStatus);
+                console.log(jqXHR.responseText);
+            });
+        }
     }, 200);
 }
 
@@ -67,14 +79,23 @@ function showNowPlaying(artist, album, trackId, callback){
         }, function(html){
             $("#playing").html(html);
             $(".playlists-tabs .playing a").tab('show');
-            if (typeof callback === 'function'){
-                callback();
-            }
         }, "html")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);
         });
+        
+        if (typeof callback === 'function'){
+            $.get('ajax/list/tracks',{
+                filters: JSON.stringify(filter)
+            }, function(data){
+                callback(data);
+            }, "json")
+            .fail(function(jqXHR, textStatus){
+                console.log(textStatus);
+                console.log(jqXHR.responseText);
+            });
+        }
     }, 200);
 }
 

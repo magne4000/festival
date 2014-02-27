@@ -1,6 +1,9 @@
 (function($) {
     var methods = {
         init: function(options) {
+            if (!options){
+                options = {};
+            }
             return this.each(function() {
                 var $this = $(this), data = $this.data('player');
                 // If the plugin hasn't been initialized yet
@@ -26,7 +29,7 @@
                 $(this).removeData('player');
             });
         },
-        add: function(track, callback) {
+        add: function(track) {
             /**
              * @track can be a single track object, or a list of track objects
              * A track object is defined like this example:
@@ -47,7 +50,7 @@
              */
             return this.each(function() {
                 var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks'),
-                    tracklist = [], ind = 0, trackslen = len(tracks), orilen = trackslen;
+                    tracklist = [], ind = 0, trackslen = utils.len(tracks), orilen = trackslen;
                 if (!!track._id){ // only one track
                     tracklist.push(track);
                 } else {
@@ -77,8 +80,9 @@
                 clearTimeout(data.timer);
                 data.timer = setTimeout(function(){
                     data.currentSound = soundManager.createSound({
-                        id: tracks[data.currentUniqId]._id,
+                        id: 't_'+tracks[data.currentUniqId]._id,
                         url: tracks[data.currentUniqId].url,
+                        type: 'audio/mp3',
                         autoLoad: true,
                         autoPlay: !!autoPlay,
                         whileplaying: function(){

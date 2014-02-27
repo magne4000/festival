@@ -6,19 +6,22 @@ $(document).ready(function() {
         delay: 300
     });
     
+    /* Player */
+    $("#player").player();
+    
     /* Events */
     $(document).hammer().on('tap', "[data-role='play']", function(e){
         var artist = $(e.currentTarget).data("artist"),
+            trackUniqid = $(e.currentTarget).data("trackUniqid"),
             trackId = $(e.currentTarget).data("trackId"),
             album = $(e.currentTarget).data("album");
         if (!artist && !album){
-            //TODO $("#player").player('play', trackId);
+            $("#player").player('play', trackUniqid);
         }else{
             // Set in "Now playing" tab
-            showNowPlaying(artist, album, trackId, function(){
-                if (trackId){
-                    // Play
-                    //TODO $("#player").player('play', trackId);
+            showNowPlaying(artist, album, trackId, function(tracks){
+                if (tracks){
+                    $("#player").player('add', tracks).player('play');
                 }
             });
         }
@@ -28,8 +31,11 @@ $(document).ready(function() {
         var artist = $(e.currentTarget).data("artist"),
             trackId = $(e.currentTarget).data("trackId"),
             album = $(e.currentTarget).data("album");
-        // Set in "Now playing" tab
-        addNowPlaying(artist, album, trackId);
+       addNowPlaying(artist, album, trackId, function(tracks){
+            if (tracks){
+                $("#player").player('add', tracks);
+            }
+        });
     });
     
     $(document).hammer().on('tap', "[data-role='show-tracks']", function(e){
