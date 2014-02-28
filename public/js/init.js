@@ -7,7 +7,16 @@ $(document).ready(function() {
     });
     
     /* Player */
-    $("#player").player();
+    $("#player").player()
+    .on('playerload', function(e, obj){
+        $('.progressbar input').data('slider').max = Math.floor(obj.duration / 1000);
+        $('.progressbar input').slider('setValue', 0);
+        setTotalTime(Math.floor(obj.duration / 1000));
+    })
+    .on('playerplaying', function(e, obj){
+        $('.progressbar input').slider('setValue', obj.position / 1000);
+        setElapsedTime(Math.floor(obj.position / 1000));
+    });
     
     /* Events */
     $(document).hammer().on('tap', "[data-role='play']", function(e){
@@ -31,7 +40,7 @@ $(document).ready(function() {
         var artist = $(e.currentTarget).data("artist"),
             trackId = $(e.currentTarget).data("trackId"),
             album = $(e.currentTarget).data("album");
-       addNowPlaying(artist, album, trackId, function(tracks){
+        addNowPlaying(artist, album, trackId, function(tracks){
             if (tracks){
                 $("#player").player('add', tracks);
             }
@@ -53,63 +62,23 @@ $(document).ready(function() {
     
     /* Swipe */
     $("body").hammer().on('swipeleft', function(e){
-        var current = $(".wrapper:visible");
-        if (current.length === 1) { // mobile devices
-            var next = current.nextAll(":not(.hidden)").first();
-            if (next){
-                current.addClass("hidden-xs hidden-sm").removeClass("current left right");
-                next.removeClass("hidden-xs hidden-sm").addClass("current left");
-            }
-        }
+        showNextPanel();
     }).on('swiperight', function(e){
-        var current = $(".wrapper:visible");
-        if (current.length === 1) { // mobile devices
-            var prev = current.prevAll(":not(.hidden)").first();
-            if (prev){
-                current.addClass("hidden-xs hidden-sm").removeClass("current left right");
-                prev.removeClass("hidden-xs hidden-sm").addClass("current right");
-            }
-        }
+        showPreviousPanel();
     });
     
     /* Progress bar */
     $('.progressbar input').slider({
         formater: function(value) {
-            return value;
+            return utils.format_duration(value);
         }
     })
     .removeClass("hidden")
     .on('slide', function(e){
-        console.log($(this).slider('getValue'));
         //$(this).slider('setValue', 10)
     });
     
     /*
-    // Tooltip
-    Opentip.styles.myStyle = {
-        extends: "dark",
-        background: "#202020",
-        borderRadius: 5
-    };
-    var tooltipBar = new Opentip("#bar", { style: "myStyle", tipJoint: "bottom", offset: [2, 13] });
-    var tooltipVol = new Opentip("#volume-max", { style: "myStyle", tipJoint: "right", offset: [10, 0] });
-    
-    $('#bar').on('mousemove', function(e){
-        var txt = '...',
-            track = $playlist.playlist('getCurrentTrack');
-        if (!!track){
-            var cursorPositionRelative = Math.round((e.pageX - $('#bar').offset().left)),
-                cursorPosition = Math.round(cursorPositionRelative/$('#bar').width() * (track.duration/1000));
-            if (track.readyState == 3){ //loaded/success
-                txt = formatDuration(cursorPosition);
-            }else if (track.readyState == 2){
-                txt = 'Error';
-            }else if (track.readyState == 1){
-                txt = 'Loading';
-            }
-        }
-        tooltipBar.setContent(txt);
-    });
     
     /* Volume *
     $('#volume-max').slider({

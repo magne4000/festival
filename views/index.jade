@@ -37,7 +37,7 @@ head
       include player
     main.container-fluid
       .row.fill
-        .wrapper.col-xd-12.col-md-3
+        .wrapper.col-xd-12.col-md-3.wrapper-search
           .search.wrapped
             .input-group
               span.input-group-addon
@@ -45,13 +45,13 @@ head
               input#search.form-control(type="search", placeholder="Search an artist")
             div.list-group
               include tab/search
-        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-6
+        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-6.wrapper-albums
           .panel.wrapped.albums
             .panel-body
-        .wrapper.hidden-xs.hidden-sm.hidden.col-xd-12.col-md-6
+        .wrapper.hidden-xs.hidden-sm.hidden.col-xd-12.col-md-6.wrapper-genres
           .panel.wrapped.genres
             .panel-body
-        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-3
+        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-3.wrapper-playlists
           ul.nav.nav-tabs.playlists-tabs
             li.playing.active
               a(href="#playing", data-toggle="tab") Now playing
