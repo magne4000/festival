@@ -51,13 +51,12 @@ function showTracks(artist, album){
     clearTimeout(postTimeout.tracks);
     postTimeout.tracks = setTimeout(function(){
         $.get('ajax/list/tracks',{
-            filters: JSON.stringify(filter),
-            render: true
-        }, function(html){
-            $("#selection").html(html);
+            filters: JSON.stringify(filter)
+        }, function(data){
+            $("#selection").html(Templates.tab.playlist({tracks: data, filters: filter}));
             $(".playlists-tabs .selection a").tab('show');
             showPanel('.wrapper-playlists');
-        }, "html")
+        }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);
@@ -76,29 +75,18 @@ function addNowPlaying(artist, album, trackId, callback){
     clearTimeout(postTimeout.nowPlaying);
     postTimeout.nowPlaying = setTimeout(function(){
         $.get('ajax/list/tracks',{
-            filters: JSON.stringify(filter),
-            render: true,
-            playing: true
-        }, function(html){
-            $("#playing .list-group").append($(html).find(".list-group-item"));
+            filters: JSON.stringify(filter)
+        }, function(data){
+            $("#playing .list-group").append($(Templates.tab.playlist({tracks: data, playing: true, filters: filter})).find(".list-group-item"));
             $(".playlists-tabs .playing a").tab('show');
-        }, "html")
+            if (typeof callback === 'function'){
+                callback(data);
+            }
+        }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);
         });
-        
-        if (typeof callback === 'function'){
-            $.get('ajax/list/tracks',{
-                filters: JSON.stringify(filter)
-            }, function(data){
-                callback(data);
-            }, "json")
-            .fail(function(jqXHR, textStatus){
-                console.log(textStatus);
-                console.log(jqXHR.responseText);
-            });
-        }
     }, 200);
 }
 
@@ -113,14 +101,12 @@ function showNowPlaying(artist, album, trackId, callback){
     clearTimeout(postTimeout.nowPlaying);
     postTimeout.nowPlaying = setTimeout(function(){
         $.get('ajax/list/tracks',{
-            filters: JSON.stringify(filter),
-            render: true,
-            playing: true
-        }, function(html){
-            $("#playing").html(html);
+            filters: JSON.stringify(filter)
+        }, function(data){
+            $("#playing").html(Templates.tab.playlist({tracks: data, playing: true, filters: filter}));
             $(".playlists-tabs .playing a").tab('show');
             showPanel('.wrapper-playlists');
-        }, "html")
+        }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);
@@ -150,11 +136,10 @@ function showAlbumsByArtist(artist){
     clearTimeout(postTimeout.albums);
     postTimeout.albums = setTimeout(function(){
         $.get('ajax/list/albumsbyartists',{
-            filters: JSON.stringify(filter),
-            render: true
-        }, function(html){
-            showAlbums(html);
-        }, "html")
+            filters: JSON.stringify(filter)
+        }, function(data){
+            showAlbums(Templates.tab.albums({artists: data, filters: filter}));
+        }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);

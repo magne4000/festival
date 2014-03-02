@@ -12,7 +12,8 @@ var express =
     path = require('path'),
     config = require('./settings'),
     mongoose = require('mongoose'),
-    fs = require('fs');
+    fs = require('fs'),
+    connectJadeClient = require("connect-jade-client");;
 
 var app = express();
 
@@ -26,6 +27,11 @@ app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(connectJadeClient({
+    source: path.join(__dirname, "views"),
+    public: path.join(__dirname, "public"),
+    prefix: "/js/templates"
+}));
 
 // development only
 if ('development' == app.get('env')) {
