@@ -1,4 +1,4 @@
-Webmusic
+Festival
 ========
 Webmusic is an HTML5 web application that can play music files with the help of NodeJS.  
 The app relies on a MongoDB database.
