@@ -75,7 +75,11 @@ $(document).ready(function() {
     })
     .removeClass("hidden")
     .on('slide', function(e){
-        //$(this).slider('setValue', 10)
+        var pos = parseInt(e.value, 10) * 1000,
+            cur = $("#player").data('player').currentSound;
+        if (!!cur && cur.readyState > 2) {
+            cur.setPosition(pos);
+        }
     });
     
     /*
