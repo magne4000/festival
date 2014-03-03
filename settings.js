@@ -1,6 +1,6 @@
 module.exports = {
     mongodb: {
-        url: 'mongodb://localhost/webmusic'
+        url: 'mongodb://localhost/festival'
     },
     express: {
         port: 3000
@@ -10,7 +10,7 @@ module.exports = {
         exts: '.mp3,.ogg'
     },
     debug: {
-        debug: true
+        debug: false
     },
     soundmanager: {
         url: 'swf/',
