@@ -2,6 +2,6 @@
   if tracks
     each track in tracks
       if playing
-        a.list-group-item.track(href="#", data-track-id="#{track._id}", data-track-uniqid="#{track.uniqid}") #{track.name}
+        a.list-group-item.track(href="#", data-track-id="#{track._id}", data-track-uniqid="#{track.uniqid}", data-role="play") #{track.name}
       else
         a.list-group-item.track(href="#", data-track-id="#{track._id}", data-track-uniqid="#{track.uniqid}", data-role="play", data-artist="#{filters.artist}", data-album="#{filters.album}") #{track.name}

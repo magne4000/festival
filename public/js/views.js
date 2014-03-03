@@ -4,6 +4,14 @@ var postTimeout = {
     albums: null
 };
 
+function setPlayIcon(){
+    $('.control.play>.glyphicon').removeClass("glyphicon-pause").addClass("glyphicon-play");
+}
+
+function setPauseIcon(){
+    $('.control.play>.glyphicon').removeClass("glyphicon-play").addClass("glyphicon-pause");
+}
+
 function setElapsedTime(val){
     $('.elapsed-time').html(utils.format_duration(val));
 }

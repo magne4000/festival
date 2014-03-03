@@ -29,7 +29,7 @@
                 $(this).removeData('player');
             });
         },
-        add: function(track) {
+        add: function(track, autoPlay) {
             /**
              * @track can be a single track object, or a list of track objects
              * A track object is defined like this example:
@@ -63,7 +63,7 @@
                     $.store('add', track[ind]);
                     if (trackslen === 0 && !data.shuffle){
                         // First track, load it (if not in shuffle mode)
-                        $this.player('load', track[ind].uniqid);
+                        $this.player('load', track[ind].uniqid, autoPlay);
                     }
                     trackslen++;
                 }
@@ -90,10 +90,22 @@
                         },
                         onfinish: function(){
                             $this.trigger('playerfinish', this);
-                            $this.player('next');
+                            $this.player('next', true);
+                        },
+                        onstop: function(){
+                            $this.trigger('playerstop', this);
+                        },
+                        onpause: function(){
+                            $this.trigger('playerpause', this);
+                        },
+                        onplay: function(){
+                            $this.trigger('playerplay', this);
                         },
                         onload: function(){
                             $this.trigger('playerload', this);
+                        },
+                        onresume: function(){
+                            $this.trigger('playerresume', this);
                         },
                         volume: $.store('get', 'volume') || 100
                     });

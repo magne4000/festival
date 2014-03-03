@@ -16,6 +16,15 @@ $(document).ready(function() {
     .on('playerplaying', function(e, obj){
         $('.progressbar input').slider('setValue', obj.position / 1000);
         setElapsedTime(Math.floor(obj.position / 1000));
+    })
+    .on('playerstop playerfinish', function(e, obj){
+        setElapsedTime(0);
+    })
+    .on('playerstop playerpause playerfinish', function(e, obj){
+        setPlayIcon();
+    })
+    .on('playerplay playerresume', function(e, obj){
+        setPauseIcon();
     });
     
     /* Events */
@@ -30,7 +39,7 @@ $(document).ready(function() {
             // Set in "Now playing" tab
             showNowPlaying(artist, album, trackId, function(tracks){
                 if (tracks){
-                    $("#player").player('add', tracks).player('play');
+                    $("#player").player('add', tracks, true);
                 }
             });
         }
@@ -58,6 +67,18 @@ $(document).ready(function() {
         if (artist){
             showAlbumsByArtist(artist);
         }
+    });
+    
+    $('.control.play').hammer().on('tap', function(e){
+        $('#player').player('togglePlayPause');
+    });
+    
+    $('.control.next').hammer().on('tap', function(e){
+        $('#player').player('next');
+    });
+    
+    $('.control.prev').hammer().on('tap', function(e){
+        $('#player').player('prev');
     });
     
     /* Swipe */
