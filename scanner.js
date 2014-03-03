@@ -122,7 +122,7 @@ var scan = function(){
             {},
             "path last_updated",
             function(err, docs) {
-                var files = {};
+                var files = {}, albumarts = {};
                 for (var i in docs) {
                     if (docs.hasOwnProperty(i)) {
                         files[docs[i].path] = docs[i].last_updated;
@@ -133,7 +133,6 @@ var scan = function(){
                     {},
                     "path dir",
                     function(err2, docs2) {
-                        var albumarts = {};
                         for (var i in docs2) {
                             if (docs2.hasOwnProperty(i)) {
                                 albumarts[docs2[i].path] = docs2[i].dir;
@@ -176,7 +175,8 @@ var scan = function(){
                             if (settings.scanner.debug) {
                                 console.log('cleanold', files, albumarts);
                             }
-                            cleanold(files);
+                            cleanold(files, albumarts);
+                            console.log('Update finished.')
                         });
                     }
                 );
