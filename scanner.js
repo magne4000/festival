@@ -139,11 +139,13 @@ var scan = function(){
                                 albumarts[docs2[i].path] = docs2[i].dir;
                             }
                         }
-                        
                         var walker = walk.walk(settings.scanner.path);
                         walker.on("file", function(root, fileStats, next) {
                             var filepath = path.join(root, fileStats.name);
                             if (isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
+                                if (settings.scanner.debug) {
+                                    console.log('Reading tags : ' + filepath);
+                                }
                                 delete files[filepath];
                                 taglib.read(filepath, function(err, tag, audioProperties){
                                     merge(filepath, fileStats.mtime, tag, audioProperties);
@@ -153,8 +155,17 @@ var scan = function(){
                                 if (albumarts[filepath]){
                                     delete albumarts[filepath];
                                 }else{
-                                    Albumart.insert({path: filepath, dir: root});
+                                    var oalbum = new Albumart({path: filepath, dir: root});
+                                    oalbum.save(function (err) {
+                                        if (err){
+                                            console.log(err);
+                                        }
+                                        if (settings.scanner.debug) {
+                                            console.log('album art saved : ' + filepath);
+                                        }
+                                    });
                                 }
+                                next();
                             }else{
                                 delete files[filepath];
                                 next();
@@ -162,7 +173,9 @@ var scan = function(){
                         });
         
                         walker.on("end", function () {
-                            console.log('cleanold', files, albumarts);
+                            if (settings.scanner.debug) {
+                                console.log('cleanold', files, albumarts);
+                            }
                             cleanold(files);
                         });
                     }
