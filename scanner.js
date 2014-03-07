@@ -1,5 +1,6 @@
 var fs = require('fs'),
     settings = require('./settings'),
+    thumbs = require('./lib/thumbs'),
     walk = require('walk'),
     taglib = require('taglib'),
     path = require('path'),
@@ -158,9 +159,17 @@ var scan = function(){
                                     oalbum.save(function (err) {
                                         if (err){
                                             console.log(err);
-                                        }
-                                        if (settings.scanner.debug) {
-                                            console.log('album art saved : ' + filepath);
+                                        } else {
+                                            Albumart.findById(oalbum, function (err, doc) {
+                                                if (err) {
+                                                    console.log(err);
+                                                } else {
+                                                    thumbs.create(filepath, doc._id);
+                                                    if (settings.scanner.debug) {
+                                                        console.log('album art saved : ' + filepath);
+                                                    }
+                                                }
+                                            });
                                         }
                                     });
                                 }
@@ -176,6 +185,7 @@ var scan = function(){
                                 console.log('cleanold', files, albumarts);
                             }
                             cleanold(files, albumarts);
+                            scanInProgess = false;
                             console.log('Update finished.')
                         });
                     }

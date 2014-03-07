@@ -14,9 +14,9 @@ First of all, add mongodb and nodejs repositories to apt (more recent than defau
     echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
     sudo apt-get update
 
-Then install nodejs, mongodb and taglib
+Then install nodejs, mongodb, taglib and graphicsmagick
 
-    sudo apt-get install nodejs mongodb-10gen libtag1-dev libtag1c2a libtag1-vanilla
+    sudo apt-get install nodejs mongodb-10gen libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick
 
 Taglib installation (other systems)
 -----------------------------------

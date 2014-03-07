@@ -10,6 +10,8 @@
     "mongoose": "3.8.*",
     "taglib": "git://github.com/nikhilm/node-taglib.git",
     "walk": "2.3.*",
-    "connect-jade-client": "0.5.*"
+    "connect-jade-client": "0.5.*",
+    "mime": "1.2.*",
+    "gm": "1.14.*"
   }
 }

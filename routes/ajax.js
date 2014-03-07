@@ -1,5 +1,6 @@
 var mongoose = require('mongoose'),
-    path = require('path');
+    path = require('path'),
+    thumbs = require('../lib/thumbs');
 
 /**
  * Send HTML artist list
@@ -173,10 +174,12 @@ exports.fileinfo = function(req, res){
 
 exports.albumart = function(req, res){
     var id = req.query.id?req.query.id:null,
-        Albumart = mongoose.model('albumart');
-    Albumart.findOne({_id: id}).exec(function(err, cover) {
-        res.sendfile(cover.path);
-    });
+        thumbpath = thumbs.path(id);
+    if (thumbpath !== null) {
+        res.sendfile(thumbpath);
+    } else {
+        res.send(404);
+    }
 };
 
 exports.hasalbumart = function(req, res){

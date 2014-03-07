@@ -2,3 +2,5 @@
 /npm-debug.log
 .c9revisions
 .settings
+thumbs
+public/js/templates.js

@@ -82,7 +82,7 @@
                     data.currentSound = soundManager.createSound({
                         id: 't_'+tracks[data.currentUniqId]._id,
                         url: tracks[data.currentUniqId].url,
-                        type: 'audio/mp3',
+                        type: tracks[data.currentUniqId].mime,
                         autoLoad: true,
                         autoPlay: !!autoPlay,
                         whileplaying: function(){

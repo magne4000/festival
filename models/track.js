@@ -1,6 +1,7 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
-    uniqid = require('../lib/uniqid');
+    uniqid = require('../lib/uniqid'),
+    mime = require('mime');
 
 var trackSchema = new Schema({
     path: {type: String, 'default': '', trim: true, required: true, unique: true},
@@ -13,6 +14,7 @@ var trackSchema = new Schema({
     bitrate: {type: Number},
     frequency: {type: Number},
     trackno: {type: Number},
+    mime: {type: String, 'default': '', trim: true, required: true},
     last_updated: {type: Date, 'default': Date.now}
 });
 
@@ -31,5 +33,10 @@ trackSchema.options.toJSON.transform = function (doc, ret, options) {
   // remove the path
   delete ret.path;
 }
+
+trackSchema.pre('save', function (next) {
+  this.mime = mime.lookup(this.path);
+  next();
+});
 
 mongoose.model('track', trackSchema);
