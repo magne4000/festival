@@ -9,7 +9,7 @@ ul
               li.album
                 h4= album.name
                 div
-                  a(href="#", data-role="show-tracks", data-artist="#{artist.name}", data-album="#{album.name}")
+                  a.thumb(href="#", data-role="show-tracks", data-artist="#{artist.name}", data-album="#{album.name}")
                     img.img-responsive(src=album.albumart, alt=album.name)
                   .btn-group
                     a.btn.btn-default.btn-sm(href="#", data-role="play", data-artist="#{artist.name}", data-album="#{album.name}") Play 
