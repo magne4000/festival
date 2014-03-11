@@ -8,6 +8,7 @@ var fs = require('fs'),
     scanTimeout = null,
     progressTimeout = null,
     scanInProgess = false,
+    rescanAfter = false,
     t = 10000;
 
 /**
@@ -186,12 +187,18 @@ var scan = function(){
                             }
                             cleanold(files, albumarts);
                             scanInProgess = false;
-                            console.log('Update finished.')
+                            console.log('Update finished.');
+                            if (rescanAfter) {
+                                rescanAfter = false;
+                                exports.scan();
+                            }
                         });
                     }
                 );
             }
         );
+    } else {
+        rescanAfter = true;
     }
 };
 
