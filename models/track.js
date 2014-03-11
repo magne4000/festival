@@ -4,17 +4,17 @@ var mongoose = require('mongoose'),
     mime = require('mime');
 
 var trackSchema = new Schema({
-    path: {type: String, 'default': '', trim: true, required: true, unique: true},
+    path: {type: String, trim: true, required: true, unique: true},
     genre: {type: String, 'default': '', trim: true},
     artist: {type: String, 'default': '', trim: true},
     album: {type: String, 'default': '', trim: true},
-    name: {type: String, 'default': '', trim: true, required: true},
+    name: {type: String, trim: true, required: true},
     duration: {type: Number},
     year: {type: Number, min: 0, max: 9999},
     bitrate: {type: Number},
     frequency: {type: Number},
     trackno: {type: Number},
-    mime: {type: String, 'default': '', trim: true, required: true},
+    mime: {type: String, trim: true, required: true},
     last_updated: {type: Date, 'default': Date.now}
 });
 

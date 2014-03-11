@@ -75,13 +75,21 @@ main {
 .dropdown-toggle {
     border-left: 1px solid #000000;
     background-color: #32383E;
-    height: 37px;
+    height: 36px;
     padding-top: 10px;
     right: -15px;
     text-align: center;
     top: -10px;
     width: 40px;
     float: right;
+}
+
+.list-group-item:last-child .dropdown-toggle {
+    border-bottom-right-radius: 4px;
+}
+
+.list-group-item:first-child .dropdown-toggle {
+    border-top-right-radius: 4px;
 }
 
 .dropdown-toggle a {
