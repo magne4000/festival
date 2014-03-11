@@ -66,6 +66,7 @@ function cleanold(files, albumarts){
     // Clean old covers
     Object.keys(albumarts).forEach(function(element) {
         albumartsToDelete.push(element);
+        thumbs.remove(element);
     });
     Albumart.remove({path: {$in: albumartsToDelete}}).exec();
     
