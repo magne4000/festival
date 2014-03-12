@@ -5,6 +5,7 @@ var fs = require('fs'),
     taglib = require('taglib'),
     path = require('path'),
     mongoose = require('mongoose'),
+    watchr = require('watchr'),
     scanTimeout = null,
     progressTimeout = null,
     scanInProgess = false,
@@ -121,6 +122,7 @@ var scan = function(){
         Albumart = mongoose.model('albumart');
     if (!scanInProgess){
         scanInProgess = true;
+        console.log('Scan started.');
         Track.find(
             {},
             "path last_updated",
@@ -216,8 +218,19 @@ exports.scan = function(){
  * if an event is triggered
  */
 exports.watch = function(){
-    fs.watch(settings.scanner.path, function(event, filename){
-        console.log("File " + filename + "; event " + event);
-        exports.scan();
+    watchr.watch({
+        path: settings.scanner.path,
+        ignoreHiddenFiles: true,
+        listeners: {
+            error: function(err){
+                console.log('an error occured: ', err);
+            },
+            change: function(changeType, filePath, fileCurrentStat, filePreviousStat){
+                if (settings.scanner.debug) {
+                    console.log('a change event occured: ', arguments);
+                }
+                exports.scan();
+            }
+        }
     });
 };
