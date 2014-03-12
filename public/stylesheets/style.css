@@ -23,21 +23,16 @@ main {
     padding: 0;
 }
 
-.container {
+.container, .fill, .fill .wrapper {
     height:100%;
 }
 
-.container-fluid {
+.container-fluid, .fill .wrapper {
     padding: 0;
 }
 
-.fill, .fill .wrapper {
-    height:100%;
-    padding: 0 5px;
-}
-
-.fill .wrapper:first-child {
-    padding-left: 10px;
+.fill {
+    padding: 0 15px;
 }
 
 .fill .search .list-group, .fill .playlists {

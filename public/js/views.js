@@ -114,23 +114,14 @@ function showNowPlaying(artist, album, trackId, callback){
             $("#playing").html(Templates.tab.playlist({tracks: data, playing: true, filters: filter}));
             $(".playlists-tabs .playing a").tab('show');
             showPanel('.wrapper-playlists');
+            if (typeof callback === 'function'){
+                 callback(data);
+            }
         }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);
         });
-        
-        if (typeof callback === 'function'){
-            $.get('ajax/list/tracks',{
-                filters: JSON.stringify(filter)
-            }, function(data){
-                callback(data);
-            }, "json")
-            .fail(function(jqXHR, textStatus){
-                console.log(textStatus);
-                console.log(jqXHR.responseText);
-            });
-        }
     }, 200);
 }
 
