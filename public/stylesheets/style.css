@@ -19,16 +19,12 @@ main {
     width: 100%;
 }
 
-.panel-body {
+.panel-body, .container-fluid, .fill .wrapper {
     padding: 0;
 }
 
 .container, .fill, .fill .wrapper {
     height:100%;
-}
-
-.container-fluid, .fill .wrapper {
-    padding: 0;
 }
 
 .fill {

@@ -59,7 +59,6 @@
                     tracklist = track;
                 }
                 for (ind in track){
-                    track[ind].uniqid = utils.uniqid('t_');
                     data.uniqidsToBePlayed.push(track[ind].uniqid);
                     $this.trigger('playeradd', track[ind]);
                     $.store('add', track[ind]);
