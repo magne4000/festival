@@ -80,36 +80,44 @@
                 data.currentUniqId = uniqid;
                 clearTimeout(data.timer);
                 data.timer = setTimeout(function(){
-                    data.currentSound = soundManager.createSound({
-                        id: 't_'+tracks[data.currentUniqId]._id,
-                        url: tracks[data.currentUniqId].url,
-                        type: tracks[data.currentUniqId].mime,
-                        autoLoad: true,
-                        autoPlay: !!autoPlay,
-                        whileplaying: function(){
-                            $this.trigger('playerplaying', this);
-                        },
-                        onfinish: function(){
-                            $this.trigger('playerfinish', this);
-                            $this.player('next', true);
-                        },
-                        onstop: function(){
-                            $this.trigger('playerstop', this);
-                        },
-                        onpause: function(){
-                            $this.trigger('playerpause', this);
-                        },
-                        onplay: function(){
-                            $this.trigger('playerplay', this);
-                        },
-                        onload: function(){
-                            $this.trigger('playerload', this);
-                        },
-                        onresume: function(){
-                            $this.trigger('playerresume', this);
-                        },
-                        volume: $.store('get', 'volume') || 100
-                    });
+                    var soundId = 't_'+tracks[data.currentUniqId]._id;
+                    data.currentSound = soundManager.getSoundById(soundId);
+                    if (!!data.currentSound) {
+                        if (!!autoPlay) {
+                            data.currentSound.play();
+                        }
+                    } else {
+                        data.currentSound = soundManager.createSound({
+                            id: soundId,
+                            url: tracks[data.currentUniqId].url,
+                            type: tracks[data.currentUniqId].mime,
+                            autoLoad: true,
+                            autoPlay: !!autoPlay,
+                            whileplaying: function(){
+                                $this.trigger('playerplaying', this);
+                            },
+                            onfinish: function(){
+                                $this.trigger('playerfinish', this);
+                                $this.player('next', true);
+                            },
+                            onstop: function(){
+                                $this.trigger('playerstop', this);
+                            },
+                            onpause: function(){
+                                $this.trigger('playerpause', this);
+                            },
+                            onplay: function(){
+                                $this.trigger('playerplay', this);
+                            },
+                            onload: function(){
+                                $this.trigger('playerload', this);
+                            },
+                            onresume: function(){
+                                $this.trigger('playerresume', this);
+                            },
+                            volume: $.store('get', 'volume') || 100
+                        });
+                    }
                     $this.trigger('playerbeforeload', tracks[uniqid]);
                 }, 200);
             }
@@ -196,6 +204,7 @@
             var $this = $(this), data = $this.data('player');
             if (!!data.currentSound) {
                 $this.trigger('playerstop');
+                data.currentSound.unload();
                 data.currentSound.stop();
             }
         },
