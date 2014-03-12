@@ -35,6 +35,8 @@
              * A track object is defined like this example:
              * track = {
              *      "_id": "52f24b6b89e9eb1e4aed8c1c",
+             *      "id": "52f24b6b89e9eb1e4aed8c1c",
+             *      "uniqid": "t_532028e157259",
              *      "bitrate": 320,
              *      "duration": 86,
              *      "frequency": 44100,
@@ -45,7 +47,7 @@
              *      "album": "Entities",
              *      "artist": "Pomegranate Tiger",
              *      "genre": "Instrumental Progressice Metal",
-             *      "path": "/home/magne/music/Pomegranate Tiger/Entities/01 Gift Of Tongues.mp3"
+             *      "url": "/music/52f24b6b89e9eb1e4aed8c1c"
              * }
              */
             return this.each(function() {

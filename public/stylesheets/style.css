@@ -19,6 +19,10 @@ main {
     width: 100%;
 }
 
+.panel-body {
+    padding: 0;
+}
+
 .container {
     height:100%;
 }
@@ -30,6 +34,10 @@ main {
 .fill, .fill .wrapper {
     height:100%;
     padding: 0 5px;
+}
+
+.fill .wrapper:first-child {
+    padding-left: 10px;
 }
 
 .fill .search .list-group, .fill .playlists {
