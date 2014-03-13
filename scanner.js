@@ -85,12 +85,10 @@ function clearProgressTimeout(){
 }
 
 /**
- * Test if filepath is a music file.
- * Based on extensions from settings.js file
+ *  Test if filepath's extension is in exts.
  */
-function isMusicFile(filepath){
-    var exts = settings.scanner.exts.split(','),
-        fileext = path.extname(filepath);
+function isTypeFile(filepath, exts){
+    var fileext = path.extname(filepath);
     for (var key in exts){
         if (exts[key].trim().toLowerCase() === fileext){
             return true;
@@ -100,17 +98,20 @@ function isMusicFile(filepath){
 }
 
 /**
+ * Test if filepath is a music file.
+ * Based on extensions from settings.js file
+ */
+function isMusicFile(filepath){
+    var exts = settings.scanner.musicExts.split(',');
+    return isTypeFile(filepath, exts);
+}
+
+/**
  * Test if filepath is a cover file.
  */
 function isCoverFile(filepath){
-    var exts = ['.png', '.jpg', '.jpeg', '.gif'],
-        fileext = path.extname(filepath);
-    for (var key in exts){
-        if (exts[key].trim().toLowerCase() === fileext){
-            return true;
-        }
-    }
-    return false;
+    var exts = settings.scanner.coverExts.split(',');
+    return isTypeFile(filepath, exts);
 }
 
 /**
