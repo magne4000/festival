@@ -5,11 +5,11 @@ var postTimeout = {
 };
 
 function setPlayIcon(){
-    $('.control.play>.glyphicon').removeClass("glyphicon-pause").addClass("glyphicon-play");
+    $('.control.play').removeClass("pause").attr("title", "Play");
 }
 
 function setPauseIcon(){
-    $('.control.play>.glyphicon').removeClass("glyphicon-play").addClass("glyphicon-pause");
+    $('.control.play').addClass("pause").attr("title", "Pause");
 }
 
 function setElapsedTime(val){

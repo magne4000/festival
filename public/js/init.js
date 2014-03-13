@@ -63,7 +63,7 @@ $(document).ready(function() {
     });
     
     $(document).hammer().on('tap', "[data-role='show-albums']", function(e){
-        if (!$(e.target).is('.dropdown') && $(e.target).parents('.dropdown').length === 0) {
+        if (!$(e.target).is('.dropdown-toggle') && $(e.target).parents('.dropdown-toggle').length === 0) {
             var artist = $(e.currentTarget).data("artist");
             if (artist){
                 showAlbumsByArtist(artist);

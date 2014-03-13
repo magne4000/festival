@@ -72,15 +72,23 @@ main {
 }
 
 .dropdown-toggle {
-    border-left: 1px solid #000000;
-    background-color: #32383E;
-    height: 36px;
+    height: 38px;
     padding-top: 10px;
-    right: -15px;
+    right: -1px;
     text-align: center;
-    top: -10px;
+    top: -1px;
     width: 40px;
-    float: right;
+    position: absolute;
+}
+
+.open .dropdown-toggle.btn-default, .dropdown-toggle, .dropdown-toggle:hover, .dropdown-toggle.active {
+    background-image: url(/images/festival.png);
+    background-size: 600%;
+    background-position: -113px -38px;
+}
+
+.list-group-item .dropdown-toggle {
+    border-radius: 0;
 }
 
 .list-group-item:last-child .dropdown-toggle {
@@ -89,10 +97,6 @@ main {
 
 .list-group-item:first-child .dropdown-toggle {
     border-top-right-radius: 4px;
-}
-
-.dropdown-toggle a {
-    color: #C8C8C8;
 }
 
 .list-inline > li {
@@ -135,12 +139,13 @@ li.album .btn:first-child {
     position: relative;
 }
 
-#player .controls, #player .loader, #player .loader .info>span, #player .controls .control {
+#player .controls, #player .loader, #player .loader .info>span {
     display: inline-block;
 }
 
 #player .controls .control {
     width: 52px;
+    height: 50px;
 }
 
 #player .loader {
@@ -179,7 +184,8 @@ li.album .btn:first-child {
         width: 100%;
     }
     
-    #player .controls .next, #player .controls .prev {
+    #player .controls .next, #player .controls .prev,
+    #player .controls .loop, #player .controls .shuffle, #player .controls .volume {
         display: none;
     }
 }
@@ -192,6 +198,39 @@ li.album .btn:first-child {
 #player .loader .elapsed-time {
     position: absolute;
     left: 5px;
+}
+
+#player .controls .control {
+    background-image: url(/images/festival.png);
+    background-size: 600%;
+}
+
+#player .controls .play {
+    background-position: 2px -1px;
+}
+
+#player .controls .pause {
+    background-position: -50px -1px;
+}
+
+#player .controls .prev {
+    background-position: -100px -1px;
+}
+
+#player .controls .next {
+    background-position: -150px -1px;
+}
+
+#player .controls .loop {
+    background-position: -250px -1px;
+}
+
+#player .controls .shuffle {
+    background-position: -200px -1px;
+}
+
+#player .controls .volume {
+    background-position: -100px -51px;
 }
 
 .current.right {

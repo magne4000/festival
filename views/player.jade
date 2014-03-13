@@ -1,20 +1,17 @@
 #player
   .controls
-    a.control.play(title='Play', href='javascript:void(0);')
-      span.btn.btn-lg.btn-default.glyphicon.glyphicon-play
-    a.control.prev(title='Previous track', href='javascript:void(0);')
-      span.btn.btn-lg.btn-default.glyphicon.glyphicon-step-backward
-    a.control.next(title='Next track', href='javascript:void(0);')
-      span.btn.btn-lg.btn-default.glyphicon.glyphicon-step-forward
+    a.btn.btn-default.control.play(title='Play', href='javascript:void(0);')
+    a.btn.btn-default.control.prev(title='Previous track', href='javascript:void(0);')
+    a.btn.btn-default.control.next(title='Next track', href='javascript:void(0);')
   .loader
     .info
       span.elapsed-time 00:00
       span Waiting for a track
       span.total-time 00:00
     .progressbar
-      input.hidden(data-slider-id='progress', data-slider-handle="slim", data-slider-min="0", data-slider-max="100", data-slider-step="1", data-slider-value="14")
-  .controls
-    a.control.loop(title='Loop', href='javascript:void(0);')
-    a.control.random(title='Random', href='javascript:void(0);')
-    a.control.volume(title='Volume')
+      input.hidden(data-slider-id='progress', data-slider-handle="slim", data-slider-min="0", data-slider-max="100", data-slider-step="1", data-slider-value="0")
+  .controls.pull-right
+    a.btn.btn-default.control.loop(title='Loop', href='javascript:void(0);')
+    a.btn.btn-default.control.shuffle(title='Shuffle', href='javascript:void(0);')
+    a.btn.btn-default.control.volume(title='Volume')
     .volume-wrapper
