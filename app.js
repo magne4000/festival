@@ -19,7 +19,7 @@ var app = express();
 
 // all environments
 app.set('port', process.env.PORT || config.express.port || 3000);
-app.set('views', __dirname + '/views');
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
@@ -52,10 +52,10 @@ app.get('/ajax/hasalbumart', ajax.hasalbumart);
 mongoose.connect(config.mongodb.url);
 
 //Bootstrap models
-var models_path = __dirname + '/models';
+var models_path = path.join(__dirname, 'models');
 fs.readdirSync(models_path).forEach(function(file) {
     if (~file.indexOf('.js')) {
-        require(models_path + '/' + file);
+        require(path.join(models_path, file));
     }
 });
 
