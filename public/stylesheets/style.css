@@ -115,7 +115,7 @@ li.album .thumb {
     border-left: 1px solid #000000;
     border-right: 1px solid #000000;
     margin-bottom: -4px;
-    background: url(/images/nocover.jpg) no-repeat;
+    background: url(/images/nocover.png) no-repeat;
 }
 
 li.album img {

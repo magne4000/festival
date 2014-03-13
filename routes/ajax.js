@@ -84,7 +84,7 @@ exports.listalbumsbyartists = function(req, res){
                         album.albumart = '/ajax/albumart/?id=' + covers[albumdir];
                     }else{
                         // Default cover when none found
-                        album.albumart = '/images/nocover.jpg';
+                        album.albumart = '/images/nocover.png';
                     }
                     if (artist !== null){
                         if (lastArtist !== artist){
