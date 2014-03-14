@@ -96,6 +96,9 @@
                             whileplaying: function(){
                                 $this.trigger('playerplaying', this);
                             },
+                            whileloading: function(){
+                                $this.trigger('playerloading', this);
+                            },
                             onfinish: function(){
                                 $this.trigger('playerfinish', this);
                                 $this.player('next', true);
@@ -118,7 +121,6 @@
                             volume: $.store('get', 'volume') || 100
                         });
                     }
-                    $this.trigger('playerbeforeload', tracks[uniqid]);
                 }, 200);
             }
             return this;

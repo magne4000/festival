@@ -1,4 +1,7 @@
 $(document).ready(function() {
+    var newTrackLoadStart = false,
+        newTrackPlayStart = false;
+    
     /* Fastsearch */
     $('#search').fastsearch({
         source: "ajax/search/artists",
@@ -8,17 +11,35 @@ $(document).ready(function() {
     
     /* Player */
     $("#player").player()
+    .on('playerloading', function(e, obj){
+        var duration = Math.floor(obj.durationEstimate / 1000);
+        $('.progressbar input').data('slider').max = duration;
+        setTotalTime(duration);
+        if (!newTrackLoadStart) {
+            var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks');
+            setLoadingInfo(tracks[data.currentUniqId]);
+            $('.progressbar input').slider('enable');
+            newTrackLoadStart = true;
+        }
+    })    
     .on('playerload', function(e, obj){
-        $('.progressbar input').data('slider').max = Math.floor(obj.duration / 1000);
-        $('.progressbar input').slider('setValue', 0);
-        setTotalTime(Math.floor(obj.duration / 1000));
+        var duration = Math.floor(obj.duration / 1000);
+        $('.progressbar input').data('slider').max = duration;
+        setTotalTime(duration);
     })
     .on('playerplaying', function(e, obj){
+        if (!newTrackPlayStart) {
+            var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks');
+            setTrackInfo(tracks[data.currentUniqId]);
+            newTrackPlayStart = true;
+        }
         $('.progressbar input').slider('setValue', obj.position / 1000);
         setElapsedTime(Math.floor(obj.position / 1000));
     })
     .on('playerstop playerfinish', function(e, obj){
         setElapsedTime(0);
+        newTrackLoadStart = false;
+        newTrackPlayStart = false;
     })
     .on('playerstop playerpause playerfinish', function(e, obj){
         setPlayIcon();

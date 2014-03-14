@@ -4,6 +4,15 @@ var postTimeout = {
     albums: null
 };
 
+function setLoadingInfo(track){
+    setTrackInfo(track, " <small>(loading)</small>")
+}
+
+function setTrackInfo(track, append){
+    append = append || "";
+    $("#player .info .name").html(track.name + " - " + track.album + " - " + track.artist + append);
+}
+
 function setPlayIcon(){
     $('.control.play').removeClass("pause").attr("title", "Play");
 }
