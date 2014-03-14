@@ -5,7 +5,7 @@ var postTimeout = {
 };
 
 function hideVolume(){
-    $('#player .controls .control').removeClass("active");
+    $('#player .controls .volume').removeClass("active");
     $('.volume-wrapper').addClass('hidden');
 }
 
