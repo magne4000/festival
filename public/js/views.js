@@ -4,6 +4,11 @@ var postTimeout = {
     albums: null
 };
 
+function hideVolume(){
+    $('#player .controls .control').removeClass("active");
+    $('.volume-wrapper').addClass('hidden');
+}
+
 function setPlayingTrack(uniqid){
     $(".track.playing").removeClass("playing");
     if (!!uniqid) {

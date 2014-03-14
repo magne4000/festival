@@ -14,7 +14,6 @@
                         currentSound: null, // SoundManager object
                         shuffle: options.shuffle || false,
                         loop: options.loop || false,
-                        volume: options.volume || 100,
                         uniqidsAlreadyPlayed: [], // already played
                         uniqidsToBePlayed: [], // not played yet
                         timer: null
@@ -140,6 +139,7 @@
                 if (!!data.currentSound) {
                     data.currentSound.setVolume(vol);
                 }
+                $.store('set', 'volume', vol);
             });
         },
         _nextUniqId: function() {

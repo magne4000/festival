@@ -11,7 +11,8 @@
     .progressbar
       input.hidden(data-slider-id='progress', data-slider-handle="slim", data-slider-min="0", data-slider-max="1", data-slider-step="1", data-slider-enabled="false" data-slider-value="0")
   .controls.pull-right
-    a.btn.btn-default.control.loop(title='Loop', href='javascript:void(0);')
-    a.btn.btn-default.control.shuffle(title='Shuffle', href='javascript:void(0);')
+    a.btn.btn-default.control.loop(title='Loop (currently off)', data-title='Loop (currently on)', href='javascript:void(0);')
+    a.btn.btn-default.control.shuffle(title='Shuffle (currently off)', data-title='Shuffle (currently on)', href='javascript:void(0);')
     a.btn.btn-default.control.volume(title='Volume')
-    .volume-wrapper
+    .volume-wrapper.hidden
+      input(data-slider-min='0', data-slider-max='100', data-slider-step='1', data-slider-value='100', data-slider-orientation='vertical', data-slider-handle='slim', data-slider-tooltip='hide')

@@ -34,6 +34,8 @@
 }
 .slider.slider-horizontal .slider-handle.slim {
   margin-left: -5px;
+  border-radius: 30%;
+  width: 10px;
 }
 .slider.slider-horizontal .slider-handle.triangle {
   border-width: 0 10px 10px 10px;
@@ -52,6 +54,7 @@
   margin-left: -5px;
   left: 50%;
   top: 0;
+  background: grey;
 }
 .slider.slider-vertical .slider-selection {
   width: 100%;
@@ -145,7 +148,9 @@
 .slider-handle.triangle {
   background: transparent none;
 }
-.slider-handle.slim {
+.slider.slider-vertical .slider-handle.slim {
+  margin-left: -5px;
+  margin-top: -5px;
   border-radius: 30%;
-  width: 10px;
+  height: 10px;
 }

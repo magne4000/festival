@@ -1,6 +1,7 @@
 $(document).ready(function() {
     var newTrackLoadStart = false,
-        newTrackPlayStart = false;
+        newTrackPlayStart = false,
+        timeoutVolume = null;
     
     /* Fastsearch */
     $('#search').fastsearch({
@@ -93,6 +94,20 @@ $(document).ready(function() {
         }
     });
     
+    $('#player .controls .control').hammer().on('tap', function(e){
+        $(this).toggleClass("active");
+    });
+    
+    $('#player .controls .loop, #player .controls .shuffle').hammer().on('tap', function(e){
+        var title = $(this).attr("title"),
+            otherTitle = $(this).attr("data-title");
+        $(this).attr('title', otherTitle).attr('data-title', title);
+    });
+    
+    $('#player .controls .volume').hammer().on('tap', function(e){
+        $('.volume-wrapper').toggleClass('hidden');
+    });
+    
     $('.control.play').hammer().on('tap', function(e){
         $('#player').player('togglePlayPause');
     });
@@ -127,9 +142,34 @@ $(document).ready(function() {
         }
     });
     
-    /*
+    /* Volume */
+    $(".volume-wrapper input").slider()
+    .on('slide', function(e){
+        $("#player").player('setVolume', e.value);
+    });
     
-    /* Volume *
+    $(".volume-wrapper, #player .controls .volume").hover(
+        function() {
+            var current = $(".wrapper:visible");
+            if (current.length !== 1) { // not mobile devices
+                if (timeoutVolume) {
+                    clearTimeout(timeoutVolume);
+                    timeoutVolume = null;
+                }
+            }
+        },
+        function() {
+            var current = $(".wrapper:visible");
+            if (current.length !== 1) { // not mobile devices
+                timeoutVolume = setTimeout(function() {
+                    timeoutVolume = null;
+                    hideVolume();
+                }, 800);
+            }
+        }
+    );
+    
+    /*
     $('#volume-max').slider({
         orientation: "vertical",
         range: "min",
@@ -143,21 +183,7 @@ $(document).ready(function() {
         }
     });
     
-    var timeoutvolume = null;
-    $("#volume-wrapper, #volume").hover(
-        function() {
-            if (timeoutvolume) {
-                clearTimeout(timeoutvolume);
-                timeoutvolume = null;
-            }
-        },
-        function() {
-            timeoutvolume = setTimeout(function() {
-                timeoutvolume = null;
-                $player.player('hideVolume');
-            }, 800);
-        }
-    );
+    
     
     $('#volume-max').on('mousemove', function(e){
         var cursorPositionRelative = Math.round((e.pageY - $('#volume-max').offset().top)),
