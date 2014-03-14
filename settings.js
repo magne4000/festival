@@ -8,7 +8,7 @@ module.exports = {
     scanner: {
         path: '/share/FTP/Musique',
         musicExts: '.mp3,.ogg',
-        coverExts = '.png,.jpg,.jpeg,.gif'
+        coverExts: '.png,.jpg,.jpeg,.gif'
     },
     debug: {
         debug: false
