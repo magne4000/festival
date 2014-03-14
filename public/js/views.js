@@ -4,13 +4,17 @@ var postTimeout = {
     albums: null
 };
 
-function setLoadingInfo(track){
-    setTrackInfo(track, " <small>(loading)</small>")
+function setPlayingTrack(uniqid){
+    $(".track.playing").removeClass("playing");
+    if (!!uniqid) {
+        $('[data-track-uniqid="'+uniqid+'"]').addClass("playing");
+    }
 }
 
-function setTrackInfo(track, append){
-    append = append || "";
-    $("#player .info .name").html(track.name + " - " + track.album + " - " + track.artist + append);
+function setTrackInfo(uniqid){
+    var tracks = $.store('get', 'tracks'),
+        track = tracks[uniqid];
+    $("#player .info .name").html("<span class='title'>" + track.name + "</span><span class='album'>" + track.album + "</span><span class='artist'>" + track.artist + "</span>");
 }
 
 function setPlayIcon(){

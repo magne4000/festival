@@ -16,8 +16,9 @@ $(document).ready(function() {
         $('.progressbar input').data('slider').max = duration;
         setTotalTime(duration);
         if (!newTrackLoadStart) {
-            var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks');
-            setLoadingInfo(tracks[data.currentUniqId]);
+            var $this = $(this), data = $this.data('player');
+            setTrackInfo(data.currentUniqId);
+            setPlayingTrack(data.currentUniqId);
             $('.progressbar input').slider('enable');
             newTrackLoadStart = true;
         }
@@ -29,8 +30,8 @@ $(document).ready(function() {
     })
     .on('playerplaying', function(e, obj){
         if (!newTrackPlayStart) {
-            var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks');
-            setTrackInfo(tracks[data.currentUniqId]);
+            var $this = $(this), data = $this.data('player');
+            setTrackInfo(data.currentUniqId);
             newTrackPlayStart = true;
         }
         $('.progressbar input').slider('setValue', obj.position / 1000);

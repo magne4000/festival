@@ -232,6 +232,17 @@ li.album .btn:first-child {
     background-position: -105px -54px;
 }
 
+#player .info .name>span:not(:last-child):after {
+    content: ' - ';
+}
+
+.track.playing:before {
+    content: url("/images/headphone_music.png");
+    float: left;
+    margin-right: 10px;
+    margin-top: -2px;
+}
+
 .current.right {
     animation-duration: 0.5s;
     animation-name: slideright;
