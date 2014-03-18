@@ -70,9 +70,9 @@ function showPreviousPanel(){
 }
 
 function showTracks(artist, album){
-    var filter = {artist: artist};
+    var filter = {artist: ""+artist};
     if (album) {
-        filter.album = album;
+        filter.album = ""+album;
     }
     clearTimeout(postTimeout.tracks);
     postTimeout.tracks = setTimeout(function(){
@@ -91,12 +91,12 @@ function showTracks(artist, album){
 }
 
 function addNowPlaying(artist, album, trackId, callback){
-    var filter = {artist: artist};
+    var filter = {artist: ""+artist};
     if (album) {
-        filter.album = album;
+        filter.album = ""+album;
     }
     if (!album && !artist){
-        filter = {_id: trackId};
+        filter = {_id: ""+trackId};
     }
     clearTimeout(postTimeout.nowPlaying);
     postTimeout.nowPlaying = setTimeout(function(){
@@ -117,12 +117,12 @@ function addNowPlaying(artist, album, trackId, callback){
 }
 
 function showNowPlaying(artist, album, trackId, callback){
-    var filter = {artist: artist};
+    var filter = {artist: ""+artist};
     if (album) {
-        filter.album = album;
+        filter.album = ""+album;
     }
     if (!album && !artist){
-        filter = {_id: trackId};
+        filter = {_id: ""+trackId};
     }
     clearTimeout(postTimeout.nowPlaying);
     postTimeout.nowPlaying = setTimeout(function(){
@@ -149,7 +149,7 @@ function showAlbums(html){
 }
 
 function showAlbumsByArtist(artist){
-    var filter = {artist: artist};
+    var filter = {artist: ""+artist};
     clearTimeout(postTimeout.albums);
     postTimeout.albums = setTimeout(function(){
         $.get('ajax/list/albumsbyartists',{

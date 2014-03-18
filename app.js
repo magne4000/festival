@@ -13,7 +13,7 @@ var express =
     config = require('./settings'),
     mongoose = require('mongoose'),
     fs = require('fs'),
-    connectJadeClient = require("connect-jade-client");;
+    connectJadeClient = require("connect-jade-client");
 
 var app = express();
 
