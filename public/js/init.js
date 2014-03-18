@@ -62,7 +62,7 @@ $(document).ready(function() {
             // Set in "Now playing" tab
             showNowPlaying(artist, album, trackId, function(tracks){
                 if (tracks){
-                    $("#player").player('add', tracks, true);
+                    $("#player").player('add', tracks, true, trackId);
                 }
             });
         }

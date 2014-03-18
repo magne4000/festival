@@ -28,7 +28,7 @@
                 $(this).removeData('player');
             });
         },
-        add: function(track, autoPlay) {
+        add: function(track, autoPlay, idToPlay) {
             /**
              * @track can be a single track object, or a list of track objects
              * A track object is defined like this example:
@@ -61,10 +61,13 @@
                     data.uniqidsToBePlayed.push(track[ind].uniqid);
                     $this.trigger('playeradd', track[ind]);
                     $.store('add', track[ind]);
-                    if (trackslen === 0 && !data.shuffle){
+                    if (idToPlay === track[ind].id){
+                        $this.player('load', track[ind].uniqid, autoPlay);
+                    } else if (trackslen === 0 && !data.shuffle){
                         // First track, load it (if not in shuffle mode)
                         $this.player('load', track[ind].uniqid, autoPlay);
                     }
+                    
                     trackslen++;
                 }
                 if (data.shuffle && orilen === 0){
@@ -76,9 +79,12 @@
         load: function(uniqid, autoPlay) {
             var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks');
             if (!!tracks[uniqid]){
-                data.currentUniqId = uniqid;
                 clearTimeout(data.timer);
                 data.timer = setTimeout(function(){
+                    if (!!autoPlay) {
+                        $this.player('_stop');
+                    }
+                    data.currentUniqId = uniqid;
                     var soundId = 't_'+tracks[data.currentUniqId]._id;
                     data.currentSound = soundManager.getSoundById(soundId);
                     if (!!data.currentSound) {
