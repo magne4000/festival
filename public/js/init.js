@@ -11,22 +11,22 @@ $(document).ready(function() {
     });
     
     /* Fix dropdown showing out of viewport */
-    $(".dropdown-toggle").click(function(e) {
-        var menu = $(this).next('.dropdown-menu'),
-            mousey = e.pageY,
-            menuHeight = menu.height(),
-            menuVisY = $(window).height() - (mousey + menuHeight);
+    $(".dropdown").on('show.bs.dropdown', function(e) {
+        var toggle = $(this).find('.dropdown-toggle'),
+            menu = $(this).find('.dropdown-menu'),
+            menuVisY = $(window).height() - (toggle.offset().top + toggle.height() + menu.height());
         if (menuVisY < 20) {
             menu.css({
                 'top': 'auto',
                 'bottom': '100%',
             });
-        } else {
-            menu.css({
-                'top': '',
-                'bottom': '',
-            });
         }
+    }).on('hidden.bs.dropdown', function(e) {
+        var menu = $(this).find('.dropdown-menu');
+        menu.css({
+            'top': '',
+            'bottom': '',
+        });
     });
     
     /* Player */
