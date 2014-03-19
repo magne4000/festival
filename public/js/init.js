@@ -11,7 +11,7 @@ $(document).ready(function() {
     });
     
     /* Fix dropdown showing out of viewport */
-    $(".dropdown").on('show.bs.dropdown', function(e) {
+    $(".search .dropdown").on('show.bs.dropdown', function(e) {
         var toggle = $(this).find('.dropdown-toggle'),
             menu = $(this).find('.dropdown-menu'),
             menuVisY = $(window).height() - (toggle.offset().top + toggle.height() + menu.height());
@@ -123,9 +123,10 @@ $(document).ready(function() {
         $(this).attr('title', otherTitle).attr('data-title', title);
     });
     
+    /*
     $('#player .controls .volume').hammer().on('tap', function(e){
         $('.volume-wrapper').toggleClass('hidden');
-    });
+    });*/
     
     $('.control.play').hammer().on('tap', function(e){
         $('#player').player('togglePlayPause');
@@ -166,7 +167,7 @@ $(document).ready(function() {
     .on('slide', function(e){
         $("#player").player('setVolume', e.value);
     });
-    
+    /*
     $(".volume-wrapper, #player .controls .volume").hover(
         function() {
             var current = $(".wrapper:visible");
@@ -187,7 +188,7 @@ $(document).ready(function() {
             }
         }
     );
-    
+    */
     /*
     $('#volume-max').slider({
         orientation: "vertical",

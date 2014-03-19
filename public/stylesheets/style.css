@@ -149,16 +149,14 @@ li.album .btn:first-child {
 }
 
 .volume-wrapper {
-    position: absolute;
     width: 52px;
+    min-width: 52px;
     height: 150px;
-    right: 0;
-    top: 46px;
-    z-index: 2;
-    padding: 17px;
+    top: 42px;
+    padding: 16px;
     background-color: #272B2E;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
     border-bottom: 1px solid #666666;
     border-left: 1px solid #666666;
     border-right: 1px solid #666666;
@@ -254,6 +252,10 @@ li.album .btn:first-child {
 
 #player .controls .volume {
     background-position: -105px -54px;
+}
+
+#player .controls .dropdown {
+    float: right;
 }
 
 #player .info .name>span:not(:last-child):after {
