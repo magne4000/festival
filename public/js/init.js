@@ -21,6 +21,11 @@ $(document).ready(function() {
                 'top': 'auto',
                 'bottom': '100%',
             });
+        } else {
+            menu.css({
+                'top': '',
+                'bottom': '',
+            });
         }
     });
     
