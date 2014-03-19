@@ -7,7 +7,8 @@ $(document).ready(function() {
     $('#search').fastsearch({
         source: "ajax/search/artists",
         recipient: ".search .list-group",
-        delay: 300
+        delay: 300,
+        render: Templates.tab.search
     });
     
     /* Fix dropdown showing out of viewport */

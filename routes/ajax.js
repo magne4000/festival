@@ -12,7 +12,7 @@ exports.searchartists = function(req, res) {
         req.query.filters = JSON.stringify({artist : {$regex: '.*'+term+'.*', $options: 'i'}});
     }
     exports.listartists(req, res, function(list){
-        res.render("tab/search", {
+        res.json({
             artists: list
         });
     });

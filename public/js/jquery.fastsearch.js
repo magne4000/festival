@@ -10,7 +10,8 @@
                         source: options.source,
                         target: $this,
                         delay: options.delay || 200,
-                        term: ""
+                        term: "",
+                        render: options.render || null
                     });
                     data = $this.data('fastsearch');
                 }
@@ -64,7 +65,8 @@
                 function( items ) {
                     $this.fastsearch('_render', items);
                     $this.trigger('fastsearchchanged', value);
-                }
+                },
+                "json"
             );
         },
         _render: function( items ) {
@@ -73,7 +75,11 @@
             if (!items){
                 data.$recipient.html('<span>No results match your search.</span>');
             }else{
-                data.$recipient.html(items);
+                if (typeof data.render === 'function') {
+                    data.$recipient.html(data.render(items));
+                } else {
+                    data.$recipient.html(items);
+                }
             }
         }
     };
