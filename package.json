@@ -17,6 +17,7 @@
     "connect-jade-client": "0.5.*",
     "mime": "1.2.*",
     "gm": "1.14.*",
-    "watchr": "2.4.*"
+    "watchr": "2.4.*",
+    "mkdirp": "0.3.*"
   }
 }
