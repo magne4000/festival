@@ -10,6 +10,20 @@ $(document).ready(function() {
         delay: 300
     });
     
+    /* Fix dropdown showing out of viewport */
+    $(".dropdown-toggle").click(function(e) {
+        var menu = $(this).next('.dropdown-menu'),
+            mousey = e.pageY,
+            menuHeight = menu.height(),
+            menuVisY = $(window).height() - (mousey + menuHeight);
+        if (menuVisY < 20) {
+            menu.css({
+                'top': 'auto',
+                'bottom': '100%',
+            });
+        }
+    });
+    
     /* Player */
     $("#player").player()
     .on('playerloading', function(e, obj){
