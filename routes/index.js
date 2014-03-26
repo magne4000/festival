@@ -7,7 +7,7 @@ var settings = require('../settings'),
 exports.index = function(req, res) {
     ajax.listartists(req, res, function(docs){
         res.render('index', {
-            title : 'Webmusic',
+            title : 'Festival',
             soundmanager: settings.soundmanager,
             debug: settings.debug,
             artists: docs
