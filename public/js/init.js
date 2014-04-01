@@ -82,6 +82,7 @@ $(document).ready(function() {
             // Set in "Now playing" tab
             showNowPlaying(artist, album, trackId, function(tracks){
                 if (tracks){
+                    $("#player").player('empty');
                     $("#player").player('add', tracks, true, trackId);
                 }
             });
@@ -114,10 +115,6 @@ $(document).ready(function() {
         }
     });
     
-    $('#player .controls .control').hammer().on('tap', function(e){
-        $(this).toggleClass("active");
-    });
-    
     $('#player .controls .loop, #player .controls .shuffle').hammer().on('tap', function(e){
         var title = $(this).attr("title"),
             otherTitle = $(this).attr("data-title");
@@ -129,11 +126,21 @@ $(document).ready(function() {
     });
     
     $('.control.next').hammer().on('tap', function(e){
-        $('#player').player('next');
+        $('#player').player('next', true);
     });
     
     $('.control.prev').hammer().on('tap', function(e){
-        $('#player').player('prev');
+        $('#player').player('prev', true);
+    });
+    
+    $('.control.shuffle').hammer().on('tap', function(e){
+        $('#player').player('toggleShuffle');
+        $(this).toggleClass("active");
+    });
+    
+    $('.control.loop').hammer().on('tap', function(e){
+        $('#player').player('toggleLoop');
+        $(this).toggleClass("active");
     });
     
     /* Swipe */

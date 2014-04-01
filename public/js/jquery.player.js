@@ -51,28 +51,30 @@
              */
             return this.each(function() {
                 var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks'),
-                    tracklist = [], ind = 0, trackslen = utils.len(tracks), orilen = trackslen;
+                    tracklist = [], ind = 0, trackslen = utils.len(tracks), orilen = trackslen,
+                    randno = null;
                 if (!!track._id){ // only one track
                     tracklist.push(track);
                 } else {
                     tracklist = track;
                 }
-                for (ind in track){
-                    data.uniqidsToBePlayed.push(track[ind].uniqid);
-                    $this.trigger('playeradd', track[ind]);
-                    $.store('add', track[ind]);
-                    if (idToPlay === track[ind].id){
-                        $this.player('load', track[ind].uniqid, autoPlay);
-                    } else if (trackslen === 0 && !data.shuffle){
-                        // First track, load it (if not in shuffle mode)
-                        $this.player('load', track[ind].uniqid, autoPlay);
-                    }
-                    
-                    trackslen++;
+                if (data.shuffle) {
+                    randno = Math.floor(Math.random()*tracklist.length);
                 }
-                if (data.shuffle && orilen === 0){
-                    // Load a random track
-                    $this.player('next');
+                for (ind in tracklist){
+                    data.uniqidsToBePlayed.push(tracklist[ind].uniqid);
+                    $this.trigger('playeradd', tracklist[ind]);
+                    $.store('add', tracklist[ind]);
+                    if (idToPlay === tracklist[ind].id) {
+                        $this.player('load', tracklist[ind].uniqid, autoPlay);
+                    } else if (trackslen === 0 && !data.shuffle) {
+                        // First track, load it (if not in shuffle mode)
+                        $this.player('load', tracklist[ind].uniqid, autoPlay);
+                    } else if (randno === trackslen && orilen === 0 && data.shuffle) {
+                        // load random track
+                        $this.player('load', tracklist[ind].uniqid, autoPlay);
+                    }
+                    trackslen++;
                 }
             });
         },
@@ -150,39 +152,43 @@
         },
         _nextUniqId: function() {
             var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks');
-            
-            if (data.shuffle){
-                if (data.loop && data.uniqidsToBePlayed.length === 0){
-                    // in loop and the playlist has been finished, so reset
-                    data.uniqidsToBePlayed = data.uniqidsAlreadyPlayed;
+            if (!!tracks) {
+                if (data.shuffle){
+                    if (data.loop && data.uniqidsToBePlayed.length === 0){
+                        // in loop and the playlist has been finished, so reset
+                        data.uniqidsToBePlayed = data.uniqidsAlreadyPlayed;
+                    }
+                    var randno = Math.floor(Math.random()*data.uniqidsToBePlayed.length),
+                        uniqid = data.uniqidsToBePlayed[randno];
+                    data.uniqidsAlreadyPlayed.push(uniqid);
+                    data.uniqidsToBePlayed.splice(randno, 1);
+                    return uniqid;
                 }
-                var randno = Math.floor(Math.random()*data.uniqidsToBePlayed.length),
-                    uniqid = data.uniqidsToBePlayed[randno];
-                data.uniqidsAlreadyPlayed.push(uniqid);
-                data.uniqidsToBePlayed.splice(randno, 1);
-                return uniqid;
+                
+                if (tracks[data.currentUniqId].next === null && data.loop) {
+                    return $.store('get', 'head');
+                }
+                return tracks[data.currentUniqId].next;
             }
-            
-            if (tracks[data.currentUniqId].next === null && data.loop) {
-                return $.store('get', 'head');
-            }
-            return tracks[data.currentUniqId].next;
+            return null;
         },
         _prevUniqId: function() {
             var $this = $(this), data = $this.data('player'), tracks = $.store('get', 'tracks');
-            
-            if (data.shuffle){
-                if (data.uniqidsAlreadyPlayed.length === 0){
-                    return null;
+            if (!!tracks) {
+                if (data.shuffle){
+                    if (data.uniqidsAlreadyPlayed.length === 0){
+                        return null;
+                    }
+                    data.uniqidsToBePlayed.push(data.uniqidsAlreadyPlayed.pop());
+                    return data.uniqidsToBePlayed[data.uniqidsToBePlayed.length-1];
                 }
-                data.uniqidsToBePlayed.push(data.uniqidsAlreadyPlayed.pop());
-                return data.uniqidsToBePlayed[data.uniqidsToBePlayed.length-1];
+                
+                if (tracks[data.currentUniqId].prev === null && data.loop) {
+                    return $.store('get', 'tail');
+                }
+                return tracks[data.currentUniqId].prev;
             }
-            
-            if (tracks[data.currentUniqId].prev === null && data.loop) {
-                return $.store('get', 'tail');
-            }
-            return tracks[data.currentUniqId].prev;
+            return null;
         },
         _play: function() {
             return this.each(function() {
@@ -220,21 +226,25 @@
             return this.each(function() {
                 var $this = $(this), data = $this.data('player'), uniqid = $this.player('_nextUniqId');
                 $this.player('_stop');
-                data.uniqidsAlreadyPlayed.push(data.currentUniqId);
+                if (!!data.currentUniqId) {
+                    data.uniqidsAlreadyPlayed.push(data.currentUniqId);
+                }
                 if (uniqid !== null) {
                     $this.trigger('playernext');
                     $this.player('load', uniqid, !!autoPlay);
                 }
             });
         },
-        prev: function() {
+        prev: function(autoPlay) {
             return this.each(function() {
                 var $this = $(this), data = $this.data('player'), uniqid = $this.player('_prevUniqId');
                 $this.player('_stop');
-                delete data.uniqidsAlreadyPlayed[data.uniqidsAlreadyPlayed.length-1];
+                if (data.uniqidsAlreadyPlayed.length > 0) {
+                    delete data.uniqidsAlreadyPlayed[data.uniqidsAlreadyPlayed.length-1];
+                }
                 if (uniqid !== null) {
                     $this.trigger('playerprev');
-                    $this.player('load', uniqid, true);
+                    $this.player('load', uniqid, !!autoPlay);
                 }
             });
         },
@@ -254,6 +264,15 @@
                 $this.trigger('playertoggleloop');
                 data.loop = !data.loop;
                 $.store('set', 'loop', data.loop);
+            });
+        },
+        empty: function() {
+            return this.each(function() {
+                var $this = $(this), data = $this.data('player');
+                data.uniqidsAlreadyPlayed = [];
+                data.uniqidsToBePlayed = [];
+                $.store('empty'),
+                $this.trigger('playerempty');
             });
         }
     };
