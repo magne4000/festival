@@ -250,8 +250,16 @@ li.album .btn:first-child {
     background-position: -209px -2px;
 }
 
-#player .controls .volume {
+#player .controls .volume-max {
     background-position: -105px -54px;
+}
+
+#player .controls .volume-mid {
+    background-position: -52px -54px;
+}
+
+#player .controls .volume-min {
+    background-position: 1px -54px;
 }
 
 #player .controls .dropdown {

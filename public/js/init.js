@@ -161,7 +161,21 @@ $(document).ready(function() {
     /* Volume */
     $(".volume-wrapper input").slider()
     .on('slide', function(e){
+        var vol = $(".controls .volume");
         $("#player").player('setVolume', e.value);
+        if (e.value < 30) {
+            if (!vol.hasClass("volume-min")) {
+                vol.removeClass("volume-max volume-mid").addClass("volume-min")
+            }
+        } else if (e.value < 75) {
+            if (!vol.hasClass("volume-mid")) {
+                vol.removeClass("volume-min volume-max").addClass("volume-mid")
+            }
+        } else {
+            if (!vol.hasClass("volume-max")) {
+                vol.removeClass("volume-min volume-mid").addClass("volume-max")
+            }
+        }
     });
     
     /*
