@@ -185,17 +185,8 @@ $(document).ready(function() {
         }
     });
     
-    /*
-    
-    /* Shortcuts *
-    $(document).on('keydown.space', function() {
-        $player.player('togglePlayPause');
+    /* Shortcuts */
+    $(document).on('keydown', null, 'space', function() {
+        $('#player').player('togglePlayPause');
     });
-    $(document).on('keydown.ctrl_right', function() {
-        $player.player('next');
-    });
-    $(document).on('keydown.ctrl_left', function() {
-        $player.player('prev');
-    });
-    */
 });
