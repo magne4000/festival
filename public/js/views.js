@@ -4,6 +4,16 @@ var postTimeout = {
     albums: null
 };
 
+function showExtendedControls() {
+    $('#player .controls .showmore').siblings().removeClass('hidden-xs hidden-sm');
+    $("#player .loader").css('right', '180px');
+}
+
+function hideExtendedControls() {
+    $('#player .controls .showmore').siblings().addClass('hidden-xs hidden-sm');
+    $("#player .loader").css('right', '');
+}
+
 function hideLoadingOverlay(applyOn) {
     $(applyOn).find('.overlay').remove();
 }

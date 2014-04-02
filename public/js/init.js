@@ -150,6 +150,14 @@ $(document).ready(function() {
         showPreviousPanel();
     });
     
+    $('#player .controls .showmore').hammer().on('tap', function(e){
+        if ($('#player .controls .showmore').siblings().is(':visible')) {
+            hideExtendedControls();
+        } else {
+            showExtendedControls();
+        }
+    });
+    
     /* Progress bar */
     $('.progressbar input').slider({
         formater: function(value) {

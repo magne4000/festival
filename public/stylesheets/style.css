@@ -196,7 +196,7 @@ li.album .btn:first-child {
 @media (max-width: 991px) {
     #player .loader {
         left: 51px;
-        right: 0;
+        right: 20px;
     }
     
     #player .loader .progressbar {
@@ -207,16 +207,11 @@ li.album .btn:first-child {
         top: 0;
         width: 100%;
     }
-    
-    #player .controls .next, #player .controls .prev,
-    #player .controls .loop, #player .controls .shuffle, #player .controls .volume {
-        display: none;
-    }
 }
 
 #player .loader .total-time {
     position: absolute;
-    right: 5px;
+    right: 10px;
 }
 
 #player .loader .elapsed-time {
@@ -226,6 +221,22 @@ li.album .btn:first-child {
 
 #player .controls .control {
     background-image: url(/images/festival.png);
+}
+
+#player .controls .showmore {
+    background-image: none;
+    position: relative;
+    float: left;
+    width: 20px;
+}
+
+#player .controls .showmore>span {
+    display: inline-block;
+    left: -4px;
+    padding: 0;
+    position: absolute;
+    top: 13px;
+    transform: rotate(-90deg);
 }
 
 #player .controls .control.active {
