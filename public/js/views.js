@@ -5,13 +5,17 @@ var postTimeout = {
 };
 
 function showExtendedControls() {
+    $("#player .loader").hide();
     $('#player .controls .showmore').siblings().removeClass('hidden-xs hidden-sm');
-    $("#player .loader").css('right', '180px');
+    $('#player .controls .next, #player .controls .prev').removeClass('hidden-xs hidden-sm');
+    $('#player .controls .showmore span').html('Less');
 }
 
 function hideExtendedControls() {
+    $("#player .loader").show();
     $('#player .controls .showmore').siblings().addClass('hidden-xs hidden-sm');
-    $("#player .loader").css('right', '');
+    $('#player .controls .next, #player .controls .prev').addClass('hidden-xs hidden-sm');
+    $('#player .controls .showmore span').html('More');
 }
 
 function hideLoadingOverlay(applyOn) {
