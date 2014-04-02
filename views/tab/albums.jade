@@ -7,7 +7,7 @@ ul
           if artist.albums
             each album in artist.albums
               li.album
-                h4= album.name
+                h5= album.name
                 div
                   a.thumb(href="#", data-role="show-tracks", data-artist="#{artist.name}", data-album="#{album.name}")
                     img.img-responsive(src=album.albumart, alt=album.name)

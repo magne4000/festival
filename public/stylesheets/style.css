@@ -103,6 +103,11 @@ main {
     padding: 0;
 }
 
+.albums .panel-body>ul {
+    padding-left: 20px;
+    list-style: none outside none;
+}
+
 li.album {
     width: 142px;
     margin-right: 15px;
@@ -177,6 +182,7 @@ li.album .btn:first-child {
 #player .loader .info {
     text-align: center;
     height: 21px;
+    padding: 0 50px;
 }
 
 #player .loader .progressbar {
