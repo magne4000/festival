@@ -177,6 +177,7 @@ function showAlbumsByArtist(artist){
     var filter = {artist: ""+artist};
     clearTimeout(postTimeout.albums);
     postTimeout.albums = setTimeout(function(){
+        showLoadingOverlay('.wrapper-albums');
         $.get('ajax/list/albumsbyartists',{
             filters: JSON.stringify(filter)
         }, function(data){
@@ -185,6 +186,9 @@ function showAlbumsByArtist(artist){
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);
+        })
+        .always(function(jqXHR, textStatus){
+            hideLoadingOverlay('.wrapper-albums');
         });
     }, 200);
 }

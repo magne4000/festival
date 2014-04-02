@@ -9,6 +9,12 @@ $(document).ready(function() {
         recipient: ".search .list-group",
         delay: 300,
         render: Templates.tab.search
+    })
+    .on('fastsearchchange', function(){
+        showLoadingOverlay(".search .list-group");
+    })
+    .on('fastsearchchanged', function(){
+        hideLoadingOverlay(".search .list-group");
     });
     
     /* Fix dropdown showing out of viewport */
