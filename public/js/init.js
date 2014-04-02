@@ -151,11 +151,13 @@ $(document).ready(function() {
     });
     
     $('#player .controls .showmore').hammer().on('tap', function(e){
-        if ($('#player .controls .showmore').siblings().is(':visible')) {
-            hideExtendedControls();
-        } else {
-            showExtendedControls();
-        }
+        setTimeout(function(){
+            if ($('#player .controls .showmore').siblings().is(':visible')) {
+                hideExtendedControls();
+            } else {
+                showExtendedControls();
+            }
+        }, 10);
     });
     
     /* Progress bar */
