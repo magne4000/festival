@@ -193,7 +193,7 @@ li.album .btn:first-child {
     width: 100%;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 767px) {
     #player .loader {
         left: 51px;
         right: 20px;

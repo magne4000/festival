@@ -1,8 +1,8 @@
 #player
   .controls
     a.btn.btn-default.control.play(title='Play', href='javascript:void(0);')
-    a.btn.btn-default.control.hidden-xs.hidden-sm.prev(title='Previous track', href='javascript:void(0);')
-    a.btn.btn-default.control.hidden-xs.hidden-sm.next(title='Next track', href='javascript:void(0);')
+    a.btn.btn-default.control.hidden-xs.prev(title='Previous track', href='javascript:void(0);')
+    a.btn.btn-default.control.hidden-xs.next(title='Next track', href='javascript:void(0);')
   .loader
     .info
       span.elapsed-time 00:00
@@ -11,11 +11,11 @@
     .progressbar
       input.hidden(data-slider-id='progress', data-slider-handle="slim", data-slider-min="0", data-slider-max="1", data-slider-step="1", data-slider-enabled="false" data-slider-value="0")
   .controls.pull-right
-    a.btn.btn-default.control.hidden-md.hidden-lg.showmore(title='Show more', data-title='Hide', href='javascript:void(0);')
+    a.btn.btn-default.control.hidden-sm.hidden-md.hidden-lg.showmore(title='Show more', data-title='Hide', href='javascript:void(0);')
       span More
-    a.btn.btn-default.control.hidden-xs.hidden-sm.loop(title='Loop (currently off)', data-title='Loop (currently on)', href='javascript:void(0);')
-    a.btn.btn-default.control.hidden-xs.hidden-sm.shuffle(title='Shuffle (currently off)', data-title='Shuffle (currently on)', href='javascript:void(0);')
-    .dropdown.hidden-xs.hidden-sm
+    a.btn.btn-default.control.hidden-xs.loop(title='Loop (currently off)', data-title='Loop (currently on)', href='javascript:void(0);')
+    a.btn.btn-default.control.hidden-xs.shuffle(title='Shuffle (currently off)', data-title='Shuffle (currently on)', href='javascript:void(0);')
+    .dropdown.hidden-xs
       a.btn.btn-default.control.volume.volume-max(title='Volume', data-toggle='dropdown', href='javascript:void(0);')
       .volume-wrapper.dropdown-menu
         input(data-slider-min='0', data-slider-max='100', data-slider-step='1', data-slider-value='100', data-slider-orientation='vertical', data-slider-handle='slim', data-slider-tooltip='hide')

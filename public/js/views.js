@@ -6,15 +6,15 @@ var postTimeout = {
 
 function showExtendedControls() {
     $("#player .loader").hide();
-    $('#player .controls .showmore').siblings().removeClass('hidden-xs hidden-sm');
-    $('#player .controls .next, #player .controls .prev').removeClass('hidden-xs hidden-sm');
+    $('#player .controls .showmore').siblings().removeClass('hidden-xs');
+    $('#player .controls .next, #player .controls .prev').removeClass('hidden-xs');
     $('#player .controls .showmore span').html('Less');
 }
 
 function hideExtendedControls() {
     $("#player .loader").show();
-    $('#player .controls .showmore').siblings().addClass('hidden-xs hidden-sm');
-    $('#player .controls .next, #player .controls .prev').addClass('hidden-xs hidden-sm');
+    $('#player .controls .showmore').siblings().addClass('hidden-xs');
+    $('#player .controls .next, #player .controls .prev').addClass('hidden-xs');
     $('#player .controls .showmore span').html('More');
 }
 
