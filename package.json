@@ -1,8 +1,14 @@
 {
   "name": "festival",
   "version": "0.1.0",
+  "author": {
+    "name": "Joël Charles"
+  },
   "scripts": {
     "start": "node app.js"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
   },
   "repository": {
     "type": "git",
@@ -14,10 +20,17 @@
     "mongoose": "3.8.*",
     "taglib": "0.8.*",
     "walk": "2.3.*",
-    "connect-jade-client": "0.5.*",
     "mime": "1.2.*",
     "gm": "1.14.*",
     "watchr": "2.4.*",
     "mkdirp": "0.3.*"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-concat": "~0.4.0",
+    "grunt-contrib-uglify": "~0.4.0",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-jade": "~0.11.0"
   }
 }

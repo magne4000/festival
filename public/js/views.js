@@ -104,7 +104,7 @@ function showTracks(artist, album){
         $.get('ajax/list/tracks',{
             filters: JSON.stringify(filter)
         }, function(data){
-            $("#selection").html(Templates.tab.playlist({tracks: data, filters: filter}));
+            $("#selection").html(Templates["views/tab/playlist"]({tracks: data, filters: filter}));
             $(".playlists-tabs .selection a").tab('show');
             showPanel('.wrapper-playlists');
         }, "json")
@@ -128,7 +128,7 @@ function addNowPlaying(artist, album, trackId, callback){
         $.get('ajax/list/tracks',{
             filters: JSON.stringify(filter)
         }, function(data){
-            $("#playing .list-group").append($(Templates.tab.playlist({tracks: data, playing: true, filters: filter})).find(".list-group-item"));
+            $("#playing .list-group").append($(Templates["views/tab/playlist"]({tracks: data, playing: true, filters: filter})).find(".list-group-item"));
             $(".playlists-tabs .playing a").tab('show');
             if (typeof callback === 'function'){
                 callback(data);
@@ -154,7 +154,7 @@ function showNowPlaying(artist, album, trackId, callback){
         $.get('ajax/list/tracks',{
             filters: JSON.stringify(filter)
         }, function(data){
-            $("#playing").html(Templates.tab.playlist({tracks: data, playing: true, filters: filter}));
+            $("#playing").html(Templates["views/tab/playlist"]({tracks: data, playing: true, filters: filter}));
             $(".playlists-tabs .playing a").tab('show');
             showPanel('.wrapper-playlists');
             if (typeof callback === 'function'){
@@ -181,7 +181,7 @@ function showAlbumsByArtist(artist){
         $.get('ajax/list/albumsbyartists',{
             filters: JSON.stringify(filter)
         }, function(data){
-            showAlbums(Templates.tab.albums({artists: data, filters: filter}));
+            showAlbums(Templates["views/tab/albums"]({artists: data, filters: filter}));
         }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);

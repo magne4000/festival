@@ -8,7 +8,7 @@ $(document).ready(function() {
         source: "ajax/search/artists",
         recipient: ".search .list-group",
         delay: 300,
-        render: Templates.tab.search
+        render: Templates["views/tab/search"]
     })
     .on('fastsearchchange', function(){
         showLoadingOverlay(".search .list-group");
