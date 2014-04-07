@@ -52,7 +52,7 @@ module.exports = function(grunt) {
     clean: ['<%= uglify.dist.dest %>', '<%= concat.dist.dest %>'],
     watch: {
       gruntfile: {
-        files: '<%= concat.dist.src %>',
+        files: ["views/*.jade", "views/tab/*.jade", '<%= concat.dist.src %>'],
         tasks: ['jade', 'concat:dist', 'uglify:dist', 'concat:all', 'clean']
       }
     }
