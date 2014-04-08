@@ -1,16 +1,16 @@
 (function($) {
-    var version = "1.0",
+    var version = "1.1",
         methods = {
         init : function(options) {
             $.store.data = {};
+            $.store.localstorage = Modernizr.localstorage;
             if (version === $.store('get', 'version', true)){
-                /* not for the moment while in dev
                 $.store('get', 'tracks', true);
                 $.store('get', 'head', true);
                 $.store('get', 'tail', true);
                 $.store('get', 'volume', true);
                 $.store('get', 'shuffle', true);
-                $.store('get', 'loop', true);*/
+                $.store('get', 'loop', true);
             }else{
                 $.store('empty');
                 $.store('set', 'version', version);
@@ -46,7 +46,15 @@
         },
         get: function(name, persist){
             if (!!persist){
-                $.store.data[name] = JSON.parse($.store("_readCookie", name));
+                var val = null;
+                if ($.store.localstorage) {
+                    val = localStorage[name];
+                } else { //cookie fallback
+                    $.store("_readCookie", name)
+                }
+                if (typeof val !== 'undefined' && val !== null) {
+                    $.store.data[name] = JSON.parse(val);
+                }
             }
             return $.store.data[name];
         },
@@ -57,9 +65,19 @@
         persist: function(){
             for (var name in $.store.data){
                 if ($.store.data[name] === null){
-                    $.store("_deleteCookie", name);
+                    if ($.store.localstorage) {
+                        if (typeof localStorage[name] !== 'undefined') {
+                            delete localStorage[name];
+                        }
+                    }else{
+                        $.store("_deleteCookie", name);
+                    }
                 }else{
-                    $.store("_createCookie", name, JSON.stringify($.store.data[name]));
+                    if ($.store.localstorage) {
+                        localStorage[name] = JSON.stringify($.store.data[name]);
+                    }else{
+                        $.store("_createCookie", name, JSON.stringify($.store.data[name]));
+                    }
                 }
             }
             return this;
