@@ -27,6 +27,14 @@ main {
     height:100%;
 }
 
+.tooltip {
+    display: none;
+}
+
+.tooltip.in {
+    display: block;
+}
+
 .fill {
     padding: 0 15px;
 }

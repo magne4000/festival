@@ -205,4 +205,7 @@ $(document).ready(function() {
     $(document).on('keydown', null, 'space', function() {
         $('#player').player('togglePlayPause');
     });
+    
+    /* Show previously saved playlist */
+    showNowPlayingData($.store('get', 'tracks'));
 });

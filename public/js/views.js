@@ -141,6 +141,12 @@ function addNowPlaying(artist, album, trackId, callback){
     }, 200);
 }
 
+function showNowPlayingData(data, playing){
+    $("#playing").html(Templates["views/tab/playlist"]({tracks: data, playing: !!playing}));
+    $(".playlists-tabs .playing a").tab('show');
+    showPanel('.wrapper-playlists');
+}
+
 function showNowPlaying(artist, album, trackId, callback){
     var filter = {artist: ""+artist};
     if (album) {
@@ -154,9 +160,7 @@ function showNowPlaying(artist, album, trackId, callback){
         $.get('ajax/list/tracks',{
             filters: JSON.stringify(filter)
         }, function(data){
-            $("#playing").html(Templates["views/tab/playlist"]({tracks: data, playing: true, filters: filter}));
-            $(".playlists-tabs .playing a").tab('show');
-            showPanel('.wrapper-playlists');
+            showNowPlayingData(data, true);
             if (typeof callback === 'function'){
                  callback(data);
             }
