@@ -18,7 +18,7 @@ First of all, add mongodb and nodejs repositories to apt (more recent than defau
 
 Then install nodejs, mongodb, taglib and graphicsmagick
 
-    sudo apt-get install nodejs mongodb-10gen libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick
+    sudo apt-get install nodejs mongodb-10gen libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick git build-essential
 
 Taglib installation (other systems)
 -----------------------------------
