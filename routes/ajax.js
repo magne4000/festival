@@ -2,6 +2,11 @@ var mongoose = require('mongoose'),
     path = require('path'),
     thumbs = require('../lib/thumbs');
 
+//https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+function escapeRegExp(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
 /**
  * Send HTML artist list
  */
@@ -9,6 +14,7 @@ exports.searchartists = function(req, res) {
     var term = req.body.term?req.body.term:null,
         render = req.query.render?req.query.render:null;
     if (term !== null && term !== '') {
+        term = escapeRegExp(term);
         req.query.filters = JSON.stringify({artist : {$regex: '.*'+term+'.*', $options: 'i'}});
     }
     exports.listartists(req, res, function(list){
