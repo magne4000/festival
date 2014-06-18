@@ -14,7 +14,6 @@ exports.index = function(req, res){
             fs.exists(track.path, function(exists){
                 var relativepath = path.relative(settings.scanner.path, track.path);
                 if (exists && relativepath.indexOf('..') !== 0){
-                    console.log(track.path)
                     res.sendfile(relativepath, {root: settings.scanner.path});
                 }else{ 
                     console.warn('Path "'+track.path+'" invalid for track '+id);
