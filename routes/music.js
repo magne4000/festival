@@ -1,13 +1,14 @@
-var mongoose = require('mongoose'),
-    db = mongoose.connection,
-    fs = require('fs'),
+var fs = require('fs'),
     path = require('path'),
     settings = require('../settings');
 
-exports.index = function(req, res){
-    var id = req.params.id,
-        Track = mongoose.model('track');
-    Track.findOne({ _id : id }, function (err, track) {
+var music = function(db) {
+    this.db = db;
+};
+
+music.prototype.index = function(req, res){
+    var id = req.params.id;
+    this.db.track.findOne({ _id : id }, function (err, track) {
         if (err) {
             console.error(err);
         } else if (track) {
@@ -24,4 +25,8 @@ exports.index = function(req, res){
             res.send(404);
         }
     });
+};
+
+module.exports = function(db) {
+    return new music(db);
 };

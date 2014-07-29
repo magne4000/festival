@@ -34,8 +34,7 @@
              * A track object is defined like this example:
              * track = {
              *      "_id": "52f24b6b89e9eb1e4aed8c1c",
-             *      "id": "52f24b6b89e9eb1e4aed8c1c",
-             *      "uniqid": "t_532028e157259",
+             *      "uniqid": "532028e157259",
              *      "bitrate": 320,
              *      "duration": 86,
              *      "frequency": 44100,
@@ -65,7 +64,7 @@
                     data.uniqidsToBePlayed.push(tracklist[ind].uniqid);
                     $this.trigger('playeradd', tracklist[ind]);
                     $.store('add', tracklist[ind]);
-                    if (idToPlay === tracklist[ind].id) {
+                    if (idToPlay === tracklist[ind]._id) {
                         $this.player('load', tracklist[ind].uniqid, autoPlay);
                     } else if (trackslen === 0 && !data.shuffle) {
                         // First track, load it (if not in shuffle mode)

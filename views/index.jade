@@ -7,23 +7,25 @@ html(lang='fr')
     link(rel='stylesheet', type='text/css', href='stylesheets/bootstrap.min.css')
     link(rel='stylesheet', type='text/css', href='stylesheets/bootstrap-slider.css')
     link(rel='stylesheet', type='text/css', href='stylesheets/style.css')
-    script(type='text/javascript', src='js/festival.min.js')
-    //script(type='text/javascript', src='js/modernizr.min.js')
-    //script(type='text/javascript', src='js/jquery.min.js')
-    //script(type='text/javascript', src='js/jquery.hammer-full.min.js')
-    //script(type='text/javascript', src='js/bootstrap.min.js')
-    //script(type='text/javascript', src='js/bootstrap-slider.js')
-    //script(type='text/javascript', src='js/jquery.hotkeys.js')
-    //script(type='text/javascript', src='js/templates.js')
-    //script(type='text/javascript', src='js/utils.js')
-    //script(type='text/javascript', src='js/jquery.store.js')
-    //script(type='text/javascript', src='js/jquery.player.js')
-    //script(type='text/javascript', src='js/jquery.fastsearch.js')
-    //script(type='text/javascript', src='js/views.js')
-    //script(type='text/javascript', src='js/init.js')
     if debug
+      script(type='text/javascript', src='js/modernizr.min.js')
+      script(type='text/javascript', src='js/jquery.min.js')
+      script(type='text/javascript', src='js/jquery.hammer-full.min.js')
+      script(type='text/javascript', src='js/bootstrap.min.js')
+      script(type='text/javascript', src='js/bootstrap-slider.js')
+      script(type='text/javascript', src='js/jquery.hotkeys.js')
+      script(type='text/javascript', src='js/templates.js')
+      script(type='text/javascript', src='js/utils.js')
+      script(type='text/javascript', src='js/jquery.store.js')
+      script(type='text/javascript', src='js/jquery.player.js')
+      script(type='text/javascript', src='js/jquery.fastsearch.js')
+      script(type='text/javascript', src='js/runtime.js')
+      script(type='text/javascript', src='js/views.js')
+      script(type='text/javascript', src='js/ajax.js')
+      script(type='text/javascript', src='js/init.js')
       script(type='text/javascript', src='js/soundmanager2-jsmin.js')
     else
+      script(type='text/javascript', src='js/festival.min.js')
       script(type='text/javascript', src='js/soundmanager2-nodebug-jsmin.js')
     script(type='text/javascript').
       soundManager.setup({
@@ -33,7 +35,6 @@ html(lang='fr')
         useHTML5Audio: #{soundmanager.useHTML5Audio},
         preferFlash: #{soundmanager.preferFlash}
       });
-    script(type='text/javascript', src='js/ajax.js')
     //TODO plugins
     
     title #{title}

@@ -4,13 +4,16 @@ var fs = require('fs'),
     walk = require('walk'),
     taglib = require('taglib'),
     path = require('path'),
-    mongoose = require('mongoose'),
     watchr = require('watchr'),
-    scanTimeout = null,
-    progressTimeout = null,
-    scanInProgess = false,
-    rescanAfter = false,
+    mime = require('mime'),
     t = 10000;
+
+var Scanner = function(db) {
+    this.db = db;
+    this.progressTimeout = null;
+    this.scanInProgess = false;
+    this.rescanAfter = false;
+};
 
 /**
  * Add or update track to database
@@ -19,12 +22,11 @@ var fs = require('fs'),
  * @param tag
  * @param audioProperties
  */
-function merge(filepath, mtime, tag, audioProperties){
-    var Track = mongoose.model('track');
+Scanner.prototype.merge = function(filepath, mtime, tag, audioProperties){
     var track = {
         path: filepath,
         last_updated: mtime
-    };
+    }, self = this;
     if (tag === null){
         console.log(filepath + ' : tag is null');
     } else {
@@ -42,9 +44,10 @@ function merge(filepath, mtime, tag, audioProperties){
         track.bitrate = audioProperties.bitrate;
         track.frequency = audioProperties.sampleRate;
     }
-    Track.update({ path: filepath }, track, {upsert: true}, function(err, a, b){
+    track.mime = mime.lookup(track.path);
+    this.db.track.update({ path: filepath }, track, {upsert: true}, function(err, a, b){
         console.log(filepath + ' : updated');
-        clearProgressTimeout();
+        self.clearProgressTimeout();
     });
 }
 
@@ -52,34 +55,32 @@ function merge(filepath, mtime, tag, audioProperties){
  * Delete files that are not on the filesystem anymore
  * @param files
  */
-function cleanold(files, albumarts){
-    var Track = mongoose.model('track'),
-        Albumart = mongoose.model('albumart'),
-        albumartsToDelete = [],
+Scanner.prototype.cleanold = function(files, albumarts){
+    var albumartsToDelete = [],
         filesToDelete = [];
     
     // Clean old tracks
     Object.keys(files).forEach(function(element) {
         filesToDelete.push(element);
     });
-    Track.remove({path: {$in: filesToDelete}}).exec();
+    this.db.track.remove({path: {$in: filesToDelete}});
     
     // Clean old covers
     Object.keys(albumarts).forEach(function(element) {
         albumartsToDelete.push(element);
         thumbs.remove(element);
     });
-    Albumart.remove({path: {$in: albumartsToDelete}}).exec();
+    this.db.albumart.remove({path: {$in: albumartsToDelete}});
     
-    clearProgressTimeout();
+    this.clearProgressTimeout();
 }
 
 /**
  * Update the scanInProgess boolean
  */
-function clearProgressTimeout(){
-    clearTimeout(progressTimeout);
-    progressTimeout = setTimeout(function(){
+Scanner.prototype.clearProgressTimeout = function(){
+    clearTimeout(this.progressTimeout);
+    this.progressTimeout = setTimeout(function(){
         scanInProgess = false;
     }, t);
 }
@@ -87,7 +88,7 @@ function clearProgressTimeout(){
 /**
  *  Test if filepath's extension is in exts.
  */
-function isTypeFile(filepath, exts){
+Scanner.prototype.isTypeFile = function(filepath, exts){
     var fileext = path.extname(filepath);
     for (var key in exts){
         if (exts[key].trim().toLowerCase() === fileext){
@@ -101,33 +102,32 @@ function isTypeFile(filepath, exts){
  * Test if filepath is a music file.
  * Based on extensions from settings.js file
  */
-function isMusicFile(filepath){
+Scanner.prototype.isMusicFile = function(filepath){
     var exts = settings.scanner.musicExts.split(',');
-    return isTypeFile(filepath, exts);
+    return this.isTypeFile(filepath, exts);
 }
 
 /**
  * Test if filepath is a cover file.
  */
-function isCoverFile(filepath){
+Scanner.prototype.isCoverFile = function(filepath){
     var exts = settings.scanner.coverExts.split(',');
-    return isTypeFile(filepath, exts);
+    return this.isTypeFile(filepath, exts);
 }
 
 /**
  * Walk through folder defined in settings.json in order
  * to retrieve music files
  */
-var scan = function(){
-    var Track = mongoose.model('track'),
-        Albumart = mongoose.model('albumart');
-    if (!scanInProgess){
-        scanInProgess = true;
+Scanner.prototype.scan = function(){
+    var self = this;
+    if (!this.scanInProgess){
+        this.scanInProgess = true;
         console.log('Scan started.');
-        Track.find(
+        self.db.track.find(
             {},
-            "path last_updated",
             function(err, docs) {
+                if (err) console.log(err);
                 var files = {}, albumarts = {};
                 for (var i in docs) {
                     if (docs.hasOwnProperty(i)) {
@@ -135,10 +135,10 @@ var scan = function(){
                     }
                 }
                 
-                Albumart.find(
+                self.db.albumart.find(
                     {},
-                    "path dir",
                     function(err2, docs2) {
+                        if (err) console.log(err);
                         for (var i in docs2) {
                             if (docs2.hasOwnProperty(i)) {
                                 albumarts[docs2[i].path] = docs2[i].dir;
@@ -147,34 +147,28 @@ var scan = function(){
                         var walker = walk.walk(settings.scanner.path);
                         walker.on("file", function(root, fileStats, next) {
                             var filepath = path.join(root, fileStats.name);
-                            if (isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
+                            if (self.isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
                                 if (settings.scanner.debug) {
                                     console.log('Reading tags : ' + filepath);
                                 }
                                 delete files[filepath];
                                 taglib.read(filepath, function(err, tag, audioProperties){
-                                    merge(filepath, fileStats.mtime, tag, audioProperties);
+                                    self.merge(filepath, fileStats.mtime, tag, audioProperties);
                                     next();
                                 });
-                            }else if(isCoverFile(filepath)){
+                            }else if(self.isCoverFile(filepath)){
                                 if (albumarts[filepath]){
                                     delete albumarts[filepath];
                                 }else{
-                                    var oalbum = new Albumart({path: filepath, dir: root});
-                                    oalbum.save(function (err) {
+                                    var oalbum = {path: filepath, dir: root};
+                                    self.db.albumart.insert(oalbum, function (err, newDoc) {
                                         if (err){
                                             console.log(err);
                                         } else {
-                                            Albumart.findById(oalbum, function (err, doc) {
-                                                if (err) {
-                                                    console.log(err);
-                                                } else {
-                                                    thumbs.create(filepath, doc._id);
-                                                    if (settings.scanner.debug) {
-                                                        console.log('album art saved : ' + filepath);
-                                                    }
-                                                }
-                                            });
+                                            thumbs.create(filepath, newDoc._id);
+                                            if (settings.scanner.debug) {
+                                                console.log('album art saved : ' + filepath);
+                                            }
                                         }
                                     });
                                 }
@@ -189,11 +183,13 @@ var scan = function(){
                             if (settings.scanner.debug) {
                                 console.log('cleanold', files, albumarts);
                             }
-                            cleanold(files, albumarts);
-                            scanInProgess = false;
+                            self.cleanold(files, albumarts);
+                            self.db.track.persistence.compactDatafile();
+                            self.db.albumart.persistence.compactDatafile();
+                            self.scanInProgess = false;
                             console.log('Update finished.');
-                            if (rescanAfter) {
-                                rescanAfter = false;
+                            if (self.rescanAfter) {
+                                self.rescanAfter = false;
                                 exports.scan();
                             }
                         });
@@ -202,23 +198,31 @@ var scan = function(){
             }
         );
     } else {
-        rescanAfter = true;
+        self.rescanAfter = true;
     }
+};
+
+var Watcher = function(db) {
+    this.scanner = new Scanner(db);
+    this.scanTimeout = null;
 };
 
 /**
  * Launch scan after t milliseconds
  */
-exports.scan = function(){
-    clearTimeout(scanTimeout);
-    scanTimeout = setTimeout(scan, t);
+Watcher.prototype.scan = function(){
+    var self = this;
+    clearTimeout(this.scanTimeout);
+    this.scanTimeout = setTimeout(function() {
+        self.scanner.scan();
+    }, t);
 };
 
 /**
  * Watch folder defined in settings.json and then call scan()
  * if an event is triggered
  */
-exports.watch = function(){
+Watcher.prototype.watch = function(){
     watchr.watch({
         path: settings.scanner.path,
         ignoreHiddenFiles: true,
@@ -234,4 +238,8 @@ exports.watch = function(){
             }
         }
     });
+};
+
+module.exports = function(db) {
+    return new Watcher(db);
 };

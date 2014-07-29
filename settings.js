@@ -1,12 +1,16 @@
 module.exports = {
-    mongodb: {
-        url: 'mongodb://localhost/festival'
+    nedb: {
+        dir: 'data/db/',
+        dbs: {
+            track: 'track',
+            albumart: 'albumart'
+        }
     },
     express: {
-        port: 3000
+        port: 3001
     },
     scanner: {
-        path: '/share/FTP/Musique',
+        path: '/mnt/data/musique',
         musicExts: '.mp3,.ogg',
         coverExts: '.png,.jpg,.jpeg,.gif'
     },

@@ -9,16 +9,15 @@ The app relies on a MongoDB database.
 
 Dependencies (ubuntu)
 ---------------------
-First of all, add mongodb and nodejs repositories to apt (more recent than default ones)
+First of all, add nodejs repositories to apt (more recent than default ones)
 
     sudo add-apt-repository ppa:chris-lea/node.js
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-    echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
     sudo apt-get update
 
-Then install nodejs, mongodb, taglib and graphicsmagick
+Then install nodejs, taglib and graphicsmagick
 
-    sudo apt-get install nodejs mongodb-org libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick git build-essential
+    sudo apt-get install nodejs libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick git build-essential
 
 Taglib installation (other systems)
 -----------------------------------

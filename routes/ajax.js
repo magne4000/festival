@@ -1,5 +1,5 @@
-var mongoose = require('mongoose'),
-    path = require('path'),
+var path = require('path'),
+    uniqid = require('../lib/uniqid')
     thumbs = require('../lib/thumbs');
 
 //https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
@@ -7,17 +7,29 @@ function escapeRegExp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
+function cleanJsonTrack(track) {
+    delete track.path;
+    track.url = '/music/' + track._id;
+    track.uniqid = uniqid();
+    return track;
+}
+
+
+var ajax = function(db) {
+    this.db = db;
+};
+
 /**
  * Send HTML artist list
  */
-exports.searchartists = function(req, res) {
+ajax.prototype.searchartists = function(req, res) {
     var term = req.body.term?req.body.term:null,
         render = req.query.render?req.query.render:null;
     if (term !== null && term !== '') {
         term = escapeRegExp(term);
-        req.query.filters = JSON.stringify({artist : {$regex: '.*'+term+'.*', $options: 'i'}});
+        req.query.filters = {artist : {$regex: new RegExp('.*'+term+'.*', 'i')}};
     }
-    exports.listartists(req, res, function(list){
+    this.listartists(req, res, function(list){
         res.json({
             artists: list
         });
@@ -27,12 +39,11 @@ exports.searchartists = function(req, res) {
 /**
  * JSON list of tracks
  */
-exports.listtracks = function(req, res){
+ajax.prototype.listtracks = function(req, res){
     var filters = req.query.filters?JSON.parse(req.query.filters):{},
         render = req.query.render?req.query.render:null,
-        playing = req.query.playing?req.query.playing:false,
-        Track = mongoose.model('track');
-    var query = Track.find(filters);
+        playing = req.query.playing?req.query.playing:false;
+    var query = this.db.track.find(filters);
     query.exec(function (err, docs) {
         if (render){
             res.render("tab/playlist", {
@@ -41,6 +52,7 @@ exports.listtracks = function(req, res){
                 playing: playing
             });
         } else {
+            docs.forEach(cleanJsonTrack);
             res.json(docs);
         }
     });
@@ -57,33 +69,36 @@ exports.listtracks = function(req, res){
  *     ]
  *   }, ...]
  */
-exports.listalbumsbyartists = function(req, res){
+ajax.prototype.listalbumsbyartists = function(req, res){
     var filters = req.query.filters?JSON.parse(req.query.filters):{},
         render = req.query.render?req.query.render:null,
-        Track = mongoose.model('track'),
-        Albumart = mongoose.model('albumart'),
         albumsByArtists = [],
-        lastArtist = null;
+        lastArtist = null,
+        self = this;
     
     // Fetch covers info
-    Albumart.find({}).exec(function(err2, docs2) {
+    this.db.albumart.find({}).exec(function(err2, docs2) {
         var covers = {};
         for (var i=0; i<docs2.length; i++){
             covers[docs2[i].dir] = docs2[i]._id;
         }
-        
+
         // Fetch tracks info
-        Track.aggregate(
-        {$match: filters},
-        {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}, first_path: {$first: '$path'}}},
-        {$sort: {artist: 1, album: 1}},
-        {$project: {_id: 0, artist: 1, year: 1, first_path: 1, album: '$_id.album'}},
-        function(err, docs) {
+        self.db.track.find(filters).group({
+            key: {artist: 1, album: 1},
+            reduce: function(curr, result) {
+                // Get one of the path in order to get the folder
+                // path afterwards
+                result.path = curr.path;
+                return result;
+            },
+            initial: {}
+        }).sort({artist: 1, album: 1}).exec(function(err, docs) {
             if (err){
                 console.error(err);
             }else{
                 for (var i=0; i<docs.length; i++){
-                    var albumdir = path.dirname(docs[i].first_path),
+                    var albumdir = path.dirname(docs[i].path),
                         album = {name: docs[i].album},
                         artist = docs[i].artist;
                     if (covers[albumdir]){
@@ -118,15 +133,13 @@ exports.listalbumsbyartists = function(req, res){
 /**
  * JSON list of albums
  */
-exports.listalbums = function(req, res){
-    var filters = req.query.filters?JSON.parse(req.query.filters):{},
-        Track = mongoose.model('track');
-    Track.aggregate(
-    {$match: filters},
-    {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}}},
-    {$sort: {artist: 1, album: 1}},
-    {$project: {_id: 0, artist: 1, year: 1, album: '$_id.album'}},
-    function(err, docs) {
+ajax.prototype.listalbums = function(req, res){
+    var filters = req.query.filters?JSON.parse(req.query.filters):{};
+    this.db.track.find(filters).group({
+        key: {artist: 1, album: 1},
+        reduce: function(curr, result) {},
+        initial: {}
+    }).sort({artist: 1, album: 1}).exec(function(err, docs) {
         if (err){
             console.error(err);
         }else{
@@ -138,15 +151,16 @@ exports.listalbums = function(req, res){
 /**
  * JSON list of artists
  */
-exports.listartists = function(req, res, callback){
-    var filters = req.query.filters?JSON.parse(req.query.filters):{},
-        Track = mongoose.model('track');
-    Track.aggregate(
-    {$match: filters},
-    {$group: {_id: {artist: '$artist'}}},
-    {$project: {_id: 0, artist: '$_id.artist'}},
-    {$sort: {artist: 1}},
-    function(err, docs) {
+ajax.prototype.listartists = function(req, res, callback){
+    var filters = req.query.filters?req.query.filters:{};
+    if (typeof callback !== 'function'){
+        filters = JSON.parse(filters);
+    }
+    this.db.track.find(filters).group({
+        key: {artist: 1},
+        reduce: function(curr, result) {},
+        initial: {}
+    }).sort({artist: 1}).exec(function(err, docs) {
         if (err){
             console.error(err);
         }else{
@@ -159,12 +173,10 @@ exports.listartists = function(req, res, callback){
     });
 };
 
-exports.fileinfo = function(req, res){
-    var ids = req.query.ids?JSON.parse(req.query.ids):null,
-        Track = mongoose.model('track');
-    console.log(ids);
+ajax.prototype.fileinfo = function(req, res){
+    var ids = req.query.ids?JSON.parse(req.query.ids):null;
     if (ids !== null){
-        Track.find({ _id : {$in: ids.ids}}, function (err, tracks) {
+        this.db.track.find({ _id : {$in: ids.ids}}, function (err, tracks) {
             if (err) {
                 console.error(err);
             } else if (tracks) {
@@ -178,7 +190,7 @@ exports.fileinfo = function(req, res){
     }
 };
 
-exports.albumart = function(req, res){
+ajax.prototype.albumart = function(req, res){
     var id = req.query.id?req.query.id:null,
         thumbpath = thumbs.path(id);
     if (thumbpath !== null) {
@@ -188,11 +200,10 @@ exports.albumart = function(req, res){
     }
 };
 
-exports.hasalbumart = function(req, res){
-    var album = req.query.album?JSON.parse(req.query.album):null,
-        Track = mongoose.model('track'),
-        Albumart = mongoose.model('albumart');
-    var query = Track.findOne({$and: [{album: album.album}, {artist: album.artist}]});
+ajax.prototype.hasalbumart = function(req, res){
+    var album = req.query.album?JSON.parse(req.query.album):null;
+    var query = this.db.track.findOne({$and: [{album: album.album}, {artist: album.artist}]});
+    var self = this;
     query.exec(function (err, doc) {
         if (err){
             console.error(err);
@@ -200,7 +211,7 @@ exports.hasalbumart = function(req, res){
         }else{
             if (doc){
                 var albumdir = path.dirname(doc.path);
-                Albumart.findOne({dir: albumdir}).exec(function(err2, cover) {
+                this.db.albumart.findOne({dir: albumdir}).exec(function(err2, cover) {
                     if (err2 || !cover) {
                         if (err2) console.log(err2);
                         res.send(false);
@@ -213,4 +224,8 @@ exports.hasalbumart = function(req, res){
             }
         }
     });
+};
+
+module.exports = function(db) {
+    return new ajax(db);
 };

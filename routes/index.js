@@ -1,11 +1,14 @@
 /*
  * GET home page.
  */
-var settings = require('../settings'),
-    ajax = require('./ajax');
+var settings = require('../settings');
 
-exports.index = function(req, res) {
-    ajax.listartists(req, res, function(docs){
+var index = function(db) {
+    this.ajax = require('./ajax')(db);
+};
+
+index.prototype.index = function(req, res) {
+    this.ajax.listartists(req, res, function(docs){
         res.render('index', {
             title : 'Festival',
             soundmanager: settings.soundmanager,
@@ -13,4 +16,8 @@ exports.index = function(req, res) {
             artists: docs
         });
     });
+};
+
+module.exports = function(db) {
+    return new index(db);
 };

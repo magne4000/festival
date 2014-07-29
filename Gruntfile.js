@@ -20,7 +20,8 @@ module.exports = function(grunt) {
         src: ['public/js/bootstrap-slider.js', 'public/js/jquery.hotkeys.js',
 		'node_modules/jade/runtime.js', 'public/js/templates.js', 'public/js/utils.js',
 		'public/js/jquery.store.js', 'public/js/jquery.player.js',
-		'public/js/jquery.fastsearch.js', 'public/js/views.js','public/js/init.js'],
+		'public/js/jquery.fastsearch.js', 'public/js/views.js', 'public/js/ajax.js',
+                'public/js/init.js'],
         dest: 'public/js/temp.js'
       },
       all: {
