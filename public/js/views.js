@@ -19,14 +19,26 @@ function hideExtendedControls() {
 }
 
 function hideLoadingOverlay(applyOn) {
-    $(applyOn).find('.overlay').remove();
+    var ov = $(applyOn).find('.overlay');
+    if (ov.data('overlays') <= 1) {
+        ov.remove();
+    } else {
+        var nb = ov.data('overlays');
+        ov.data('overlays', nb-1);
+    }
 }
 
 function showLoadingOverlay(applyOn) {
-    var overlayHtml = "<div class='overlay'><div class='spinner'>"+
-        "<div class='rect1'></div><div class='rect2'></div><div class='rect3'>"+
-        "</div><div class='rect4'></div><div class='rect5'></div></div></div>";
-    $(overlayHtml).appendTo($(applyOn));
+    var ov = $(applyOn).find('.overlay');
+    if (ov.length === 0) {
+        var overlayHtml = "<div class='overlay'><div class='spinner'>"+
+            "<div class='rect1'></div><div class='rect2'></div><div class='rect3'>"+
+            "</div><div class='rect4'></div><div class='rect5'></div></div></div>";
+        $(overlayHtml).data('overlays', 1).appendTo($(applyOn));
+    } else {
+        var nb = ov.data('overlays');
+        ov.data('overlays', nb+1);
+    }
 }
 
 function hideVolume(){
