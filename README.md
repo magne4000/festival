@@ -46,6 +46,10 @@ Update
     git pull
     npm update
 
+and optionally
+
+    rm -fr data/*
+
 Configuration
 -------------
 In order to configure the app, you need to customize settings.js file.

@@ -78,9 +78,27 @@ ajax.prototype.listalbumsbyartists = function(req, res){
     
     // Fetch covers info
     this.db.albumart.find({}).exec(function(err2, docs2) {
-        var covers = {};
+        var covers = [];
         for (var i=0; i<docs2.length; i++){
-            covers[docs2[i].dir] = docs2[i]._id;
+            if (docs2[i].path !== null) {
+                var artist = docs2[i].artist.trim().toLowerCase();
+                var album = docs2[i].album.trim().toLowerCase();
+                if (typeof covers[artist] == 'undefined') {
+                    covers[artist] = [];
+                }
+                covers[artist].push(album);
+            }
+        }
+
+        function coverexists(artist, album) {
+            artist = artist.trim().toLowerCase();
+            album = album.trim().toLowerCase();
+            if (typeof covers[artist] != 'undefined'){
+                if (covers[artist].indexOf(album) !== -1) {
+                    return true
+                }
+            }
+            return false;
         }
 
         // Fetch tracks info
@@ -101,8 +119,8 @@ ajax.prototype.listalbumsbyartists = function(req, res){
                     var albumdir = path.dirname(docs[i].path),
                         album = {name: docs[i].album},
                         artist = docs[i].artist;
-                    if (covers[albumdir]){
-                        album.albumart = '/ajax/albumart/?id=' + covers[albumdir];
+                    if (coverexists(docs[i].artist, docs[i].album)){
+                        album.albumart = '/ajax/albumart/?album=' + encodeURIComponent(docs[i].album) + '&artist=' + encodeURIComponent(docs[i].artist);
                     }else{
                         // Default cover when none found
                         album.albumart = '/images/nocover.png';
@@ -191,36 +209,18 @@ ajax.prototype.fileinfo = function(req, res){
 };
 
 ajax.prototype.albumart = function(req, res){
-    var id = req.query.id?req.query.id:null,
-        thumbpath = thumbs.path(id);
-    if (thumbpath !== null) {
-        res.sendfile(thumbpath);
-    } else {
-        res.send(404);
-    }
-};
-
-ajax.prototype.hasalbumart = function(req, res){
-    var album = req.query.album?JSON.parse(req.query.album):null;
-    var query = this.db.track.findOne({$and: [{album: album.album}, {artist: album.artist}]});
-    var self = this;
+    var album = req.query.album.trim().toLowerCase();
+    var artist = req.query.artist.trim().toLowerCase();
+    var query = this.db.albumart.findOne({album: album, artist: artist});
     query.exec(function (err, doc) {
-        if (err){
+        if (err) {
             console.error(err);
-            res.send(false);
-        }else{
-            if (doc){
-                var albumdir = path.dirname(doc.path);
-                this.db.albumart.findOne({dir: albumdir}).exec(function(err2, cover) {
-                    if (err2 || !cover) {
-                        if (err2) console.log(err2);
-                        res.send(false);
-                    } else {
-                        res.send(cover._id);
-                    }
-                });
-            }else{
-                res.send(false);
+            res.send(404);
+        } else {
+            if (doc && doc.path !== null) {
+                res.sendFile(doc.path);
+            } else {
+                res.send(404);
             }
         }
     });

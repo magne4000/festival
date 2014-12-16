@@ -53,7 +53,6 @@ app.get('/ajax/list/artists', ajax.listartists.bind(ajax));
 app.get('/ajax/list/albumsbyartists', ajax.listalbumsbyartists.bind(ajax));
 app.get('/ajax/fileinfo', ajax.fileinfo.bind(ajax));
 app.get('/ajax/albumart', ajax.albumart.bind(ajax));
-app.get('/ajax/hasalbumart', ajax.hasalbumart.bind(ajax));
 
 //Watcher
 scanner.watch();

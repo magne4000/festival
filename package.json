@@ -1,6 +1,6 @@
 {
   "name": "festival",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "Joël Charles"
   },
@@ -24,9 +24,12 @@
     "mime": "^1.2.11",
     "mkdirp": "^0.5.0",
     "morgan": "^1.2.2",
-    "nedb": "https://github.com/adityamukho/nedb/tarball/v0.10.5g-1",
+    "nedb": "https://github.com/adityamukho/nedb/tarball/v0.11.1g",
+    "node-uuid": "^1.4.2",
+    "rimraf": "^2.2.8",
     "serve-static": "^1.4.2",
     "taglib": "^0.8.0",
+    "temp": "^0.8.1",
     "walk": "^2.3.3",
     "watchr": "^2.4.11"
   },
