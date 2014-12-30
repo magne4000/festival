@@ -256,7 +256,7 @@ Scanner.prototype.scan = function(){
                     console.log('Update finished.');
                     if (self.rescanAfter) {
                         self.rescanAfter = false;
-                        exports.scan();
+                        self.scan();
                     }
                 });
             }
@@ -278,6 +278,7 @@ Watcher.prototype.scan = function(){
     var self = this;
     clearTimeout(this.scanTimeout);
     this.scanTimeout = setTimeout(function() {
+        temp.cleanupSync();
         self.scanner.scan();
     }, t);
 };
@@ -287,6 +288,7 @@ Watcher.prototype.scan = function(){
  * if an event is triggered
  */
 Watcher.prototype.watch = function(){
+    var self = this;
     watchr.watch({
         path: settings.scanner.path,
         ignoreHiddenFiles: true,
@@ -298,8 +300,7 @@ Watcher.prototype.watch = function(){
                 if (settings.scanner.debug) {
                     console.log('a change event occured: ', arguments);
                 }
-                temp.cleanupSync();
-                exports.scan();
+                self.scan();
             }
         }
     });
