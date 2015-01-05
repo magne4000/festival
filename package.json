@@ -31,7 +31,8 @@
     "taglib": "^0.8.0",
     "temp": "^0.8.1",
     "walk": "^2.3.3",
-    "watchr": "^2.4.11"
+    "watchr": "^2.4.11",
+    "xmldom": "^0.1.19"
   },
   "devDependencies": {
     "grunt": "~0.4.2",

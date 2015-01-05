@@ -19,6 +19,7 @@ var express = require('express'),
     ajax = require('./routes/ajax')(db),
     music = require('./routes/music')(db),
     scanner = require('./scanner')(db),
+    subsonicapi = require('./routes/api/subsonic')(db),
     fs = require('fs');
 
 // nedb indexes
@@ -53,6 +54,7 @@ app.get('/ajax/list/artists', ajax.listartists.bind(ajax));
 app.get('/ajax/list/albumsbyartists', ajax.listalbumsbyartists.bind(ajax));
 app.get('/ajax/fileinfo', ajax.fileinfo.bind(ajax));
 app.get('/ajax/albumart', ajax.albumart.bind(ajax));
+app.use('/rest', subsonicapi.router());
 
 //Watcher
 scanner.watch();
