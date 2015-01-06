@@ -18,6 +18,10 @@ function SubsonicJson() {
     var AMPACHEID_SMARTPL = 400000000;
     var AMPACHEID_VIDEO = 500000000;
 
+    this.set = function(jsobj, key, value) {
+        jsobj['subsonic-response'][key] = value;
+    };
+
     this.createFailedResponse = function(version) {
         var response = this.createResponse(version);
         response['subsobic-response'].status = 'failed';
@@ -46,6 +50,78 @@ function SubsonicJson() {
         var response = this.createFailedResponse(version);
         this.setError(response, code, message);
         return response;
+    }
+
+    this.getLicense = function() {
+        var response = this.createSuccessResponse();
+        this.setLicense(response); 
+        return response;
+    }
+
+    this.setLicense = function(jsobj) {
+        this.set(jsobj, 'license', {
+            valid: true,
+            email: "webmaster@festival",
+            key: "ABC123DEF",
+            date: "2015-01-01T00:00:00"
+        });
+    }
+
+    this.getMusicFolders = function() {
+        var response = this.createSuccessResponse();
+        this.setMusicFolders(response); 
+        return response;
+    }
+
+    this.setMusicFolders = function(jsobj) {
+        this.set(jsobj, 'musicFolders', {
+            musicFolder: [{
+                id: 1,
+                name: 'Music'
+            }]
+        });
+    }
+
+    this.getIndexes = function(artists) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'indexes', {
+            lastModified: Date.now(),
+        })
+        this.addArtists(response['subsonic-response'].indexes, artists); 
+        return response;
+    }
+
+    this.addArtists = function(jsobj, artists) {
+        var indices = ['#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X-Z'];
+        if (!jsobj['index']) {
+            jsobj.index = [];
+            for (var ind in indices) {
+                jsobj.index.push({
+                    name: indices[ind],
+                    artist: []
+                });
+            }
+        }
+        for (var artistVal in artists) {
+            var artist = artists[artistVal];
+            if (artist.artist && artist.artist.length > 0) {
+                var letter = artist.artist.toUpperCase();
+                if (letter == "X" || letter == "Y" || letter == "Z") letter = "X-Z";
+                else if (!letter.match(/^[A-W]$/)) letter = "#";
+
+                this.addArtist(jsobj.index[indices.indexOf(letter)], artist);
+            }
+        }
+        jsobj.index = jsobj.index.filter(function(n){ return n.artist.length > 0 });
+    }
+
+    this.addArtist = function(jsobj, artist){
+        var data = {
+            'id': artist.artist,
+            'name': artist.artist
+        };
+
+        jsobj.artist.push(data);
     }
 
     this.setError = function(jsobj, code, message) {

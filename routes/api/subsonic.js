@@ -5,8 +5,44 @@ var express = require('express'),
     settings = require('../../settings');
 
 var api = function(db) {
+    var self = this;
     this.db = db;
     this.context = new jsonix.Jsonix.Context([jsonixcontext]);
+    this.routes = {};
+    
+    this.routes.ping = function(req, res, callback){
+        var response = subsonicjson.createSuccessResponse();
+        callback(response);
+    };
+
+    this.routes.getLicense = function(req, res, callback){
+        var response = subsonicjson.getLicense();
+        callback(response);
+    };
+
+    this.routes.getMusicFolders = function(req, res, callback){
+        var response = subsonicjson.getMusicFolders();
+        callback(response);
+    };
+
+    this.routes.getIndexes = function(req, res, callback){
+        // var musicFolderId = req.param('musicFolderId');
+        // var ifModifiedSince = req.param('ifModifiedSince');
+        self.db.track.find({}).group({
+            key: {artist: 1},
+            reduce: function(curr, result) {},
+            initial: {}
+        }).sort({artist: 1}).exec(function(err, docs) {
+            if (err){
+                console.error(err);
+            }else{
+                var response = subsonicjson.getIndexes(docs);
+                callback(response);
+            }
+        });
+    };
+
+
 };
 
 api.prototype.preprocess = function(req, res, callback, next){
@@ -37,18 +73,12 @@ api.prototype.preprocess = function(req, res, callback, next){
     });
 };
 
-api.routes = {};
-api.routes.ping = function(req, res, callback){
-    var response = subsonicjson.createSuccessResponse();
-    callback(response);
-};
-
 api.prototype.router = function() {
     var router = express.Router();
     var self = this;
-    for (var x in api.routes) {
+    for (var x in this.routes) {
         router.use('/' + x + '.view', function(req, res, next){
-            self.preprocess(req, res, api.routes[x], next);
+            self.preprocess(req, res, self.routes[x], next);
         });
     }
     return router;
