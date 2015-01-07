@@ -42,27 +42,6 @@ var api = function(db) {
         });
     };
 
-    this.getAlbumsByArtists = function(filter, callback) {
-        self.db.track.find(filter).group({
-            key: {artist: 1, album: 1},
-            reduce: function(curr, result) {
-                if (!result.year) result.year = curr.year;
-                if (!result.last_updated) result.last_updated = curr.last_updated;
-                result.songCount += 1;
-                if (curr.duration) result.duration += curr.duration;
-            },
-            initial: {
-                duration: 0,
-                songCount: 0
-            }
-        }).sort({artist: 1, album: 1}).exec(function(err, docs) {
-            if (err){
-                console.error(err);
-            }else{
-                callback(docs);
-            }
-        });
-    };
     
     this.routes.getArtist = function(req, res, callback){
         var id = req.param('id');
@@ -83,13 +62,9 @@ var api = function(db) {
                     callback(response);
                 });
             } else if (subsonicjson.isAlbumId(id)) {
-                self.db.track.find({album: cid[0], artist: cid[1]}).exec(function (err, docs) {
-                    if (err){
-                        console.error(err);
-                    }else{
-                        var response = subsonicjson.getMusicDirectory(id, cid[0], docs);
-                        callback(response);
-                    }
+                self.getSongs({album: cid[0], artist: cid[1]}, function (docs) {
+                    var response = subsonicjson.getMusicDirectory(id, cid[0], docs);
+                    callback(response);
                 });
             }
         } else {
@@ -111,6 +86,51 @@ var api = function(db) {
             }
         });
     };
+
+    this.routes.getAlbum = function(req, res, callback){
+        var id = req.param('id');
+        var cid = subsonicjson.clearId(id);
+        if (id.length > 0) {
+            self.getSongs({album: cid[0], artist: cid[1]}, function(docs) {
+                var response = subsonicjson.getAlbum(id, cid, docs);
+                callback(response);
+            });
+        } else {
+            // TODO send error
+        }
+    };
+};
+
+api.prototype.getAlbumsByArtists = function(filter, callback) {
+    this.db.track.find(filter).group({
+        key: {artist: 1, album: 1},
+        reduce: function(curr, result) {
+            if (!result.year) result.year = curr.year;
+            if (!result.last_updated) result.last_updated = curr.last_updated;
+            result.songCount += 1;
+            if (curr.duration) result.duration += curr.duration;
+        },
+        initial: {
+            duration: 0,
+            songCount: 0
+        }
+    }).sort({artist: 1, album: 1}).exec(function(err, docs) {
+        if (err){
+            console.error(err);
+        }else{
+            callback(docs);
+        }
+    });
+};
+
+api.prototype.getSongs = function(filter, callback) {
+    this.db.track.find(filter).exec(function(err, docs) {
+        if (err){
+            console.error(err);
+        }else{
+            callback(docs);
+        }
+    });
 };
 
 api.prototype.preprocess = function(req, res, callback, next){

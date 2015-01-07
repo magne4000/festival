@@ -1,3 +1,5 @@
+var path = require('path');
+var fs = require('fs');
 
 function SubsonicJson() {
 
@@ -135,57 +137,72 @@ function SubsonicJson() {
         jsobj.artist.push(data);
     }
 
-    this.handleArtistsElements = function(jsobj, idparent, elements) {
+    this.shapeAlbum = function(elt, idparent, options) {
+        var options = options || {};
+        var ret = {
+            id: this.getAlbumId(elt.artist, elt.album),
+            album: elt.album,
+            year: elt.year,
+            coverArt: this.getAlbumId(elt.artist, elt.album),
+            duration: elt.duration,
+            artistId: idparent,
+            artist: elt.artist,
+            averageRating: 0,
+            created: {
+                year: elt.last_updated.getFullYear(),
+                month: elt.last_updated.getMonth(),
+                day: elt.last_updated.getDay()
+            }
+        };
+        if (options.id3) {
+            ret.songCount = elt.songCount;
+            ret.name = elt.name;
+        }
+        if (options.child) {
+            ret.isDir = true;
+            ret.title = elt.album + ((elt.year)?' [' + elt.year + ']':'');
+            ret.parent = idparent;
+        }
+        return ret;
+    }
+
+    this.handleArtistsElements = function(jsobj, idparent, elements, options) {
         for (x in elements) {
             var elt = elements[x];
-            jsobj.push({
-                id: this.getAlbumId(elt.artist, elt.album),
-                title: elt.album + ((elt.year)?' [' + elt.year + ']':''),
-                name: elt.album,
-                album: elt.album,
-                isDir: true,
-                year: elt.year,
-                coverArt: this.getAlbumId(elt.artist, elt.album),
-                songCount: elt.songCount,
-                duration: elt.duration,
-                artistId: idparent,
-                parent: idparent,
-                artist: elt.artist,
-                averageRating: 0,
-                created: {
-                    year: elt.last_updated.getFullYear(),
-                    month: elt.last_updated.getMonth(),
-                    day: elt.last_updated.getDay()
-                }
-            });
+            jsobj.push(this.shapeAlbum(elt, idparent, options));
         }
+    }
+
+    this.shapeSong = function(elt, idparent) {
+        var ret = {
+            id: this.getSongId(elt._id),
+            parent: idparent,
+            title: elt.name,
+            isDir: false,
+            isVideo: false,
+            type: 'music',
+            albumId: idparent,
+            album: elt.album,
+            artistId: this.getArtistId(idparent),
+            artist: elt.artist,
+            covertArt: idparent,
+            duration: elt.duration,
+            bitRate: elt.bitrate,
+            track: elt.trackno,
+            year: elt.year,
+            genre: elt.genre,
+            size: fs.statSync(elt.path).size,
+            suffix: path.extname(elt.path),
+            contentType: elt.mime,
+            path: '' // TODO ?
+        };
+        return ret;
     }
 
     this.handleAlbumsElements = function(jsobj, idparent, elements) {
         for (x in elements) {
             var elt = elements[x];
-            jsobj.push({
-                id: this.getSongId(elt._id),
-                parent: idparent,
-                title: elt.name,
-                isDir: false,
-                isVideo: false,
-                type: 'music',
-                albumId: idparent,
-                album: elt.album,
-                artistId: this.getArtistId(idparent),
-                artist: elt.artist,
-                covertArt: idparent,
-                duration: elt.duration,
-                bitRate: elt.bitrate,
-                track: elt.trackno,
-                year: elt.year,
-                genre: elt.genre,
-                size: 0, // TODO
-                suffix: '.mp3', // TODO
-                contentType: 'audio/mpeg', // TODO
-                path: '' // TODO ?
-            });
+            jsobj.push(this.shapeSong(elt, idparent));
         }
     }
 
@@ -193,7 +210,7 @@ function SubsonicJson() {
         if (this.isArtistId(idparent)) {
             this.handleArtistsElements(jsobj, idparent, elements);
         } else if (this.isAlbumId(idparent)) {
-            this.handleAlbumsElements(jsobj, idparent, elements);
+            this.handleAlbumsElements(jsobj, idparent, elements, {child: true});
         }
     }
 
@@ -230,7 +247,25 @@ function SubsonicJson() {
             albumCount: albums.length,
             album: []
         });
-        this.handleArtistsElements(response['subsonic-response'].artist.album, id, albums);
+        this.handleArtistsElements(response['subsonic-response'].artist.album, id, albums, {id3: true});
+        return response;
+    }
+
+    this.getAlbum = function(id, cid, songs) {
+        var response = this.createSuccessResponse();
+        var albuminfo = songs[0];
+        albuminfo.duration = 0;
+        albuminfo.songCount = 0;
+        for (x in songs) {
+            albuminfo.duration += songs[x].duration;
+            albuminfo.songCount += 1;
+        }
+        var albumelt = this.shapeAlbum(albuminfo, this.getArtistId(id), {id3: true});
+        albumelt.song = [];
+        for (x in songs) {
+            albumelt.song.push(this.shapeSong(songs[x], id));
+        }
+        this.set(response, 'album', albumelt);
         return response;
     }
 
