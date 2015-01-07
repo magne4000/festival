@@ -42,7 +42,44 @@ var api = function(db) {
         });
     };
 
-
+    this.routes.getMusicDirectory = function(req, res, callback){
+        var id = ''+req.param('id');
+        var cid = subsonicjson.clearId(id);
+        if (id.length > 0) {
+            if (subsonicjson.isArtistId(id)) {
+                self.db.track.find({artist: cid}).group({
+                    key: {artist: 1, album: 1},
+                    reduce: function(curr, result) {
+                        if (!result.year) result.year = curr.year;
+                        result.songCount += 1;
+                        if (curr.duration) result.duration += curr.duration;
+                    },
+                    initial: {
+                        duration: 0,
+                        songCount: 0
+                    }
+                }).sort({artist: 1, album: 1}).exec(function(err, docs) {
+                    if (err){
+                        console.error(err);
+                    }else{
+                        var response = subsonicjson.getMusicDirectory(id, cid, docs);
+                        callback(response);
+                    }
+                });
+            } else if (subsonicjson.isAlbumId(id)) {
+                self.db.track.find({album: cid[0], artist: cid[1]}).exec(function (err, docs) {
+                    if (err){
+                        console.error(err);
+                    }else{
+                        var response = subsonicjson.getMusicDirectory(id, cid[0], docs);
+                        callback(response);
+                    }
+                });
+            }
+        } else {
+            // TODO send error
+        }
+    };
 };
 
 api.prototype.preprocess = function(req, res, callback, next){
