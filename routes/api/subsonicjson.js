@@ -140,17 +140,23 @@ function SubsonicJson() {
             var elt = elements[x];
             jsobj.push({
                 id: this.getAlbumId(elt.artist, elt.album),
-                album: elt.album,
                 title: elt.album + ((elt.year)?' [' + elt.year + ']':''),
                 name: elt.album,
+                album: elt.album,
                 isDir: true,
-                covertArt: this.getAlbumId(elt.artist, elt.album),
+                year: elt.year,
+                coverArt: this.getAlbumId(elt.artist, elt.album),
                 songCount: elt.songCount,
                 duration: elt.duration,
                 artistId: idparent,
                 parent: idparent,
                 artist: elt.artist,
-                averageRating: 0
+                averageRating: 0,
+                created: {
+                    year: elt.last_updated.getFullYear(),
+                    month: elt.last_updated.getMonth(),
+                    day: elt.last_updated.getDay()
+                }
             });
         }
     }
@@ -213,6 +219,18 @@ function SubsonicJson() {
                 response['subsonic-response'].genres.genre.push(genre.genre);
             }
         }
+        return response;
+    }
+
+    this.getArtist = function(id, albums) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'artist', {
+            id: id,
+            name: this.clearId(id),
+            albumCount: albums.length,
+            album: []
+        });
+        this.handleArtistsElements(response['subsonic-response'].artist.album, id, albums);
         return response;
     }
 
