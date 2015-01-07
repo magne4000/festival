@@ -269,6 +269,12 @@ function SubsonicJson() {
         return response;
     }
 
+    this.getSong  = function(id, song) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'song', this.shapeSong(song, this.getAlbumId(song.album, song.artist)));
+        return response;
+    }
+
     this.setError = function(jsobj, code, message) {
         jsobj.error = {
             code: code

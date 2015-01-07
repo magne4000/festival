@@ -99,6 +99,23 @@ var api = function(db) {
             // TODO send error
         }
     };
+
+    this.routes.getSong = function(req, res, callback){
+        var id = req.param('id');
+        var cid = subsonicjson.clearId(id);
+        if (id.length > 0) {
+            self.getSongs({_id: cid}, function(docs) {
+                if (docs.length === 1) {
+                    var response = subsonicjson.getSong(id, docs[0]);
+                    callback(response);
+                } else {
+                    // TODO send error
+                }
+            });
+        } else {
+            // TODO send error
+        }
+    };
 };
 
 api.prototype.getAlbumsByArtists = function(filter, callback) {
