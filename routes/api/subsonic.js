@@ -80,6 +80,21 @@ var api = function(db) {
             // TODO send error
         }
     };
+    
+    this.routes.getGenres = function(req, res, callback){
+        self.db.track.find({}).group({
+            key: {genre: 1},
+            reduce: function(curr, result) {},
+            initial: {}
+        }).sort({genre: 1}).exec(function(err, docs) {
+            if (err){
+                console.error(err);
+            }else{
+                var response = subsonicjson.getGenres(docs);
+                callback(response);
+            }
+        });
+    };
 };
 
 api.prototype.preprocess = function(req, res, callback, next){
@@ -110,13 +125,18 @@ api.prototype.preprocess = function(req, res, callback, next){
     });
 };
 
+api.prototype.serveview = function(fct){
+    var self = this;
+    return function serveview(req, res, next) {
+        self.preprocess(req, res, fct, next); 
+    };
+};
+
 api.prototype.router = function() {
     var router = express.Router();
-    var self = this;
     for (var x in this.routes) {
-        router.use('/' + x + '.view', function(req, res, next){
-            self.preprocess(req, res, self.routes[x], next);
-        });
+        var fct = this.routes[x];
+        router.get('/' + x + '.view', this.serveview(fct));
     }
     return router;
 };

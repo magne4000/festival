@@ -1,7 +1,7 @@
 
 function SubsonicJson() {
 
-    var API_VERSION = "1.10.2";
+    var API_VERSION = "1.10.1";
 
     var SSERROR_GENERIC = 0;
     var SSERROR_MISSINGPARAM = 10;
@@ -182,6 +182,7 @@ function SubsonicJson() {
             });
         }
     }
+
     this.handleElements = function(jsobj, idparent, elements) {
         if (this.isArtistId(idparent)) {
             this.handleArtistsElements(jsobj, idparent, elements);
@@ -198,6 +199,20 @@ function SubsonicJson() {
             child: []
         });
         this.handleElements(response['subsonic-response'].directory.child, id, elements);
+        return response;
+    }
+    
+    this.getGenres = function(genres) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'genres', {
+            genre: []
+        });
+        for (x in genres) {
+            var genre = genres[x];
+            if (genre.genre !== null) {
+                response['subsonic-response'].genres.genre.push(genre.genre);
+            }
+        }
         return response;
     }
 
