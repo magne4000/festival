@@ -1,8 +1,9 @@
 var express = require('express'),
-    subsonicjson = require('./subsonicjson')(),
+    SubsonicJson = require('./subsonicjson'),
     jsonix = require('./jsonix'),
     jsonixcontext = require('./jsonix-context'),
-    settings = require('../../settings');
+    settings = require('../../settings'),
+    subsonicjson = new SubsonicJson;
 
 var api = function(db) {
     var self = this;
@@ -121,6 +122,13 @@ var api = function(db) {
         var response = subsonicjson.getEmpty('videos');
         callback(response);
     };
+    
+    this.routes.getSimilarSongs2 = this.routes.getSimilarSongs
+        = this.routes.getArtistInfo2 = this.routes.getArtistInfo
+        = function(req, res, callback){
+        var response = subsonicjson.createError(SubsonicJson.SSERROR_DATA_NOTFOUND);
+        callback(response, true);
+    };
 };
 
 api.prototype.getAlbumsByArtists = function(filter, callback) {
@@ -162,7 +170,8 @@ api.prototype.preprocess = function(req, res, callback, next){
     var version = req.param('v');
     var client = req.param('c');
     var format = req.param('f', 'xml');
-    callback(req, res, function(response) {
+    callback(req, res, function(response, error) {
+        if (error) format = 'xml';
         switch (format) {
             case 'json':
                 res.json(response);
