@@ -65,6 +65,12 @@ function SubsonicJson() {
         return response;
     }
 
+    this.getEmpty = function(name) {
+        var response = this.createSuccessResponse();
+        this.set(response, name, {});
+        return response;
+    }
+
     this.getLicense = function() {
         var response = this.createSuccessResponse();
         this.setLicense(response); 

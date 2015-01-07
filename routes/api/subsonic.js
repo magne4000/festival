@@ -116,6 +116,11 @@ var api = function(db) {
             // TODO send error
         }
     };
+
+    this.routes.getVideos = function(req, res, callback){
+        var response = subsonicjson.getEmpty('videos');
+        callback(response);
+    };
 };
 
 api.prototype.getAlbumsByArtists = function(filter, callback) {
