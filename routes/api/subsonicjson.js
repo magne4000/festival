@@ -142,7 +142,7 @@ function SubsonicJson() {
         jsobj.artist.push(data);
     }
 
-    this.shapeAlbum = function(elt, idparent, options) {
+    this.shapeAlbum = function(elt, options) {
         var options = options || {};
         var ret = {
             id: this.getAlbumId(elt.artist, elt.album),
@@ -150,7 +150,7 @@ function SubsonicJson() {
             year: elt.year,
             coverArt: this.getAlbumId(elt.artist, elt.album),
             duration: elt.duration,
-            artistId: idparent,
+            artistId: this.getArtistId(elt.artist),
             artist: elt.artist,
             averageRating: 0,
             created: {
@@ -166,15 +166,17 @@ function SubsonicJson() {
         if (options.child) {
             ret.isDir = true;
             ret.title = elt.album + ((elt.year)?' [' + elt.year + ']':'');
-            ret.parent = idparent;
+            ret.parent = this.getArtistId(elt.artist);
         }
         return ret;
     }
 
-    this.handleArtistsElements = function(jsobj, idparent, elements, options) {
+    this.handleArtistsElements = function(jsobj, elements, options) {
         for (x in elements) {
             var elt = elements[x];
-            jsobj.push(this.shapeAlbum(elt, idparent, options));
+            if (elt.artist && elt.album) {
+                jsobj.push(this.shapeAlbum(elt, options));
+            }
         }
     }
 
@@ -213,7 +215,7 @@ function SubsonicJson() {
 
     this.handleElements = function(jsobj, idparent, elements) {
         if (this.isArtistId(idparent)) {
-            this.handleArtistsElements(jsobj, idparent, elements);
+            this.handleArtistsElements(jsobj, elements);
         } else if (this.isAlbumId(idparent)) {
             this.handleAlbumsElements(jsobj, idparent, elements, {child: true});
         }
@@ -252,7 +254,7 @@ function SubsonicJson() {
             albumCount: albums.length,
             album: []
         });
-        this.handleArtistsElements(response['subsonic-response'].artist.album, id, albums, {id3: true});
+        this.handleArtistsElements(response['subsonic-response'].artist.album, albums, {id3: true});
         return response;
     }
 
@@ -265,7 +267,7 @@ function SubsonicJson() {
             albuminfo.duration += songs[x].duration;
             albuminfo.songCount += 1;
         }
-        var albumelt = this.shapeAlbum(albuminfo, this.getArtistId(id), {id3: true});
+        var albumelt = this.shapeAlbum(albuminfo, {id3: true});
         albumelt.song = [];
         for (x in songs) {
             albumelt.song.push(this.shapeSong(songs[x], id));
@@ -277,6 +279,24 @@ function SubsonicJson() {
     this.getSong  = function(id, song) {
         var response = this.createSuccessResponse();
         this.set(response, 'song', this.shapeSong(song, this.getAlbumId(song.album, song.artist)));
+        return response;
+    }
+
+    this.getAlbumList = function(albums) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'albumList', {
+            album: []
+        });
+        this.handleArtistsElements(response['subsonic-response'].albumList.album, albums, {child: true});
+        return response;
+    }
+
+    this.getAlbumList2 = function(albums) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'albumList2', {
+            album: []
+        });
+        this.handleArtistsElements(response['subsonic-response'].albumList2.album, albums, {id3: true});
         return response;
     }
 

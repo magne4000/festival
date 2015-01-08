@@ -129,6 +129,94 @@ var api = function(db) {
         var response = subsonicjson.createError(SubsonicJson.SSERROR_DATA_NOTFOUND);
         callback(response, true);
     };
+
+    function getFilterByType(type, options) {
+        var filter;
+        switch (type) {
+            case 'starred':
+                filter = {_id: 0}; // because we have no starred albums
+                break;
+            case 'byYear':
+                filter = {year: {$gte: parseInt(options.fromYear, 10), $lte: parseInt(options.toYear, 10)}}
+                break;
+            case 'genre':
+                filter = {genre: options.genre};
+                break;
+            default:
+                filter = {};
+        }
+        return filter;
+    }
+
+    function getSortByType(type) {
+        var sort;
+        switch (type) {
+            case 'newest':
+                sort = {last_updated: 1};
+                break;
+            case 'alphabeticalByName':
+                sort = {album: 1};
+                break;
+            default:
+                sort = {album: 1, artist: 1};
+        }
+        return sort;
+    }
+
+    this.routes.getAlbumList2 = function(req, res, callback){
+        self.routes.getAlbumList(req, res, callback, subsonicjson.getAlbumList2);
+    }
+
+    this.routes.getAlbumList = function(req, res, callback, subsonicfct){
+        var error = null;
+        var type = req.param('type', null);
+        var size = Math.max(Math.min(req.param('size', 10), 500), 1);
+        var offset = Math.max(req.param('offset', 0), 0);
+        var fromYear = req.param('fromYear', null);
+        var toYear = req.param('toYear', null);
+        var genre = req.param('genre', null);
+
+        if (type === 'random') {
+            error = SubsonicJson.SSERROR_DATA_NOTFOUND;
+        } else if (type === null) {
+            error = SubsonicJson.SSERROR_MISSINGPARAM;
+        } else if (type === 'byYear' && (fromYear === null || toYear === null)) {
+            error = SubsonicJson.SSERROR_MISSINGPARAM;
+        } else if (type === 'genre' && genre === null) {
+            error = SubsonicJson.SSERROR_MISSINGPARAM;
+        }
+        
+        if (error === null) {
+            var filter = getFilterByType(type);
+            var sort = getSortByType(type, {fromYear: fromYear, toYear: toYear, genre: genre});
+
+            var query = self.db.track.find(filter).group({
+                key: {artist: 1, album: 1},
+                reduce: function(curr, result) {
+                    if (!result.year) result.year = curr.year;
+                    if (!result.last_updated) result.last_updated = curr.last_updated;
+                    result.songCount += 1;
+                    if (curr.duration) result.duration += curr.duration;
+                },
+                initial: {
+                    duration: 0,
+                    songCount: 0
+                }
+            }).sort(sort).skip(offset).limit(size).exec(function(err, docs) {
+                if (err){
+                    console.error(err);
+                }else{
+                    var fct = subsonicfct;
+                    if (typeof fct != 'function') fct = subsonicjson.getAlbumList;
+                    var response = fct.call(subsonicjson, docs);
+                    callback(response);
+                }
+            });
+        } else {
+            var response = subsonicjson.createError(error);
+            callback(response, true);
+        }
+    };
 };
 
 api.prototype.getAlbumsByArtists = function(filter, callback) {
