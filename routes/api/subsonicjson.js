@@ -39,13 +39,13 @@ function SubsonicJson() {
         var response = this.createResponse(version);
         response['subsonic-response'].status = 'failed';
         return response;
-    }
+    };
 
     this.createSuccessResponse = function(version) {
         var response = this.createResponse(version);
         response['subsonic-response'].status = 'ok';
         return response;
-    }
+    };
 
     this.createResponse = function(version) {
         if (!version) version = API_VERSION;
@@ -56,25 +56,25 @@ function SubsonicJson() {
             }
         };
         return obj;
-    }
+    };
 
     this.createError = function(code, message) {
         var response = this.createFailedResponse();
         this.setError(response['subsonic-response'], code, message);
         return response;
-    }
+    };
 
     this.getEmpty = function(name) {
         var response = this.createSuccessResponse();
         this.set(response, name, {});
         return response;
-    }
+    };
 
     this.getLicense = function() {
         var response = this.createSuccessResponse();
         this.setLicense(response); 
         return response;
-    }
+    };
 
     this.setLicense = function(jsobj) {
         this.set(jsobj, 'license', {
@@ -83,13 +83,13 @@ function SubsonicJson() {
             key: "ABC123DEF",
             date: "2015-01-01T00:00:00"
         });
-    }
+    };
 
     this.getMusicFolders = function() {
         var response = this.createSuccessResponse();
         this.setMusicFolders(response); 
         return response;
-    }
+    };
 
     this.setMusicFolders = function(jsobj) {
         this.set(jsobj, 'musicFolders', {
@@ -98,7 +98,7 @@ function SubsonicJson() {
                 name: 'Music'
             }]
         });
-    }
+    };
 
     this.getIndexes = function(artists) {
         var response = this.createSuccessResponse();
@@ -107,7 +107,7 @@ function SubsonicJson() {
         });
         this.addArtists(response['subsonic-response'].indexes, artists); 
         return response;
-    }
+    };
 
     this.addArtists = function(jsobj, artists) {
         var indices = ['#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X-Z'];
@@ -130,8 +130,8 @@ function SubsonicJson() {
                 this.addArtist(jsobj.index[indices.indexOf(letter)], artist);
             }
         }
-        jsobj.index = jsobj.index.filter(function(n){ return n.artist.length > 0 });
-    }
+        jsobj.index = jsobj.index.filter(function(n){ return n.artist.length > 0; });
+    };
 
     this.addArtist = function(jsobj, artist){
         var data = {
@@ -140,10 +140,10 @@ function SubsonicJson() {
         };
 
         jsobj.artist.push(data);
-    }
+    };
 
     this.shapeAlbum = function(elt, options) {
-        var options = options || {};
+        options = options || {};
         var ret = {
             id: this.getAlbumId(elt.artist, elt.album),
             album: elt.album,
@@ -169,30 +169,31 @@ function SubsonicJson() {
             ret.parent = this.getArtistId(elt.artist);
         }
         return ret;
-    }
+    };
 
     this.handleArtistsElements = function(jsobj, elements, options) {
-        for (x in elements) {
+        for (var x in elements) {
             var elt = elements[x];
             if (elt.artist && elt.album) {
                 jsobj.push(this.shapeAlbum(elt, options));
             }
         }
-    }
+    };
 
-    this.shapeSong = function(elt, idparent) {
+    this.shapeSong = function(elt) {
+        var albumId = this.getAlbumId(elt.artist, elt.album);
         var ret = {
             id: this.getSongId(elt._id),
-            parent: idparent,
+            parent: albumId,
             title: elt.name,
             isDir: false,
             isVideo: false,
             type: 'music',
-            albumId: idparent,
+            albumId: albumId,
             album: elt.album,
-            artistId: this.getArtistId(idparent),
+            artistId: this.getArtistId(elt.artist),
             artist: elt.artist,
-            covertArt: idparent,
+            covertArt: albumId,
             duration: elt.duration,
             bitRate: elt.bitrate,
             track: elt.trackno,
@@ -204,22 +205,22 @@ function SubsonicJson() {
             path: '' // TODO ?
         };
         return ret;
-    }
+    };
 
-    this.handleAlbumsElements = function(jsobj, idparent, elements) {
-        for (x in elements) {
+    this.handleAlbumsElements = function(jsobj, elements) {
+        for (var x in elements) {
             var elt = elements[x];
-            jsobj.push(this.shapeSong(elt, idparent));
+            jsobj.push(this.shapeSong(elt));
         }
-    }
+    };
 
     this.handleElements = function(jsobj, idparent, elements) {
         if (this.isArtistId(idparent)) {
             this.handleArtistsElements(jsobj, elements);
         } else if (this.isAlbumId(idparent)) {
-            this.handleAlbumsElements(jsobj, idparent, elements, {child: true});
+            this.handleAlbumsElements(jsobj, elements, {child: true});
         }
-    }
+    };
 
     this.getMusicDirectory = function(id, name, elements) {
         var response = this.createSuccessResponse();
@@ -230,21 +231,21 @@ function SubsonicJson() {
         });
         this.handleElements(response['subsonic-response'].directory.child, id, elements);
         return response;
-    }
+    };
     
     this.getGenres = function(genres) {
         var response = this.createSuccessResponse();
         this.set(response, 'genres', {
             genre: []
         });
-        for (x in genres) {
+        for (var x in genres) {
             var genre = genres[x];
             if (genre.genre !== null) {
                 response['subsonic-response'].genres.genre.push(genre.genre);
             }
         }
         return response;
-    }
+    };
 
     this.getArtist = function(id, albums) {
         var response = this.createSuccessResponse();
@@ -256,11 +257,12 @@ function SubsonicJson() {
         });
         this.handleArtistsElements(response['subsonic-response'].artist.album, albums, {id3: true});
         return response;
-    }
+    };
 
     this.getAlbum = function(id, cid, songs) {
         var response = this.createSuccessResponse();
         var albuminfo = songs[0];
+        var x;
         albuminfo.duration = 0;
         albuminfo.songCount = 0;
         for (x in songs) {
@@ -274,13 +276,13 @@ function SubsonicJson() {
         }
         this.set(response, 'album', albumelt);
         return response;
-    }
+    };
 
     this.getSong  = function(id, song) {
         var response = this.createSuccessResponse();
         this.set(response, 'song', this.shapeSong(song, this.getAlbumId(song.album, song.artist)));
         return response;
-    }
+    };
 
     this.getAlbumList = function(albums) {
         var response = this.createSuccessResponse();
@@ -289,7 +291,7 @@ function SubsonicJson() {
         });
         this.handleArtistsElements(response['subsonic-response'].albumList.album, albums, {child: true});
         return response;
-    }
+    };
 
     this.getAlbumList2 = function(albums) {
         var response = this.createSuccessResponse();
@@ -298,7 +300,16 @@ function SubsonicJson() {
         });
         this.handleArtistsElements(response['subsonic-response'].albumList2.album, albums, {id3: true});
         return response;
-    }
+    };
+
+    this.getSongsByGenre = function(songs) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'songsByGenre', {
+            song: []
+        });
+        this.handleAlbumsElements(response['subsonic-response'].songsByGenre.song, songs);
+        return response;
+    };
 
     this.setError = function(jsobj, code, message) {
         jsobj.error = {
@@ -335,7 +346,7 @@ function SubsonicJson() {
         }
 
         jsobj.error.message = message;
-    }
+    };
 }
 
 module.exports = SubsonicJson;

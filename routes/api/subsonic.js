@@ -123,9 +123,10 @@ var api = function(db) {
         callback(response);
     };
     
-    this.routes.getSimilarSongs2 = this.routes.getSimilarSongs
-        = this.routes.getArtistInfo2 = this.routes.getArtistInfo
-        = function(req, res, callback){
+    this.routes.getRandomSongs =
+    this.routes.getSimilarSongs2 = this.routes.getSimilarSongs =
+    this.routes.getArtistInfo2 = this.routes.getArtistInfo =
+        function(req, res, callback){
         var response = subsonicjson.createError(SubsonicJson.SSERROR_DATA_NOTFOUND);
         callback(response, true);
     };
@@ -137,7 +138,7 @@ var api = function(db) {
                 filter = {_id: 0}; // because we have no starred albums
                 break;
             case 'byYear':
-                filter = {year: {$gte: parseInt(options.fromYear, 10), $lte: parseInt(options.toYear, 10)}}
+                filter = {year: {$gte: parseInt(options.fromYear, 10), $lte: parseInt(options.toYear, 10)}};
                 break;
             case 'genre':
                 filter = {genre: options.genre};
@@ -163,9 +164,32 @@ var api = function(db) {
         return sort;
     }
 
+    this.routes.getSongsByGenre = function(req, res, callback){
+        var error = null;
+        var genre = req.param('genre', null);
+        var count = Math.max(Math.min(req.param('count', 10), 500), 1);
+        var offset = Math.max(req.param('offset', 0), 0);
+
+        if (genre === null) {
+            error = SubsonicJson.SSERROR_MISSINGPARAM;
+        }
+
+        if (error === null) {
+            var filter = getFilterByType('byGenre');
+            var sort = getSortByType('byGenre', {genre: genre});
+            self.getSongs(filter, function(docs){
+                var response = subsonicjson.getSongsByGenre(docs);
+                callback(response);
+            }, sort, offset, count);
+        } else {
+            var response = subsonicjson.createError(error);
+            callback(response, true);
+        }
+    };
+
     this.routes.getAlbumList2 = function(req, res, callback){
         self.routes.getAlbumList(req, res, callback, subsonicjson.getAlbumList2);
-    }
+    };
 
     this.routes.getAlbumList = function(req, res, callback, subsonicfct){
         var error = null;
@@ -189,29 +213,13 @@ var api = function(db) {
         if (error === null) {
             var filter = getFilterByType(type);
             var sort = getSortByType(type, {fromYear: fromYear, toYear: toYear, genre: genre});
-
-            var query = self.db.track.find(filter).group({
-                key: {artist: 1, album: 1},
-                reduce: function(curr, result) {
-                    if (!result.year) result.year = curr.year;
-                    if (!result.last_updated) result.last_updated = curr.last_updated;
-                    result.songCount += 1;
-                    if (curr.duration) result.duration += curr.duration;
-                },
-                initial: {
-                    duration: 0,
-                    songCount: 0
-                }
-            }).sort(sort).skip(offset).limit(size).exec(function(err, docs) {
-                if (err){
-                    console.error(err);
-                }else{
-                    var fct = subsonicfct;
-                    if (typeof fct != 'function') fct = subsonicjson.getAlbumList;
-                    var response = fct.call(subsonicjson, docs);
-                    callback(response);
-                }
-            });
+            
+            self.getAlbumsByArtists(filter, function(docs){
+                var fct = subsonicfct;
+                if (typeof fct != 'function') fct = subsonicjson.getAlbumList;
+                var response = fct.call(subsonicjson, docs);
+                callback(response);
+            }, sort, offset, size);
         } else {
             var response = subsonicjson.createError(error);
             callback(response, true);
@@ -219,8 +227,9 @@ var api = function(db) {
     };
 };
 
-api.prototype.getAlbumsByArtists = function(filter, callback) {
-    this.db.track.find(filter).group({
+api.prototype.getAlbumsByArtists = function(filter, callback, sort, skip, limit) {
+    sort = sort || {artist: 1, album: 1};
+    var query = this.db.track.find(filter).group({
         key: {artist: 1, album: 1},
         reduce: function(curr, result) {
             if (!result.year) result.year = curr.year;
@@ -232,7 +241,10 @@ api.prototype.getAlbumsByArtists = function(filter, callback) {
             duration: 0,
             songCount: 0
         }
-    }).sort({artist: 1, album: 1}).exec(function(err, docs) {
+    }).sort(sort);
+    if (skip) query.skip(skip);
+    if (limit) query.limit(limit);
+    query.exec(function(err, docs) {
         if (err){
             console.error(err);
         }else{
@@ -241,8 +253,12 @@ api.prototype.getAlbumsByArtists = function(filter, callback) {
     });
 };
 
-api.prototype.getSongs = function(filter, callback) {
-    this.db.track.find(filter).exec(function(err, docs) {
+api.prototype.getSongs = function(filter, callback, sort, skip, limit) {
+    var query = this.db.track.find(filter);
+    if (sort) query.sort(sort);
+    if (skip) query.skip(skip);
+    if (limit) query.limit(limit);
+    query.exec(function(err, docs) {
         if (err){
             console.error(err);
         }else{
