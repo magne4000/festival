@@ -123,6 +123,8 @@ var api = function(db) {
         callback(response);
     };
     
+    this.routes.search =
+    this.routes.getNowPlaying =
     this.routes.getRandomSongs =
     this.routes.getSimilarSongs2 = this.routes.getSimilarSongs =
     this.routes.getArtistInfo2 = this.routes.getArtistInfo =
@@ -220,6 +222,59 @@ var api = function(db) {
                 var response = fct.call(subsonicjson, docs);
                 callback(response);
             }, sort, offset, size);
+        } else {
+            var response = subsonicjson.createError(error);
+            callback(response, true);
+        }
+    };
+
+    this.routes.getStarred = function(req, res, callback){
+        var response = subsonicjson.getEmpty('starred');
+        callback(response);
+    };
+    
+    this.routes.getStarred2 = function(req, res, callback){
+        var response = subsonicjson.getEmpty('starred2');
+        callback(response);
+    };
+
+    function escapeRegExp(str) {
+        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    }
+
+    this.routes.search3 = function(req, res, callback){
+        self.routes.search2(req, res, callback, {id3: true});
+    };
+
+    this.routes.search2 = function(req, res, callback, options){
+        options = options || {child: true};
+        var error = null;
+        var query = req.param('query', null);
+        var artistCount = Math.max(req.param('artistCount', 20), 1);
+        var artistOffset = Math.max(req.param('artistOffset', 0), 0);
+        var albumCount = Math.max(req.param('albumCount', 20), 1);
+        var albumOffset = Math.max(req.param('albumOffset', 0), 0);
+        var songCount = Math.max(req.param('songCount', 20), 1);
+        var songOffset = Math.max(req.param('songOffset', 0), 0);
+
+        if (query === null) {
+            error = SubsonicJson.SSERROR_MISSINGPARAM;
+        }
+
+        var term = escapeRegExp(query);
+        var reg = new RegExp('.*'+term+'.*', 'i');
+
+        if (error === null) {
+            var filter = {$or: [
+                {artist: {$regex: reg}},
+                {album: {$regex: reg}},
+                {name: {$regex: reg}}
+            ]};
+
+            self.getSongs(filter, function(docs){
+                var response = subsonicjson.search(docs, artistCount, artistOffset, albumCount, albumOffset, options);
+                callback(response);
+            }, undefined, songOffset, songCount);
         } else {
             var response = subsonicjson.createError(error);
             callback(response, true);

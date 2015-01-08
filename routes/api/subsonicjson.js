@@ -149,7 +149,6 @@ function SubsonicJson() {
             album: elt.album,
             year: elt.year,
             coverArt: this.getAlbumId(elt.artist, elt.album),
-            duration: elt.duration,
             artistId: this.getArtistId(elt.artist),
             artist: elt.artist,
             averageRating: 0,
@@ -159,9 +158,12 @@ function SubsonicJson() {
                 day: elt.last_updated.getDate()
             }
         };
+
+        if (elt.duration) ret.duration = elt.duration;
+
         if (options.id3) {
-            ret.songCount = elt.songCount;
-            ret.name = elt.name;
+            if (elt.songCount) ret.songCount = elt.songCount;
+            ret.name = elt.album;
         }
         if (options.child) {
             ret.isDir = true;
@@ -308,6 +310,40 @@ function SubsonicJson() {
             song: []
         });
         this.handleAlbumsElements(response['subsonic-response'].songsByGenre.song, songs);
+        return response;
+    };
+
+    this.search = function(songs, artistCount, artistOffset, albumCount, albumOffset, options) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'searchResult2', {
+            artist: [],
+            album: [],
+            song: []
+        });
+        var artists = [];
+        var albums = [];
+        for (var x in songs) {
+            if (songs[x].artist && artists.indexOf(songs[x].artist) === -1) {
+                if (artistOffset > 0) artistOffset -= 1;
+                else if (artists.length <= artistCount) {
+                    artists.push(songs[x].artist);
+                    response['subsonic-response'].searchResult2.artist.push({
+                        id: this.getArtistId(songs[x].artist),
+                        name: songs[x].artist
+                    });
+                }
+            }
+            if (songs[x].album && albums.indexOf(songs[x].album) === -1) {
+                if (albumOffset > 0) albumOffset -= 1;
+                else if (albums.length <= albumCount) {
+                    var song = songs[x];
+                    if (song.duration) delete song.duration;
+                    albums.push(songs[x].album);
+                    response['subsonic-response'].searchResult2.album.push(this.shapeAlbum(song, options));
+                }
+            }
+        }
+        this.handleAlbumsElements(response['subsonic-response'].searchResult2.song, songs);
         return response;
     };
 
