@@ -1,7 +1,7 @@
 Festival
 ========
 Festival is an HTML5 web application that can play music files with the help of NodeJS.  
-The app relies on a MongoDB database.
+It also implements a piece of subsonic api which allows subsonic client apps to connect (like android apps) !
 
 ![Webmusic screenshot](https://github.com/magne4000/magne4000.github.com/raw/master/images/festival.screen1.jpg)
 
@@ -66,6 +66,11 @@ Launch
 You are now ready to launch the app. Just launch the following command to do so:
 
     node app.js
+
+Subsonic
+--------
+Subsonic client apps can be plugged to Festival. You just need to add it like any other server to your app.
+As it doesn't support login, if your app requires login/password, just fill credentials with random letters.
 
 License
 -------
