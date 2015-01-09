@@ -15,7 +15,7 @@ music.prototype.index = function(req, res){
             fs.exists(track.path, function(exists){
                 var relativepath = path.relative(settings.scanner.path, track.path);
                 if (exists && relativepath.indexOf('..') !== 0){
-                    res.sendfile(relativepath, {root: settings.scanner.path});
+                    res.sendFile(relativepath, {root: settings.scanner.path});
                 }else{ 
                     console.warn('Path "'+track.path+'" invalid for track '+id);
                     res.send(404);

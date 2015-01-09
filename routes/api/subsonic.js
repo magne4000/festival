@@ -8,6 +8,8 @@ var express = require('express'),
 var api = function(db) {
     var self = this;
     this.db = db;
+    this.musicRoute = require('../music')(db);
+    this.ajaxRoute = require('../ajax')(db);
     this.context = new jsonix.Jsonix.Context([jsonixcontext]);
     this.routes = {};
     
@@ -123,9 +125,10 @@ var api = function(db) {
         callback(response);
     };
     
+    this.routes.deletePlaylist = this.routes.updatePlaylist =
+    this.routes.createPlaylist = this.routes.getPlaylist = this.routes.getPlaylists =
     this.routes.search =
     this.routes.getNowPlaying =
-    this.routes.getRandomSongs =
     this.routes.getSimilarSongs2 = this.routes.getSimilarSongs =
     this.routes.getArtistInfo2 = this.routes.getArtistInfo =
         function(req, res, callback){
@@ -154,6 +157,9 @@ var api = function(db) {
     function getSortByType(type) {
         var sort;
         switch (type) {
+            case 'random':
+                sort = undefined;
+                break;
             case 'newest':
                 sort = {last_updated: 1};
                 break;
@@ -197,27 +203,29 @@ var api = function(db) {
         var error = null;
         var type = req.param('type', null);
         var size = Math.max(Math.min(req.param('size', 10), 500), 1);
+        var size2 = size;
         var offset = Math.max(req.param('offset', 0), 0);
         var fromYear = req.param('fromYear', null);
         var toYear = req.param('toYear', null);
         var genre = req.param('genre', null);
 
-        if (type === 'random') {
-            error = SubsonicJson.SSERROR_DATA_NOTFOUND;
-        } else if (type === null) {
+        if (type === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
         } else if (type === 'byYear' && (fromYear === null || toYear === null)) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
         } else if (type === 'genre' && genre === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
+        } else if (type === 'random') {
+            size = undefined;
+            offset = undefined;
         }
         
         if (error === null) {
             var filter = getFilterByType(type);
             var sort = getSortByType(type, {fromYear: fromYear, toYear: toYear, genre: genre});
-            
             self.getAlbumsByArtists(filter, function(docs){
                 var fct = subsonicfct;
+                if (type === 'random') docs = randomize(docs, size2);
                 if (typeof fct != 'function') fct = subsonicjson.getAlbumList;
                 var response = fct.call(subsonicjson, docs);
                 callback(response);
@@ -226,6 +234,50 @@ var api = function(db) {
             var response = subsonicjson.createError(error);
             callback(response, true);
         }
+    };
+
+    function randSort(a, b) {
+        var temp = parseInt( Math.random()*10 );
+        var isOddOrEven = temp%2;
+        var isPosOrNeg = temp>5 ? 1 : -1;
+        return( isOddOrEven*isPosOrNeg );
+    }
+
+    function randomize (arr, size) {
+        arr = arr.sort(randSort);
+        if (arr.length <= size) return arr;
+        else return arr.slice(0, size);
+    }
+    
+    function escapeRegExp(str) {
+        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    }
+
+    function getRandomLetter() {
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        return possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    
+    this.routes.getRandomSongs = function(req, res, callback){
+        var size = Math.max(Math.min(req.param('size', 10), 500), 1);
+        var fromYear = req.param('fromYear', null);
+        var toYear = req.param('toYear', null);
+        var genre = req.param('genre', null);
+
+        var filter = {_id: {$regex: new RegExp('.*'+getRandomLetter()+'.*', 'i')}};
+
+        if (fromYear || toYear) {
+            filter.year = {};
+            if (fromYear) filter.year.$gte = parseInt(options.fromYear, 10);
+            if (fromYear) filter.year.$lte = parseInt(options.toYear, 10);
+        }
+
+        if (genre) filter.genre = genre;
+
+        self.getSongs(filter, function(docs){
+            var response = subsonicjson.getRandomSongs(docs);
+            callback(response);
+        }, undefined, undefined, size);
     };
 
     this.routes.getStarred = function(req, res, callback){
@@ -237,10 +289,6 @@ var api = function(db) {
         var response = subsonicjson.getEmpty('starred2');
         callback(response);
     };
-
-    function escapeRegExp(str) {
-        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-    }
 
     this.routes.search3 = function(req, res, callback){
         self.routes.search2(req, res, callback, {id3: true});
@@ -280,6 +328,61 @@ var api = function(db) {
             callback(response, true);
         }
     };
+
+    this.routes.stream = this.routes.download = function(req, res, callback){
+        var id = req.param('id', null);
+
+        if (id === null) {
+            var response = subsonicjson.createError(SubsonicJson.SSERROR_MISSINGPARAM);
+            callback(response, true);
+        } else {
+            req.params.id = subsonicjson.clearId(id);
+            self.musicRoute.index(req, res);
+        }
+    };
+
+    this.routes.getCoverArt = function(req, res, callback){
+        var error = null;
+        var id = req.param('id', null);
+        var filter, cid;
+        //var size = req.param('size', null);
+        if (id !== null) {
+            if (subsonicjson.isArtistId(id)) {
+                error = SubsonicJson.SSERROR_MISSINGPARAM;
+            } else if (subsonicjson.isAlbumId(id)) {
+                cid = subsonicjson.clearId(id);
+                if (cid[0] && cid[1]) {
+                    req.query.album = cid[0];
+                    req.query.artist = cid[1];
+                    self.ajaxRoute.albumart(req, res);
+                } else {
+                    res.sendStatus(404);
+                }
+            } else if (subsonicjson.isSongId(id)) {
+                cid = subsonicjson.clearId(id);
+                filter = {_id: cid};
+                self.db.track.findOne(filter, function (err, track) {
+                    if (err) {
+                        console.error(err);
+                        res.sendStatus(404);
+                    } else {
+                        req.query.album = track.album;
+                        req.query.artist = track.artist;
+                        self.ajaxRoute.albumart(req, res);
+                    }
+                });
+            } else {
+                error = SubsonicJson.SSERROR_MISSINGPARAM;
+            }
+        } else {
+            error = SubsonicJson.SSERROR_MISSINGPARAM;
+        }
+
+        if (error !== null) {
+            var response = subsonicjson.createError(error);
+            callback(response, true);
+        }
+    };
 };
 
 api.prototype.getAlbumsByArtists = function(filter, callback, sort, skip, limit) {
@@ -296,7 +399,8 @@ api.prototype.getAlbumsByArtists = function(filter, callback, sort, skip, limit)
             duration: 0,
             songCount: 0
         }
-    }).sort(sort);
+    });
+    if (sort) query.sort(sort);
     if (skip) query.skip(skip);
     if (limit) query.limit(limit);
     query.exec(function(err, docs) {
@@ -345,7 +449,7 @@ api.prototype.preprocess = function(req, res, callback, next){
                     value: response['subsonic-response']
                 });
                 res.set('Content-Type', 'text/xml');
-                res.send(doc);
+                res.send('<?xml version="1.0" encoding="UTF-8"?>\n'+doc);
         }
         next();
     });
@@ -362,7 +466,7 @@ api.prototype.router = function() {
     var router = express.Router();
     for (var x in this.routes) {
         var fct = this.routes[x];
-        router.get('/' + x + '.view', this.serveview(fct));
+        router.use('/' + x + '.view', this.serveview(fct));
     }
     return router;
 };

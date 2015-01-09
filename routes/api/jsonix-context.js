@@ -108,6 +108,9 @@ var api_Module_Factory = function () {
           }, {
             name: 'version',
             type: 'attribute'
+          }, {
+            name: 'xmlns',
+            type: 'attribute'
           }]
       }, {
         localName: 'User',

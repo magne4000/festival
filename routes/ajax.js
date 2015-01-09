@@ -215,12 +215,12 @@ ajax.prototype.albumart = function(req, res){
     query.exec(function (err, doc) {
         if (err) {
             console.error(err);
-            res.send(404);
+            res.sendStatus(404);
         } else {
             if (doc && doc.path !== null) {
                 res.sendFile(doc.path);
             } else {
-                res.send(404);
+                res.sendStatus(404);
             }
         }
     });

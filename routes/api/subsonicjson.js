@@ -347,6 +347,15 @@ function SubsonicJson() {
         return response;
     };
 
+    this.getRandomSongs = function(songs) {
+        var response = this.createSuccessResponse();
+        this.set(response, 'randomSongs', {
+            song: []
+        });
+        this.handleAlbumsElements(response['subsonic-response'].randomSongs.song, songs);
+        return response;
+    };
+
     this.setError = function(jsobj, code, message) {
         jsobj.error = {
             code: code
