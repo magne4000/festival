@@ -212,7 +212,9 @@ function SubsonicJson() {
     this.handleAlbumsElements = function(jsobj, elements) {
         for (var x in elements) {
             var elt = elements[x];
-            jsobj.push(this.shapeSong(elt));
+            if (elt.artist && elt.album) {
+                jsobj.push(this.shapeSong(elt));
+            }
         }
     };
 
