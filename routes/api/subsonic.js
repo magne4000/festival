@@ -237,10 +237,7 @@ var api = function(db) {
     };
 
     function randSort(a, b) {
-        var temp = parseInt( Math.random()*10 );
-        var isOddOrEven = temp%2;
-        var isPosOrNeg = temp>5 ? 1 : -1;
-        return( isOddOrEven*isPosOrNeg );
+        return [-1,0,1][Math.round(Math.random()*2)];
     }
 
     function randomize (arr, size) {
