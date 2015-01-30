@@ -220,7 +220,7 @@ function SubsonicJson() {
 
     this.handleElements = function(jsobj, idparent, elements) {
         if (this.isArtistId(idparent)) {
-            this.handleArtistsElements(jsobj, elements);
+            this.handleArtistsElements(jsobj, elements, {child: true});
         } else if (this.isAlbumId(idparent)) {
             this.handleAlbumsElements(jsobj, elements, {child: true});
         }
