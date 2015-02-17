@@ -4,7 +4,7 @@ this["Templates"]["views/index"] = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),debug = locals_.debug,soundmanager = locals_.soundmanager,title = locals_.title,artists = locals_.artists,tracks = locals_.tracks,playing = locals_.playing;
+;var locals_for_with = (locals || {});(function (artists, debug, playing, soundmanager, title, tracks, undefined) {
 buf.push("<!DOCTYPE html><html lang=\"fr\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no\"><link rel=\"shortcut icon\" type=\"image/png\" href=\"images/favicon.png\"><link rel=\"stylesheet\" type=\"text/css\" href=\"stylesheets/bootstrap.min.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"stylesheets/bootstrap-slider.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"stylesheets/style.css\">");
 if ( debug)
 {
@@ -120,7 +120,7 @@ buf.push("<a href=\"#\"" + (jade.attr("data-track-id", "" + (track._id) + "", tr
 }).call(this);
 
 }
-buf.push("</div></div></div></div></div></div></main></body></html>");;return buf.join("");
+buf.push("</div></div></div></div></div></div></main></body></html>");}.call(this,"artists" in locals_for_with?locals_for_with.artists:typeof artists!=="undefined"?artists:undefined,"debug" in locals_for_with?locals_for_with.debug:typeof debug!=="undefined"?debug:undefined,"playing" in locals_for_with?locals_for_with.playing:typeof playing!=="undefined"?playing:undefined,"soundmanager" in locals_for_with?locals_for_with.soundmanager:typeof soundmanager!=="undefined"?soundmanager:undefined,"title" in locals_for_with?locals_for_with.title:typeof title!=="undefined"?title:undefined,"tracks" in locals_for_with?locals_for_with.tracks:typeof tracks!=="undefined"?tracks:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
 };
 
 this["Templates"]["views/player"] = function template(locals) {
@@ -135,7 +135,7 @@ this["Templates"]["views/tab/albums"] = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),artists = locals_.artists;
+;var locals_for_with = (locals || {});(function (artists, undefined) {
 buf.push("<ul>");
 if ( artists)
 {
@@ -214,7 +214,7 @@ buf.push("</ul></li>");
 }).call(this);
 
 }
-buf.push("</ul>");;return buf.join("");
+buf.push("</ul>");}.call(this,"artists" in locals_for_with?locals_for_with.artists:typeof artists!=="undefined"?artists:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
 };
 
 this["Templates"]["views/tab/genres"] = function template(locals) {
@@ -229,7 +229,7 @@ this["Templates"]["views/tab/playlist"] = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),tracks = locals_.tracks,playing = locals_.playing;
+;var locals_for_with = (locals || {});(function (playing, tracks, undefined) {
 buf.push("<div class=\"list-group\">");
 if ( tracks)
 {
@@ -270,14 +270,14 @@ buf.push("<a href=\"#\"" + (jade.attr("data-track-id", "" + (track._id) + "", tr
 }).call(this);
 
 }
-buf.push("</div>");;return buf.join("");
+buf.push("</div>");}.call(this,"playing" in locals_for_with?locals_for_with.playing:typeof playing!=="undefined"?playing:undefined,"tracks" in locals_for_with?locals_for_with.tracks:typeof tracks!=="undefined"?tracks:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
 };
 
 this["Templates"]["views/tab/search"] = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),artists = locals_.artists;
+;var locals_for_with = (locals || {});(function (artists, undefined) {
 if ( artists)
 {
 // iterate artists
@@ -302,5 +302,5 @@ buf.push("<div data-role=\"show-albums\"" + (jade.attr("data-artist", "" + (arti
   }
 }).call(this);
 
-};return buf.join("");
+}}.call(this,"artists" in locals_for_with?locals_for_with.artists:typeof artists!=="undefined"?artists:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
 };

@@ -3,13 +3,13 @@ var express = require('express'),
     jsonix = require('./jsonix'),
     jsonixcontext = require('./jsonix-context'),
     settings = require('../../settings'),
-    subsonicjson = new SubsonicJson;
+    mongoose = require('mongoose'),
+    subsonicjson = new SubsonicJson();
 
-var api = function(db) {
+var api = function() {
     var self = this;
-    this.db = db;
-    this.musicRoute = require('../music')(db);
-    this.ajaxRoute = require('../ajax')(db);
+    this.musicRoute = require('../music');
+    this.ajaxRoute = require('../ajax');
     this.context = new jsonix.Jsonix.Context([jsonixcontext]);
     this.routes = {};
     
@@ -47,7 +47,7 @@ var api = function(db) {
 
     
     this.routes.getArtist = function(req, res, callback){
-        var id = req.param('id');
+        var id = req.params.id;
         var cid = subsonicjson.clearId(id);
         self.getAlbumsByArtists({artist: cid}, function(docs){
             var response = subsonicjson.getArtist(id, docs);
@@ -56,7 +56,7 @@ var api = function(db) {
     };
 
     this.routes.getMusicDirectory = function(req, res, callback){
-        var id = req.param('id');
+        var id = req.params.id;
         var cid = subsonicjson.clearId(id);
         if (id.length > 0) {
             if (subsonicjson.isArtistId(id)) {
@@ -91,7 +91,7 @@ var api = function(db) {
     };
 
     this.routes.getAlbum = function(req, res, callback){
-        var id = req.param('id');
+        var id = req.params.id;
         var cid = subsonicjson.clearId(id);
         if (id.length > 0) {
             self.getSongs({album: cid[0], artist: cid[1]}, function(docs) {
@@ -104,7 +104,7 @@ var api = function(db) {
     };
 
     this.routes.getSong = function(req, res, callback){
-        var id = req.param('id');
+        var id = req.params.id;
         var cid = subsonicjson.clearId(id);
         if (id.length > 0) {
             self.getSongs({_id: cid}, function(docs) {
@@ -174,9 +174,9 @@ var api = function(db) {
 
     this.routes.getSongsByGenre = function(req, res, callback){
         var error = null;
-        var genre = req.param('genre', null);
-        var count = Math.max(Math.min(req.param('count', 10), 500), 1);
-        var offset = Math.max(req.param('offset', 0), 0);
+        var genre = req.params.genre || null;
+        var count = Math.max(Math.min(req.params.count || 10, 500), 1);
+        var offset = Math.max(req.params.offset || 0, 0);
 
         if (genre === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
@@ -201,13 +201,13 @@ var api = function(db) {
 
     this.routes.getAlbumList = function(req, res, callback, subsonicfct){
         var error = null;
-        var type = req.param('type', null);
-        var size = Math.max(Math.min(req.param('size', 10), 500), 1);
+        var type = req.params.type || null;
+        var size = Math.max(Math.min(req.params.size || 10, 500), 1);
         var size2 = size;
-        var offset = Math.max(req.param('offset', 0), 0);
-        var fromYear = req.param('fromYear', null);
-        var toYear = req.param('toYear', null);
-        var genre = req.param('genre', null);
+        var offset = Math.max(req.params.offset ||  0, 0);
+        var fromYear = req.params.fromYear || null;
+        var toYear = req.params.toYear || null;
+        var genre = req.params.genre || null;
 
         if (type === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
@@ -256,12 +256,12 @@ var api = function(db) {
     }
     
     this.routes.getRandomSongs = function(req, res, callback){
-        var size = Math.max(Math.min(req.param('size', 10), 500), 1);
-        var fromYear = req.param('fromYear', null);
-        var toYear = req.param('toYear', null);
-        var genre = req.param('genre', null);
+        var size = Math.max(Math.min(req.params.size || 10, 500), 1);
+        var fromYear = req.params.fromYear || null;
+        var toYear = req.params.toYear || null;
+        var genre = req.params.genre || null;
 
-        var filter = {_id: {$regex: new RegExp('.*'+getRandomLetter()+'.*', 'i')}};
+        var filter = {name: {$regex: new RegExp('.*'+getRandomLetter()+'.*', 'i')}};
 
         if (fromYear || toYear) {
             filter.year = {};
@@ -294,13 +294,13 @@ var api = function(db) {
     this.routes.search2 = function(req, res, callback, options){
         options = options || {child: true};
         var error = null;
-        var query = req.param('query', null);
-        var artistCount = Math.max(req.param('artistCount', 20), 1);
-        var artistOffset = Math.max(req.param('artistOffset', 0), 0);
-        var albumCount = Math.max(req.param('albumCount', 20), 1);
-        var albumOffset = Math.max(req.param('albumOffset', 0), 0);
-        var songCount = Math.max(req.param('songCount', 20), 1);
-        var songOffset = Math.max(req.param('songOffset', 0), 0);
+        var query = req.params.query || null;
+        var artistCount = Math.max(req.params.artistCount || 20, 1);
+        var artistOffset = Math.max(req.params.artistOffset || 0, 0);
+        var albumCount = Math.max(req.params.albumCount || 20, 1);
+        var albumOffset = Math.max(req.params.albumOffset || 0, 0);
+        var songCount = Math.max(req.params.songCount || 20, 1);
+        var songOffset = Math.max(req.params.songOffset || 0, 0);
 
         if (query === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
@@ -327,7 +327,7 @@ var api = function(db) {
     };
 
     this.routes.stream = this.routes.download = function(req, res, callback){
-        var id = req.param('id', null);
+        var id = req.params.id || null;
 
         if (id === null) {
             var response = subsonicjson.createError(SubsonicJson.SSERROR_MISSINGPARAM);
@@ -340,7 +340,7 @@ var api = function(db) {
 
     this.routes.getCoverArt = function(req, res, callback){
         var error = null;
-        var id = req.param('id', null);
+        var id = req.params.id || null;
         var filter, cid;
         //var size = req.param('size', null);
         if (id !== null) {
@@ -384,7 +384,8 @@ var api = function(db) {
 
 api.prototype.getAlbumsByArtists = function(filter, callback, sort, skip, limit) {
     sort = sort || {artist: 1, album: 1};
-    var query = this.db.track.find(filter).group({
+    var Track = mongoose.model('track');
+    var query = Track.find(filter).group({
         key: {artist: 1, album: 1},
         reduce: function(curr, result) {
             if (!result.year) result.year = curr.year;
@@ -410,7 +411,8 @@ api.prototype.getAlbumsByArtists = function(filter, callback, sort, skip, limit)
 };
 
 api.prototype.getSongs = function(filter, callback, sort, skip, limit) {
-    var query = this.db.track.find(filter);
+    var Track = mongoose.model('track');
+    var query = Track.find(filter);
     if (sort) query.sort(sort);
     if (skip) query.skip(skip);
     if (limit) query.limit(limit);
@@ -425,11 +427,11 @@ api.prototype.getSongs = function(filter, callback, sort, skip, limit) {
 
 api.prototype.preprocess = function(req, res, callback, next){
     var self = this;
-    var user = req.param('u');
-    var password = req.param('p');
-    var version = req.param('v');
-    var client = req.param('c');
-    var format = req.param('f', 'xml');
+    var user = req.params || u;
+    var password = req.params.p;
+    var version = req.params.v;
+    var client = req.params.c;
+    var format = req.params.f || 'xml';
     callback(req, res, function(response, error) {
         if (error) format = 'xml';
         switch (format) {
@@ -468,6 +470,4 @@ api.prototype.router = function() {
     return router;
 };
 
-module.exports = function(db) {
-    return new api(db);
-};
+module.exports = new api();

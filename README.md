@@ -15,9 +15,9 @@ First of all, add nodejs repositories to apt (more recent than default ones)
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
     sudo apt-get update
 
-Then install nodejs, taglib and graphicsmagick
+Then install nodejs, mongodb, taglib and graphicsmagick
 
-    sudo apt-get install nodejs libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick git build-essential
+    sudo apt-get install nodejs libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick git build-essential mongodb-server
 
 Taglib installation (other systems)
 -----------------------------------
@@ -76,7 +76,7 @@ License
 -------
 MIT License
 
-Copyright © 2014 Joël Charles
+Copyright © 2014-2015 Joël Charles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

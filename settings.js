@@ -1,10 +1,6 @@
 module.exports = {
-    nedb: {
-        dir: 'data/db/',
-        dbs: {
-            track: 'track',
-            albumart: 'albumart'
-        }
+    mongodb: {
+        uri: 'mongodb://localhost/festival'
     },
     express: {
         port: 3001

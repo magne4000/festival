@@ -10,21 +10,24 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     path = require('path'),
     settings = require('./settings'),
-    Datastore = require('nedb'),
-    db = {
-        track: new Datastore({ filename: settings.nedb.dir+settings.nedb.dbs.track, autoload: true }),
-        albumart: new Datastore({ filename: settings.nedb.dir+settings.nedb.dbs.albumart, autoload: true })
-    },
-    index = require('./routes/index')(db),
-    ajax = require('./routes/ajax')(db),
-    music = require('./routes/music')(db),
-    scanner = require('./scanner')(db),
-    subsonicapi = require('./routes/api/subsonic')(db),
+    mongoose = require('mongoose'),
+    index = require('./routes/index'),
+    ajax = require('./routes/ajax'),
+    music = require('./routes/music'),
+    scanner = require('./scanner'),
+    subsonicapi = require('./routes/api/subsonic'),
     fs = require('fs');
 
-// nedb indexes
-db.track.ensureIndex({ fieldName: 'artist' });
-db.track.ensureIndex({ fieldName: 'album' });
+mongoose.connect(settings.mongodb.uri);
+
+
+//Bootstrap models
+var models_path = path.join(__dirname, 'models');
+fs.readdirSync(models_path).forEach(function(file) {
+    if (~file.indexOf('.js')) {
+        require(path.join(models_path, file));
+    }
+});
 
 // express
 var app = express();

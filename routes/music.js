@@ -1,14 +1,12 @@
 var fs = require('fs'),
     path = require('path'),
-    settings = require('../settings');
+    settings = require('../settings'),
+    mongoose = require('mongoose');
 
-var music = function(db) {
-    this.db = db;
-};
-
-music.prototype.index = function(req, res){
-    var id = req.params.id;
-    this.db.track.findOne({ _id : id }, function (err, track) {
+exports.index = function(req, res){
+    var id = req.params.id,
+        Track = mongoose.model('track');
+    Track.findOne({ _id : id }, function (err, track) {
         if (err) {
             console.error(err);
         } else if (track) {
@@ -18,15 +16,11 @@ music.prototype.index = function(req, res){
                     res.sendFile(relativepath, {root: settings.scanner.path});
                 }else{ 
                     console.warn('Path "'+track.path+'" invalid for track '+id);
-                    res.send(404);
+                    res.sendStatus(404);
                 }
             });
         } else {
-            res.send(404);
+            res.sendStatus(404);
         }
     });
-};
-
-module.exports = function(db) {
-    return new music(db);
 };
