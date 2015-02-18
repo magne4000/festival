@@ -427,7 +427,7 @@ api.prototype.getSongs = function(filter, callback, sort, skip, limit) {
 
 api.prototype.preprocess = function(req, res, callback, next){
     var self = this;
-    var user = req.params || u;
+    var user = req.params.u;
     var password = req.params.p;
     var version = req.params.v;
     var client = req.params.c;
