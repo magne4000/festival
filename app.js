@@ -20,7 +20,6 @@ var express = require('express'),
 
 mongoose.connect(settings.mongodb.uri);
 
-
 //Bootstrap models
 var models_path = path.join(__dirname, 'models');
 fs.readdirSync(models_path).forEach(function(file) {

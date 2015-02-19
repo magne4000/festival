@@ -4,13 +4,12 @@ var fs = require('fs'),
     temp = require('./lib/temp').track(),
     thumbs = require('./lib/thumbs'),
     coverurl = require('./lib/coverurl'),
-    walk = require('walk'),
     taglib = require('taglib'),
     path = require('path'),
-    watchr = require('watchr'),
     mime = require('mime'),
     uuid = require('node-uuid'),
     mongoose = require('mongoose'),
+    filewalker = require('filewalker'),
     t = 10000;
 
 var Scanner = function() {
@@ -33,7 +32,7 @@ Scanner.prototype.merge = function(filepath, mtime, tag, audioProperties){
         last_updated: mtime
     }, self = this;
     if (tag === null){
-        console.log(filepath + ' : tag is null');
+        console.log(filepath, ': tag is null');
     } else {
         track.genre = tag.genre;
         track.album = tag.album;
@@ -51,7 +50,7 @@ Scanner.prototype.merge = function(filepath, mtime, tag, audioProperties){
     }
     track.mime = mime.lookup(track.path);
     Track.update({ path: filepath }, track, {upsert: true}, function(err, a, b){
-        console.log(filepath + ' : updated');
+        console.log(filepath, ': updated');
         self.clearProgressTimeout();
     });
 };
@@ -60,25 +59,109 @@ Scanner.prototype.merge = function(filepath, mtime, tag, audioProperties){
  * Delete files that are not on the filesystem anymore
  * @param files
  */
-Scanner.prototype.cleanold = function(files, albumarts){
+Scanner.prototype.cleanold = function(files){
     var Track = mongoose.model('track'),
         Albumart = mongoose.model('albumart'),
         albumartsToDelete = [],
         filesToDelete = [];
     
     // Clean old tracks
-    Object.keys(files).forEach(function(element) {
-        filesToDelete.push(element);
-    });
-    Track.remove({path: {$in: filesToDelete}}).exec();
+    if (files) {
+        Object.keys(files).forEach(function(element) {
+            filesToDelete.push(element);
+        });
+        Track.remove({path: {$in: filesToDelete}}).exec();
+        if (settings.scanner.debug) {
+            console.log('Cleared files', filesToDelete);
+        }
+    }
     
-    // Clean old covers
-    Object.keys(albumarts).forEach(function(element) {
-        albumartsToDelete.push(element);
-        thumbs.remove(element);
-    });
-    Albumart.remove({path: {$in: albumartsToDelete}}).exec();
     this.clearProgressTimeout();
+};
+
+function mkthumbnail(frompath, artist, album) {
+    var Albumart = mongoose.model('albumart');
+    if (frompath === null) {
+        var oalbum = {artist: artist, album: album, path: null};
+        var newalbumart = new Albumart(oalbum);
+        newalbumart.save(function (err, newDoc) {
+            if (err){
+                console.error(err);
+            }
+        });
+    } else {
+        thumbs.create(frompath, uuid.v4(), 140, 140, function(err, thumbpath){
+            if (err) {
+                console.error('Error while making thumbnail with "' + frompath + '"');
+                console.error(err);
+                mkthumbnail(null, artist, album);
+            } else {
+                var oalbum = {artist: artist, album: album, path: thumbpath};
+                var newalbumart = new Albumart(oalbum);
+                newalbumart.save(function (err2, newDoc) {
+                    if (err2){
+                        console.error(err2);
+                    } else {
+                        if (settings.scanner.debug) {
+                            console.log('album art saved :', thumbpath);
+                        }
+                    }
+                });
+            }
+        });
+    }
+}
+
+Scanner.prototype.updateAlbumArts = function(){
+    var Track = mongoose.model('track'),
+        Albumart = mongoose.model('albumart'),
+        self = this;
+
+    Albumart.find({}).exec(function(err2, docs2) {
+        var covers = [];
+        for (var i=0; i<docs2.length; i++){
+            var artist = docs2[i].artist.trim().toLowerCase();
+            var album = docs2[i].album.trim().toLowerCase();
+            if (typeof covers[artist] == 'undefined') {
+                covers[artist] = [];
+            }
+            covers[artist].push(album);
+        }
+
+        function coverexists(artist, album) {
+            artist = artist.trim().toLowerCase();
+            album = album.trim().toLowerCase();
+            if (typeof covers[artist] != 'undefined'){
+                if (covers[artist].indexOf(album) !== -1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        Track.aggregate(
+            {$match: {}},
+            {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}, first_path: {$first: '$path'}}},
+            {$sort: {artist: 1, album: 1}},
+            {$project: {_id: 0, artist: 1, year: 1, first_path: 1, album: '$_id.album'}},
+            function(err, docs) {
+                if (err) {
+                    console.error(err);
+                } else {
+                    for (var i=0; i<docs.length; i++){
+                        var album = docs[i].album,
+                            artist = docs[i].artist;
+                        if (artist !== null && album !== null && !coverexists(artist, album)){
+                            if (settings.scanner.debug) {
+                                console.log('No cover for', artist, '-', album);
+                            }
+                            self.fetchCoverOnline(artist, album, mkthumbnail);
+                        }
+                    }
+                }
+            }
+        );
+    });
 };
 
 /**
@@ -124,24 +207,28 @@ Scanner.prototype.isCoverFile = function(filepath){
 /**
  * Fetch cover with lastfm API, then create thumbnail
  */
-Scanner.prototype.fetchCoverOnline = function(filepath, tag, callback){
-    coverurl(settings.lastfm.api_key, tag.artist, tag.album, function(err, url) {
+Scanner.prototype.fetchCoverOnline = function(artist, album, callback){
+    coverurl(settings.lastfm.api_key, artist, album, function(err, url) {
         if (err) {
-            console.log(err);
+            if (settings.scanner.debug) {
+                console.log('fetchCoverOnline ERROR');
+                console.log(err);
+            }
+            callback(null, artist, album);
         } else {
             if (url === null) {
-                callback(null, tag);
+                callback(null, artist, album);
             } else {
                 http.get(url, function(res) {
                     var temppath = temp.path('festival');
                     var wstream = temp.createWriteStream(undefined, temppath);
                     res.pipe(wstream).on('close', function(){
-                        callback(temppath, tag);
+                        callback(temppath, artist, album);
                     });
                 }).on('error', function(e) {
                     console.log("Error in fetchCoverOnline", url);
                     console.log(e);
-                    callback(null, tag);
+                    callback(null, artist, album);
                 });
             }
         }
@@ -158,89 +245,24 @@ Scanner.prototype.scan = function(){
         Albumart = mongoose.model('albumart');
     if (!this.scanInProgess){
         this.scanInProgess = true;
-        console.log('Scan started.');
+        if (settings.scanner.debug) {
+            console.log('Scan started.');
+        }
         Track.find(
             {},
             "path last_updated",
             function(err, docs) {
                 if (err) console.error(err);
-                var files = {}, albumarts = {};
+                var files = {};
                 for (var i in docs) {
                     if (docs.hasOwnProperty(i)) {
                         files[docs[i].path] = docs[i].last_updated;
                     }
                 }
             
-                var walker = walk.walk(settings.scanner.path);
+                var walker = filewalker(settings.scanner.path);
 
-                walker.on("names", function (root, nodeNamesArray) {
-                    var coverfile = null, firstmusicfile = null;
-                    for (var i=0; i<nodeNamesArray.length && (coverfile === null || firstmusicfile === null); i++) {
-                        var filepath = path.join(root, nodeNamesArray[i]);
-                        if (coverfile === null && self.isCoverFile(filepath)) {
-                            coverfile = filepath;
-                        }
-                        if (firstmusicfile === null && self.isMusicFile(filepath)) {
-                            firstmusicfile = filepath;
-                        }
-                    }
-                    if (firstmusicfile !== null) {
-                        taglib.read(firstmusicfile, function(err2, tag, audioProperties){
-                            var artist = tag.artist?tag.artist.trim().toLowerCase():null;
-                            var album = tag.album?tag.album.trim().toLowerCase():null;
-                            if (artist !== null && album !== null) {
-                                Albumart.findOne({artist: artist, album: album}, function(err3, doc){
-                                    if (doc === null) { // no existing cover
-                                        var mkthumbnail = function(frompath, taginfo) {
-                                            if (frompath === null) {
-                                                var oalbum = {artist: artist, album: album, path: null};
-                                                var newalbumart = new Albumart(oalbum);
-                                                newalbumart.save(function (err5, newDoc) {
-                                                    if (err5){
-                                                        console.error(err5);
-                                                    } else {
-                                                        if (settings.scanner.debug) {
-                                                            console.log('no albumart found');
-                                                        }
-                                                    }
-                                                });
-                                            } else {
-                                                thumbs.create(frompath, uuid.v4(), 140, 140, function(err4, thumbpath){
-                                                    if (err4) {
-                                                        console.error('Error while making thumbnail with "' + frompath + '"');
-                                                        console.error(err4);
-                                                    } else {
-                                                        var oalbum = {artist: artist, album: album, path: thumbpath};
-                                                        var newalbumart = new Albumart(oalbum);
-                                                        newalbumart.save(function (err5, newDoc) {
-                                                            if (err5){
-                                                                console.error(err5);
-                                                            } else {
-                                                                if (settings.scanner.debug) {
-                                                                    console.log('album art saved : ' + thumbpath);
-                                                                }
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                            }
-                                        };
-                                        if (coverfile === null) {
-                                            // Fetch cover online
-                                            self.fetchCoverOnline(firstmusicfile, tag, mkthumbnail);
-                                        } else {
-                                            // Use local cover
-                                            mkthumbnail(coverfile, tag);
-                                       }
-                                    }
-                                });
-                            }
-                       });
-                    }
-                });
-
-                walker.on("file", function(root, fileStats, next) {
-                    var filepath = path.join(root, fileStats.name);
+                walker.on("file", function(rpath, fileStats, filepath) {
                     if (self.isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
                         if (settings.scanner.debug) {
                             console.log('Reading tags : ' + filepath);
@@ -248,27 +270,28 @@ Scanner.prototype.scan = function(){
                         delete files[filepath];
                         taglib.read(filepath, function(err, tag, audioProperties){
                             self.merge(filepath, fileStats.mtime, tag, audioProperties);
-                            next();
                         });
                     }else{
                         delete files[filepath];
-                        next();
                     }
                 });
 
-                walker.on("end", function () {
-                    if (settings.scanner.debug) {
-                        console.log('cleanold', files, albumarts);
-                    }
-                    self.cleanold(files, albumarts);
+                walker.on("done", function () {
+                    self.cleanold(files);
+                    // Update covers
+                    self.updateAlbumArts();
                     // Optimize mongodb here ?
                     self.scanInProgess = false;
-                    console.log('Update finished.');
+                    if (settings.scanner.debug) {
+                        console.log('Update finished.');
+                    }
                     if (self.rescanAfter) {
                         self.rescanAfter = false;
                         self.scan();
                     }
                 });
+
+                walker.walk();
             }
         );
     } else {
@@ -299,21 +322,10 @@ Watcher.prototype.scan = function(){
  */
 Watcher.prototype.watch = function(){
     var self = this;
-    watchr.watch({
-        path: settings.scanner.path,
-        ignoreHiddenFiles: true,
-        listeners: {
-            error: function(err){
-                console.log('an error occured: ', err);
-            },
-            change: function(changeType, filePath, fileCurrentStat, filePreviousStat){
-                if (settings.scanner.debug) {
-                    console.log('a change event occured: ', arguments);
-                }
-                self.scan();
-            }
-        }
-    });
+    // Try to scan every 30 seconds
+    setInterval(function(){
+        self.scan();
+    }, 30000);
 };
 
 module.exports = new Watcher();
