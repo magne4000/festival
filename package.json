@@ -28,6 +28,7 @@
     "mongoose": "^3.8.23",
     "morgan": "^1.5.1",
     "node-uuid": "^1.4.2",
+    "queue-async": "^1.0.7",
     "rimraf": "^2.2.8",
     "serve-static": "^1.8.1",
     "taglib": "^0.8.1",

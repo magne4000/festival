@@ -205,8 +205,8 @@ ajax.prototype.fileinfo = function(req, res){
 };
 
 ajax.prototype.albumart = function(req, res){
-    var album = req.query.album.trim().toLowerCase();
-    var artist = req.query.artist.trim().toLowerCase();
+    var album = req.query.album;
+    var artist = req.query.artist;
     var Albumart = mongoose.model('albumart');
     var query = Albumart.findOne({album: album, artist: artist});
     query.exec(function (err, doc) {

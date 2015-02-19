@@ -10,12 +10,14 @@ var fs = require('fs'),
     uuid = require('node-uuid'),
     mongoose = require('mongoose'),
     filewalker = require('filewalker'),
+    queue = require('queue-async'),
     t = 10000;
 
 var Scanner = function() {
     this.progressTimeout = null;
     this.scanInProgess = false;
     this.rescanAfter = false;
+    this.coverqueue = queue(10);
 };
 
 /**
@@ -42,7 +44,7 @@ Scanner.prototype.merge = function(filepath, mtime, tag, audioProperties){
         track.trackno = tag.track;
     }
     if (audioProperties === null){
-        console.log(filepath + ' : enable to retrieve audio properties');
+        console.log(filepath + ' : unable to retrieve audio properties');
     }else{
         track.duration = audioProperties.length;
         track.bitrate = audioProperties.bitrate;
@@ -112,10 +114,11 @@ function mkthumbnail(frompath, artist, album) {
     }
 }
 
-Scanner.prototype.updateAlbumArts = function(){
+Scanner.prototype.updateAlbumArts = function(callback){
     var Track = mongoose.model('track'),
         Albumart = mongoose.model('albumart'),
-        self = this;
+        self = this,
+        promise = null;
 
     Albumart.find({}).exec(function(err2, docs2) {
         var covers = [];
@@ -161,6 +164,11 @@ Scanner.prototype.updateAlbumArts = function(){
                 }
             }
         );
+
+        self.coverqueue.awaitAll(function(){
+            clearTimeout(promise);
+            promise = setTimeout(callback, 10000);
+        });
     });
 };
 
@@ -208,6 +216,7 @@ Scanner.prototype.isCoverFile = function(filepath){
  * Fetch cover with lastfm API, then create thumbnail
  */
 Scanner.prototype.fetchCoverOnline = function(artist, album, callback){
+    var self = this;
     coverurl(settings.lastfm.api_key, artist, album, function(err, url) {
         if (err) {
             if (settings.scanner.debug) {
@@ -219,17 +228,21 @@ Scanner.prototype.fetchCoverOnline = function(artist, album, callback){
             if (url === null) {
                 callback(null, artist, album);
             } else {
-                http.get(url, function(res) {
-                    var temppath = temp.path('festival');
-                    var wstream = temp.createWriteStream(undefined, temppath);
-                    res.pipe(wstream).on('close', function(){
-                        callback(temppath, artist, album);
+                self.coverqueue.defer(function(url2, artist2, album2, next){
+                    http.get(url2, function(res) {
+                        var temppath = temp.path('festival');
+                        var wstream = temp.createWriteStream(undefined, temppath);
+                        res.pipe(wstream).on('close', function(){
+                            callback(temppath, artist2, album2);
+                        });
+                        next();
+                    }).on('error', function(e) {
+                        console.log("Error in fetchCoverOnline", url2);
+                        console.log(e);
+                        callback(null, artist2, album2);
+                        next();
                     });
-                }).on('error', function(e) {
-                    console.log("Error in fetchCoverOnline", url);
-                    console.log(e);
-                    callback(null, artist, album);
-                });
+                }, url, artist, album);
             }
         }
     });
@@ -261,34 +274,51 @@ Scanner.prototype.scan = function(){
                 }
             
                 var walker = filewalker(settings.scanner.path);
+                var myqueue = queue(100);
 
                 walker.on("file", function(rpath, fileStats, filepath) {
                     if (self.isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
+                        console.log(filepath);
                         if (settings.scanner.debug) {
                             console.log('Reading tags : ' + filepath);
                         }
                         delete files[filepath];
-                        taglib.read(filepath, function(err, tag, audioProperties){
-                            self.merge(filepath, fileStats.mtime, tag, audioProperties);
-                        });
+                        myqueue.defer(function(filepath2, fileStats2, next) {
+                            taglib.read(filepath2, function(err, tag, audioProperties){
+                                if (tag) {
+                                    self.merge(filepath2, fileStats2.mtime, tag, audioProperties);
+                                } else {
+                                    console.log("No tags for", filepath2, "?");
+                                }
+                                next();
+                            });
+                        }, filepath, fileStats);
                     }else{
                         delete files[filepath];
                     }
                 });
 
+                walker.on('error', function(error){
+                    console.log('walker ERROR');
+                    console.error(error);
+                });
+
                 walker.on("done", function () {
-                    self.cleanold(files);
-                    // Update covers
-                    self.updateAlbumArts();
-                    // Optimize mongodb here ?
-                    self.scanInProgess = false;
-                    if (settings.scanner.debug) {
-                        console.log('Update finished.');
-                    }
-                    if (self.rescanAfter) {
-                        self.rescanAfter = false;
-                        self.scan();
-                    }
+                    myqueue.awaitAll(function() {
+                        self.cleanold(files);
+                        // Update covers
+                        self.updateAlbumArts(function(){
+                            // Optimize mongodb here ?
+                            self.scanInProgess = false;
+                            if (settings.scanner.debug) {
+                                console.log('Update finished.');
+                            }
+                            if (self.rescanAfter) {
+                                self.rescanAfter = false;
+                                self.scan();
+                            }
+                        });
+                    });
                 });
 
                 walker.walk();
@@ -322,10 +352,10 @@ Watcher.prototype.scan = function(){
  */
 Watcher.prototype.watch = function(){
     var self = this;
-    // Try to scan every 30 seconds
+    // Try to scan every 5 minutes
     setInterval(function(){
         self.scan();
-    }, 30000);
+    }, 300000);
 };
 
 module.exports = new Watcher();
