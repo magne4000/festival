@@ -12,7 +12,7 @@ module.exports = {
         path: '/mnt/data/musique',
         musicExts: '.mp3,.ogg',
         coverExts: '.png,.jpg,.jpeg,.gif',
-        debug: true
+        debug: false
     },
     soundmanager: {
         url: 'swf/',
