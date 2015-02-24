@@ -47,7 +47,7 @@ var api = function() {
 
     
     this.routes.getArtist = function(req, res, callback){
-        var id = req.params.id;
+        var id = req.query.id;
         var cid = subsonicjson.clearId(id);
         self.getAlbumsByArtists({artist: cid}, function(docs){
             var response = subsonicjson.getArtist(id, docs);
@@ -56,7 +56,7 @@ var api = function() {
     };
 
     this.routes.getMusicDirectory = function(req, res, callback){
-        var id = req.params.id;
+        var id = req.query.id;
         var cid = subsonicjson.clearId(id);
         if (id.length > 0) {
             if (subsonicjson.isArtistId(id)) {
@@ -91,7 +91,7 @@ var api = function() {
     };
 
     this.routes.getAlbum = function(req, res, callback){
-        var id = req.params.id;
+        var id = req.query.id;
         var cid = subsonicjson.clearId(id);
         if (id.length > 0) {
             self.getSongs({album: cid[0], artist: cid[1]}, function(docs) {
@@ -104,7 +104,7 @@ var api = function() {
     };
 
     this.routes.getSong = function(req, res, callback){
-        var id = req.params.id;
+        var id = req.query.id;
         var cid = subsonicjson.clearId(id);
         if (id.length > 0) {
             self.getSongs({_id: cid}, function(docs) {
@@ -174,9 +174,9 @@ var api = function() {
 
     this.routes.getSongsByGenre = function(req, res, callback){
         var error = null;
-        var genre = req.params.genre || null;
-        var count = Math.max(Math.min(req.params.count || 10, 500), 1);
-        var offset = Math.max(req.params.offset || 0, 0);
+        var genre = req.query.genre || null;
+        var count = Math.max(Math.min(req.query.count || 10, 500), 1);
+        var offset = Math.max(req.query.offset || 0, 0);
 
         if (genre === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
@@ -201,13 +201,13 @@ var api = function() {
 
     this.routes.getAlbumList = function(req, res, callback, subsonicfct){
         var error = null;
-        var type = req.params.type || null;
-        var size = Math.max(Math.min(req.params.size || 10, 500), 1);
+        var type = req.query.type || null;
+        var size = Math.max(Math.min(req.query.size || 10, 500), 1);
         var size2 = size;
-        var offset = Math.max(req.params.offset ||  0, 0);
-        var fromYear = req.params.fromYear || null;
-        var toYear = req.params.toYear || null;
-        var genre = req.params.genre || null;
+        var offset = Math.max(req.query.offset ||  0, 0);
+        var fromYear = req.query.fromYear || null;
+        var toYear = req.query.toYear || null;
+        var genre = req.query.genre || null;
 
         if (type === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
@@ -256,10 +256,10 @@ var api = function() {
     }
     
     this.routes.getRandomSongs = function(req, res, callback){
-        var size = Math.max(Math.min(req.params.size || 10, 500), 1);
-        var fromYear = req.params.fromYear || null;
-        var toYear = req.params.toYear || null;
-        var genre = req.params.genre || null;
+        var size = Math.max(Math.min(req.query.size || 10, 500), 1);
+        var fromYear = req.query.fromYear || null;
+        var toYear = req.query.toYear || null;
+        var genre = req.query.genre || null;
 
         var filter = {name: {$regex: new RegExp('.*'+getRandomLetter()+'.*', 'i')}};
 
@@ -294,13 +294,13 @@ var api = function() {
     this.routes.search2 = function(req, res, callback, options){
         options = options || {child: true};
         var error = null;
-        var query = req.params.query || null;
-        var artistCount = Math.max(req.params.artistCount || 20, 1);
-        var artistOffset = Math.max(req.params.artistOffset || 0, 0);
-        var albumCount = Math.max(req.params.albumCount || 20, 1);
-        var albumOffset = Math.max(req.params.albumOffset || 0, 0);
-        var songCount = Math.max(req.params.songCount || 20, 1);
-        var songOffset = Math.max(req.params.songOffset || 0, 0);
+        var query = req.query.query || null;
+        var artistCount = Math.max(req.query.artistCount || 20, 1);
+        var artistOffset = Math.max(req.query.artistOffset || 0, 0);
+        var albumCount = Math.max(req.query.albumCount || 20, 1);
+        var albumOffset = Math.max(req.query.albumOffset || 0, 0);
+        var songCount = Math.max(req.query.songCount || 20, 1);
+        var songOffset = Math.max(req.query.songOffset || 0, 0);
 
         if (query === null) {
             error = SubsonicJson.SSERROR_MISSINGPARAM;
@@ -327,20 +327,20 @@ var api = function() {
     };
 
     this.routes.stream = this.routes.download = function(req, res, callback){
-        var id = req.params.id || null;
+        var id = req.query.id || null;
 
         if (id === null) {
             var response = subsonicjson.createError(SubsonicJson.SSERROR_MISSINGPARAM);
             callback(response, true);
         } else {
-            req.params.id = subsonicjson.clearId(id);
+            req.query.id = subsonicjson.clearId(id);
             self.musicRoute.index(req, res);
         }
     };
 
     this.routes.getCoverArt = function(req, res, callback){
         var error = null;
-        var id = req.params.id || null;
+        var id = req.query.id || null;
         var filter, cid;
         //var size = req.param('size', null);
         if (id !== null) {
@@ -385,19 +385,11 @@ var api = function() {
 api.prototype.getAlbumsByArtists = function(filter, callback, sort, skip, limit) {
     sort = sort || {artist: 1, album: 1};
     var Track = mongoose.model('track');
-    var query = Track.find(filter).group({
-        key: {artist: 1, album: 1},
-        reduce: function(curr, result) {
-            if (!result.year) result.year = curr.year;
-            if (!result.last_updated) result.last_updated = curr.last_updated;
-            result.songCount += 1;
-            if (curr.duration) result.duration += curr.duration;
-        },
-        initial: {
-            duration: 0,
-            songCount: 0
-        }
-    });
+    var query = Track.aggregate(
+        {$match: filter},
+        {$project: {artist: 1, album: 1}},
+        {$group: {_id: {album: '$album'}, year: {$first: '$year'}, last_updated: {$first: '$last_updated'}, duration: {$sum: '$duration'}, songCount: {$sum: 1}}}
+    );
     if (sort) query.sort(sort);
     if (skip) query.skip(skip);
     if (limit) query.limit(limit);
@@ -427,11 +419,11 @@ api.prototype.getSongs = function(filter, callback, sort, skip, limit) {
 
 api.prototype.preprocess = function(req, res, callback, next){
     var self = this;
-    var user = req.params.u;
-    var password = req.params.p;
-    var version = req.params.v;
-    var client = req.params.c;
-    var format = req.params.f || 'xml';
+    var user = req.query.u;
+    var password = req.query.p;
+    var version = req.query.v;
+    var client = req.query.c;
+    var format = req.query.f || 'xml';
     callback(req, res, function(response, error) {
         if (error) format = 'xml';
         switch (format) {
