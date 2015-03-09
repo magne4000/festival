@@ -1,4 +1,5 @@
 module.exports = {
+    debug: true,
     mongodb: {
         uri: 'mongodb://localhost/festival'
     },
@@ -11,8 +12,7 @@ module.exports = {
     scanner: {
         path: '/mnt/data/musique',
         musicExts: '.mp3,.ogg',
-        coverExts: '.png,.jpg,.jpeg,.gif',
-        debug: false
+        coverExts: '.png,.jpg,.jpeg,.gif'
     },
     soundmanager: {
         url: 'swf/',

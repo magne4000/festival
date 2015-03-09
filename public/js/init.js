@@ -3,20 +3,6 @@ $(document).ready(function() {
         newTrackPlayStart = false,
         timeoutVolume = null;
     
-    /* Fastsearch */
-    $('#search').fastsearch({
-        source: "ajax/search/artists",
-        recipient: ".search .list-group",
-        delay: 300,
-        render: Templates["views/tab/search"]
-    })
-    .on('fastsearchchange', function(){
-        showLoadingOverlay(".search .list-group");
-    })
-    .on('fastsearchchanged', function(){
-        hideLoadingOverlay(".search .list-group");
-    });
-    
     /* Fix dropdown showing out of viewport */
     $(document).on('show.bs.dropdown', ".search .dropdown", function(e) {
         var toggle = $(this).find('.dropdown-toggle'),
@@ -77,13 +63,12 @@ $(document).ready(function() {
     });
     
     /* Events */
-    $(document).hammer().on('tap', "[data-role='play']", function(e){
-        var artist = $(e.currentTarget).data("artist"),
-            trackUniqid = $(e.currentTarget).data("trackUniqid"),
-            trackId = $(e.currentTarget).data("trackId"),
-            album = $(e.currentTarget).data("album");
-        if (!artist && !album){
-            $("#player").player('play', trackUniqid);
+    $(document).on('click', "[data-role='play']", function(e){
+        var trackUniqid = $(e.currentTarget).data("trackUniqid"),
+            trackId = $(e.currentTarget).data("trackId");
+        $("#player").player('add', trackUniqid);
+        /*if (!artist && !album){
+            
         }else{
             // Set in "Now playing" tab
             showNowPlaying(artist, album, trackId, function(tracks){
@@ -92,10 +77,10 @@ $(document).ready(function() {
                     $("#player").player('add', tracks, true, trackId);
                 }
             });
-        }
+        }*/
     });
     
-    $(document).hammer().on('tap', "[data-role='add']", function(e){
+    $(document).on('click', "[data-role='add']", function(e){
         var artist = $(e.currentTarget).data("artist"),
             trackId = $(e.currentTarget).data("trackId"),
             album = $(e.currentTarget).data("album");
@@ -106,57 +91,50 @@ $(document).ready(function() {
         });
     });
     
-    $(document).hammer().on('tap', "[data-role='show-tracks']", function(e){
-        var artist = $(e.currentTarget).data("artist"),
-            album = $(e.currentTarget).data("album");
-        showTracks(artist, album);
+    $(document).on('click', "[data-role='show-tracks']", function(e){
+        var artist = $(e.currentTarget).parents(".artist").data("artist"),
+            album = $(e.currentTarget).parents(".album").data("album");
+        showTracks(artist, album, $(e.currentTarget).next().find(".tracks"), function(tracks) {
+            $.store('add', tracks);
+        });
     });
     
-    $(document).hammer().on('tap', "[data-role='show-albums']", function(e){
-        if (!$(e.target).is('.dropdown-toggle') && $(e.target).parents('.dropdown-toggle').length === 0) {
-            var artist = $(e.currentTarget).data("artist");
-            if (artist){
-                showAlbumsByArtist(artist);
-            }
+    $(document).on('click', "[data-role='show-albums']", function(e){
+        var artist = $(e.currentTarget).parents(".artist").data("artist");
+        if (artist){
+            showAlbumsByArtist(artist, $(e.currentTarget).next(".albums"));
         }
     });
     
-    $('#player .controls .loop, #player .controls .shuffle').hammer().on('tap', function(e){
+    $('.control.loop, .control.shuffle').on('click', function(e){
         var title = $(this).attr("title"),
             otherTitle = $(this).attr("data-title");
         $(this).attr('title', otherTitle).attr('data-title', title);
     });
     
-    $('.control.play').hammer().on('tap', function(e){
+    $('.control.play').on('click', function(e){
         $('#player').player('togglePlayPause');
     });
     
-    $('.control.next').hammer().on('tap', function(e){
+    $('.control.next').on('click', function(e){
         $('#player').player('next', true);
     });
     
-    $('.control.prev').hammer().on('tap', function(e){
+    $('.control.prev').on('click', function(e){
         $('#player').player('prev', true);
     });
     
-    $('.control.shuffle').hammer().on('tap', function(e){
+    $('.control.shuffle').on('click', function(e){
         $('#player').player('toggleShuffle');
         $(this).toggleClass("active");
     });
     
-    $('.control.loop').hammer().on('tap', function(e){
+    $('.control.loop').on('click', function(e){
         $('#player').player('toggleLoop');
         $(this).toggleClass("active");
     });
-    
-    /* Swipe */
-    $("body").hammer().on('swipeleft', function(e){
-        showNextPanel();
-    }).on('swiperight', function(e){
-        showPreviousPanel();
-    });
-    
-    $('#player .controls .showmore').hammer().on('tap', function(e){
+
+    $('#player .controls .showmore').on('click', function(e){
         setTimeout(function(){
             if ($('#player .controls .showmore').siblings().is(':visible')) {
                 hideExtendedControls();
@@ -166,7 +144,7 @@ $(document).ready(function() {
         }, 10);
     });
     
-    /* Progress bar */
+    /* Progress bar 
     $('.progressbar input').slider({
         formater: function(value) {
             return utils.format_duration(value);
@@ -179,9 +157,9 @@ $(document).ready(function() {
         if (!!cur && cur.readyState > 2) {
             cur.setPosition(pos);
         }
-    });
+    }); */
     
-    /* Volume */
+    /* Volume 
     $(".volume-wrapper input").slider()
     .on('slide', function(e){
         var vol = $(".controls .volume");
@@ -199,7 +177,7 @@ $(document).ready(function() {
                 vol.removeClass("volume-min volume-mid").addClass("volume-max")
             }
         }
-    });
+    }); */
     
     /* Shortcuts */
     $(document).on('keydown', null, 'space', function() {
@@ -208,4 +186,7 @@ $(document).ready(function() {
     
     /* Show previously saved playlist */
     showNowPlayingData($.store('get', 'tracks'));
+    
+    /* Show artists list */
+    //showArtists();
 });

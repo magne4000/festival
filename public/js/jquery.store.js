@@ -3,7 +3,7 @@
         methods = {
         init : function(options) {
             $.store.data = {};
-            $.store.localstorage = Modernizr.localstorage;
+            $.store.localstorage = (typeof window.localstorage !== 'undefined');
             if (version === $.store('get', 'version', true)){
                 $.store('get', 'tracks', true);
                 $.store('get', 'head', true);

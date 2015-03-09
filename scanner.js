@@ -73,7 +73,7 @@ Scanner.prototype.cleanold = function(files){
             filesToDelete.push(element);
         });
         Track.remove({path: {$in: filesToDelete}}).exec();
-        if (settings.scanner.debug) {
+        if (settings.debug) {
             console.log('Cleared files', filesToDelete);
         }
     }
@@ -104,7 +104,7 @@ function mkthumbnail(frompath, artist, album) {
                     if (err2){
                         console.error(err2);
                     } else {
-                        if (settings.scanner.debug) {
+                        if (settings.debug) {
                             console.log('album art saved :', thumbpath);
                         }
                     }
@@ -155,7 +155,7 @@ Scanner.prototype.updateAlbumArts = function(callback){
                         var album = docs[i].album,
                             artist = docs[i].artist;
                         if (artist !== null && album !== null && !coverexists(artist, album)){
-                            if (settings.scanner.debug) {
+                            if (settings.debug) {
                                 console.log('No cover for', artist, '-', album);
                             }
                             self.fetchCoverOnline(artist, album, mkthumbnail);
@@ -219,7 +219,7 @@ Scanner.prototype.fetchCoverOnline = function(artist, album, callback){
     var self = this;
     coverurl(settings.lastfm.api_key, artist, album, function(err, url) {
         if (err) {
-            if (settings.scanner.debug) {
+            if (settings.debug) {
                 console.log('fetchCoverOnline ERROR');
                 console.log(err);
             }
@@ -258,7 +258,7 @@ Scanner.prototype.scan = function(){
         Albumart = mongoose.model('albumart');
     if (!this.scanInProgess){
         this.scanInProgess = true;
-        if (settings.scanner.debug) {
+        if (settings.debug) {
             console.log('Scan started.');
         }
         Track.find(
@@ -279,7 +279,7 @@ Scanner.prototype.scan = function(){
                 walker.on("file", function(rpath, fileStats, filepath) {
                     if (self.isMusicFile(filepath) && (!files[filepath] || fileStats.mtime > files[filepath])){
                         console.log(filepath);
-                        if (settings.scanner.debug) {
+                        if (settings.debug) {
                             console.log('Reading tags : ' + filepath);
                         }
                         delete files[filepath];
@@ -310,7 +310,7 @@ Scanner.prototype.scan = function(){
                         self.updateAlbumArts(function(){
                             // Optimize mongodb here ?
                             self.scanInProgess = false;
-                            if (settings.scanner.debug) {
+                            if (settings.debug) {
                                 console.log('Update finished.');
                             }
                             if (self.rescanAfter) {

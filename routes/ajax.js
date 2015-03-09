@@ -1,226 +1,181 @@
-var mongoose = require('mongoose'),
-    path = require('path'),
-    thumbs = require('../lib/thumbs');
+var request = require('../lib/request');
+var LRU = require("lru-cache");
 
-//https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-function escapeRegExp(str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-}
-
-var ajax = function() {};
-
-/**
- * Send HTML artist list
- */
-ajax.prototype.searchartists = function(req, res) {
-    var term = req.body.term?req.body.term:null,
-        render = req.query.render?req.query.render:null;
-    if (term !== null && term !== '') {
-        term = escapeRegExp(term);
-        req.query.filters = {artist : {$regex: new RegExp('.*'+term+'.*', 'i')}};
-    }
-    this.listartists(req, res, function(list){
-        res.json({
-            artists: list
-        });
-    });
-};
+var cacheSearch = LRU({
+    max: 20,
+    maxAge: 60000 // 1 minute
+});
 
 /**
  * JSON list of tracks
  */
-ajax.prototype.listtracks = function(req, res){
-    var filters = req.query.filters?JSON.parse(req.query.filters):{},
-        render = req.query.render?req.query.render:null,
-        playing = req.query.playing?req.query.playing:false,
-        Track = mongoose.model('track');
-    var query = Track.find(filters);
-    query.exec(function (err, docs) {
-        if (render){
+function listtracks(req, res) {
+    var filter = req.query.filters?JSON.parse(req.query.filters):{},
+        render = req.query.render?req.query.render:false,
+        playing = req.query.playing?req.query.playing:false;
+    request.listtracks(filter, function (err, docs) {
+        if (err) {
+            console.error(err);
+            res.sendStatus(500);
+        } else if (render){
             res.render("tab/playlist", {
                 tracks: docs,
-                filters: filters,
+                filters: filter,
                 playing: playing
             });
         } else {
             res.json(docs);
         }
     });
-};
+}
 
-/**
- * JSON list of albums by artists.
- * e.g.
- *   [{
- *     name: "artist1 name",
- *     albums: [
- *       {name: "album1 name", albumart: "http://mydomain.com/album1/art"},
- *       {name: "album2 name"},
- *     ]
- *   }, ...]
- */
-ajax.prototype.listalbumsbyartists = function(req, res){
-    var filters = req.query.filters?JSON.parse(req.query.filters):{},
-        render = req.query.render?req.query.render:null,
-        albumsByArtists = [],
-        lastArtist = null,
-        Track = mongoose.model('track'),
-        Albumart = mongoose.model('albumart'),
-        self = this;
-    
-    // Fetch covers info
-    Albumart.find({}).exec(function(err2, docs2) {
-        var covers = [];
-        for (var i=0; i<docs2.length; i++){
-            if (docs2[i].path !== null) {
-                var artist = docs2[i].artist.trim().toLowerCase();
-                var album = docs2[i].album.trim().toLowerCase();
-                if (typeof covers[artist] == 'undefined') {
-                    covers[artist] = [];
-                }
-                covers[artist].push(album);
-            }
+function listalbumsbyartists(req, res) {
+    var filter = req.query.filters?JSON.parse(req.query.filters):{},
+        render = req.query.render?req.query.render:false;
+    var skip = req.query.skip?parseInt(req.query.skip, 10):null;
+    var limit = req.query.limit?parseInt(req.query.limit, 10):null;
+    request.listalbumsbyartists(filter, function(err, albumsByArtists) {
+        if (err) {
+            console.error(err);
+            res.sendStatus(500);
+        } else if (render) {
+            res.render("tab/albums", {
+                artists: albumsByArtists
+            });
+        } else {
+            res.json(albumsByArtists);
         }
-
-        function coverexists(artist, album) {
-            artist = artist.trim().toLowerCase();
-            album = album.trim().toLowerCase();
-            if (typeof covers[artist] != 'undefined'){
-                if (covers[artist].indexOf(album) !== -1) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // Fetch tracks info
-        Track.aggregate(
-            {$match: filters},
-            {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}, first_path: {$first: '$path'}}},
-            {$sort: {artist: 1, album: 1}},
-            {$project: {_id: 0, artist: 1, year: 1, first_path: 1, album: '$_id.album'}},
-            function(err, docs) {
-                if (err){
-                    console.error(err);
-                }else{
-                    for (var i=0; i<docs.length; i++){
-                        var albumdir = path.dirname(docs[i].path),
-                            album = {name: docs[i].album},
-                            artist = docs[i].artist;
-                        if (coverexists(docs[i].artist, docs[i].album)){
-                            album.albumart = '/ajax/albumart/?album=' + encodeURIComponent(docs[i].album) + '&artist=' + encodeURIComponent(docs[i].artist);
-                        }else{
-                            // Default cover when none found
-                            album.albumart = '/images/nocover.png';
-                        }
-                        if (artist !== null){
-                            if (lastArtist !== artist){
-                                // add artist with first album
-                                albumsByArtists.push({name: artist, albums: [album]});
-                                lastArtist = artist;
-                            } else {
-                                // artist already exists, so only add album to it
-                                albumsByArtists[albumsByArtists.length-1].albums.push(album);
-                            }
-                        }
-                    }
-                    if (render !== null){
-                        res.render("tab/albums", {
-                            artists: albumsByArtists
-                        });
-                    }else{
-                        res.json(albumsByArtists);
-                    }
-                }
-            }
-        );
-    });
-};
+    }, skip, limit);
+}
 
 /**
  * JSON list of albums
  */
-ajax.prototype.listalbums = function(req, res){
-    var filters = req.query.filters?JSON.parse(req.query.filters):{},
-        Track = mongoose.model('track');
-    Track.aggregate(
-        {$match: filters},
-        {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}}},
-        {$sort: {artist: 1, album: 1}},
-        {$project: {_id: 0, artist: 1, year: 1, album: '$_id.album'}},
-        function(err, docs) {
-            if (err){
-                console.error(err);
-            }else{
-                res.json(docs);
-            }
+function listalbums(req, res) {
+    var filter = req.query.filters?JSON.parse(req.query.filters):{};
+    var skip = req.query.skip?parseInt(req.query.skip, 10):null;
+    var limit = req.query.limit?parseInt(req.query.limit, 10):null;
+    request.listalbums(filter, function(err, docs) {
+        if (err) {
+            console.error(err);
+            res.sendStatus(500);
+        } else {
+            res.json(docs);
         }
-    );
-};
+    }, skip, limit);
+}
 
 /**
  * JSON list of artists
  */
-ajax.prototype.listartists = function(req, res, callback){
-    var filters = req.query.filters?req.query.filters:{},
-        Track = mongoose.model('track');
-    if (typeof callback !== 'function'){
-        filters = JSON.parse(filters);
+function listartists(req, res) {
+    var filter = req.query.filters?JSON.parse(req.query.filters):{};
+    var skip = req.query.skip?parseInt(req.query.skip, 10):null;
+    var limit = req.query.limit?parseInt(req.query.limit, 10):null;
+    request.listartists(filter, function(err, docs) {
+        if (err) {
+            console.error(err);
+            res.sendStatus(500);
+        } else {
+            res.json(docs);
+        }
+    }, skip, limit);
+}
+
+function treefy(tracks, skip, limit) {
+    var tree = {};
+    var ret = [];
+    var nbAlbums = 0;
+    var albums = [];
+    var skipundef = typeof skip === "undefined";
+    var limitundef = typeof limit === "undefined";
+    if (!limitundef && !skipundef) {
+        limit += skip;
     }
-    Track.aggregate(
-        {$match: filters},
-        {$group: {_id: {artist: '$artist'}}},
-        {$project: {_id: 0, artist: '$_id.artist'}},
-        {$sort: {artist: 1}},
-        function(err, docs) {
-            if (err){
-                console.error(err);
-            }else{
-                if (typeof callback === 'function'){
-                    callback(docs);
-                }else{
-                    res.json(docs);
+    tracks.forEach(function(element) {
+        if (element.artist && element.album) {
+            if (!(!skipundef && nbAlbums <= skip) && !(!limitundef && nbAlbums > limit)) {
+                if (typeof tree[element.artist] === 'undefined') {
+                    tree[element.artist] = [];
                 }
+                if (typeof tree[element.artist][element.album] === 'undefined') {
+                    tree[element.artist][element.album] = [];
+                }
+                tree[element.artist][element.album].push(element);
+            }
+            if (albums.indexOf(element.artist+"@@@"+element.album) === -1) {
+                albums.push(element.artist+"@@@"+element.album);
+                nbAlbums += 1;
             }
         }
-    );
-};
+    });
+    for (var artist in tree) {
+        var retArtist = {artist: artist, albums: []};
+        for (var album in tree[artist]) {
+            retArtist.albums.push({
+                name: album,
+                albumart: '/albumart?album=' + encodeURIComponent(album) + '&artist=' + encodeURIComponent(artist),
+                tracks: tree[artist][album]
+            });
+        }
+        ret.push(retArtist);
+    }
+    return ret;
+}
 
-ajax.prototype.fileinfo = function(req, res){
-    var ids = req.query.ids?JSON.parse(req.query.ids):null,
-        Track = mongoose.model('track');
-    if (ids !== null){
-        Track.find({ _id : {$in: ids.ids}}, function (err, tracks) {
+function search(req, res) {
+    var term = req.query.term?req.query.term:'';
+    var flat = req.query.flat?JSON.parse(req.query.flat):false;
+    // If flat is false, skip and limit applies to numbers or albums, not number of tracks
+    var skip = req.query.skip?parseInt(req.query.skip, 10):null;
+    var limit = req.query.limit?parseInt(req.query.limit, 10):null;
+    if (cacheSearch.has(term)) {
+        var docs = cacheSearch.get(term);
+        if (flat) {
+            res.json(docs);
+        } else {
+            res.json(treefy(docs, skip, limit));
+        }
+    } else {
+        request.search(term, function(err, docs) {
             if (err) {
                 console.error(err);
+                res.sendStatus(500);
+            } else {
+                cacheSearch.set(term, docs);
+                if (flat) {
+                    res.json(docs);
+                } else {
+                    res.json(treefy(docs, skip, limit));
+                }
+            }
+        }, flat?skip:null, flat?limit:null);
+    }
+}
+
+function fileinfo(req, res) {
+    var ids = req.query.ids?JSON.parse(req.query.ids):null;
+    if (ids !== null){
+        request.fileinfo(ids.ids, function (err, tracks) {
+            if (err) {
+                console.error(err);
+                res.sendStatus(500);
             } else if (tracks) {
                 res.send(tracks);
             } else {
                 res.sendStatus(500);
             }
         });
-    }else{
+    } else {
         res.sendStatus(500);
     }
-};
+}
 
-ajax.prototype.albumart = function(req, res){
-    var album = req.query.album;
-    var artist = req.query.artist;
-    var Albumart = mongoose.model('albumart');
-    var query = Albumart.findOne({album: album, artist: artist});
-    query.exec(function (err, doc) {
-        if (err) {
-            console.error(err);
-            res.sendStatus(404);
-        } else {
-            if (doc && doc.path !== null) {
-                res.sendFile(doc.path);
-            } else {
-                res.sendStatus(404);
-            }
-        }
-    });
+module.exports = {
+    listtracks: listtracks,
+    listalbumsbyartists: listalbumsbyartists,
+    listalbums: listalbums,
+    listartists: listartists,
+    search: search,
+    fileinfo: fileinfo
 };
-
-module.exports = new ajax();

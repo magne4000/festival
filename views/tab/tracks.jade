@@ -1,0 +1,6 @@
+if tracks
+  each track in tracks
+    .track(data-track-id="#{track._id}", data-track-uniqid="#{track.uniqid}", data-role="play")
+      span= track.trackno
+      span= track.name
+      span= track.duration

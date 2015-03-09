@@ -1,0 +1,135 @@
+@header-height: 72px;
+@slider-height: 12px;
+@queue-handle-width: 10px;
+
+body {
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+a {
+    color: #00B7FF;
+}
+html,
+body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+header {
+    height: @header-height;
+    box-sizing: border-box;
+}
+header .player {
+    height: 48px;
+    box-sizing: border-box;
+    display: flex;
+}
+header .player .control {
+    height: 48px;
+    width: 48px;
+    text-align: center;
+}
+header .player .panel {
+    height: 48px;
+    flex: 1;
+}
+header .player .panel > .info-panel {
+    width: 100%;
+    display: flex;
+    
+    .name {
+        flex: 1;
+        text-align: center;
+    }
+}
+header .player .slider-panel .slider {
+    height: @slider-height;
+    width: 100%;
+    position: relative;
+    background: none repeat scroll 0% 0% #F2F1F1;
+    margin: 3px;
+    border: 1px solid #DFDFDF;
+    box-shadow: 0px 0px 2px #D5D4D4 inset;
+    
+    .loading {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: @slider-height;
+        background-color: #ccc;
+        z-index: 0;
+    }
+    
+    .progress {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 0;
+        height: @slider-height;
+        background: #239bd6;
+        z-index: 1;
+    }
+    
+    input {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: @slider-height;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 2;
+    }
+}
+header .toolbar {
+    height: 24px;
+    box-sizing: border-box;
+}
+main {
+    display: flex;
+    flex: 1;
+    position: absolute;
+    top: @header-height;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+main .container {
+    flex: 1;
+    overflow: auto;
+}
+main .container .albums {
+    display: flex;
+    flex-wrap: wrap;
+}
+main .container .albums .album {
+    width: 100%;
+}
+main .container .albums .album .album-container {
+    display: flex;
+}
+main .container .albums .album img {
+    max-width: 140px;
+    max-height: 140px;
+}
+main .container .albums .album .album-container .tracks {
+    flex: 1;
+}
+main .container .albums .album.notracks {
+    width: 200px;
+    height: 200px;
+}
+main .queue .handle {
+    width: @queue-handle-width;
+    cursor: pointer;
+    height: 100%;
+    float: left;
+}
+main .queue .tracks {
+    display: none;
+    width: 300px;
+    height: 100%;
+    overflow: auto;
+}
+main .queue .tracks.show {
+    display: block;
+}

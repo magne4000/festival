@@ -106,27 +106,6 @@ function showPreviousPanel(){
     showPanel("prev");
 }
 
-function showTracks(artist, album){
-    var filter = {artist: ""+artist};
-    if (album) {
-        filter.album = ""+album;
-    }
-    clearTimeout(postTimeout.tracks);
-    postTimeout.tracks = setTimeout(function(){
-        $.get('ajax/list/tracks',{
-            filters: JSON.stringify(filter)
-        }, function(data){
-            $("#selection").html(Templates["views/tab/playlist"]({tracks: data, filters: filter}));
-            $(".playlists-tabs .selection a").tab('show');
-            showPanel('.wrapper-playlists');
-        }, "json")
-        .fail(function(jqXHR, textStatus){
-            console.log(textStatus);
-            console.log(jqXHR.responseText);
-        });
-    }, 200);
-}
-
 function addNowPlaying(artist, album, trackId, callback){
     var filter = {artist: ""+artist};
     if (album) {
@@ -155,7 +134,6 @@ function addNowPlaying(artist, album, trackId, callback){
 
 function showNowPlayingData(data, playing){
     $("#playing").html(Templates["views/tab/playlist"]({tracks: data, playing: !!playing}));
-    $(".playlists-tabs .playing a").tab('show');
     showPanel('.wrapper-playlists');
 }
 
@@ -174,22 +152,40 @@ function showNowPlaying(artist, album, trackId, callback){
         }, function(data){
             showNowPlayingData(data, true);
             if (typeof callback === 'function'){
-                 callback(data);
+                callback(data);
             }
         }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
             console.log(jqXHR.responseText);
         });
-    }, 200);
+    }, 10);
 }
 
-function showAlbums(html){
-    $(".albums .panel-body").html(html);
-    showPanel('.wrapper-albums');
+function showTracks(artist, album, where, callback){
+    var filter = {artist: ""+artist};
+    if (album) {
+        filter.album = ""+album;
+    }
+    clearTimeout(postTimeout.tracks);
+    postTimeout.tracks = setTimeout(function(){
+        $.get('ajax/list/tracks',{
+            filters: JSON.stringify(filter)
+        }, function(data){
+            where.html(Templates["views/tab/tracks"]({tracks: data, filters: filter}));
+            where.parents('.notracks').removeClass('notracks');
+            if (typeof callback === 'function'){
+                callback(data);
+            }
+        }, "json")
+        .fail(function(jqXHR, textStatus){
+            console.log(textStatus);
+            console.log(jqXHR.responseText);
+        });
+    }, 10);
 }
 
-function showAlbumsByArtist(artist){
+function showAlbumsByArtist(artist, where){
     var filter = {artist: ""+artist};
     clearTimeout(postTimeout.albums);
     postTimeout.albums = setTimeout(function(){
@@ -197,7 +193,9 @@ function showAlbumsByArtist(artist){
         $.get('ajax/list/albumsbyartists',{
             filters: JSON.stringify(filter)
         }, function(data){
-            showAlbums(Templates["views/tab/albums"]({artists: data, filters: filter}));
+            if (data && data.length > 0 && data[0].albums && data[0].albums.length > 0) {
+                where.html(Templates["views/tab/albums"]({albums: data[0].albums, filters: filter}));
+            }
         }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);
@@ -206,5 +204,29 @@ function showAlbumsByArtist(artist){
         .always(function(jqXHR, textStatus){
             hideLoadingOverlay('.wrapper-albums');
         });
-    }, 200);
+    }, 10);
+}
+
+function fillContainer(html) {
+    $("main .container").empty().html(html);
+}
+
+function showArtists(){
+    var filter = {};
+    clearTimeout(postTimeout.artists);
+    postTimeout.artists = setTimeout(function(){
+        //showLoadingOverlay('.wrapper-albums');
+        $.get('ajax/list/artists',{
+            filters: JSON.stringify(filter)
+        }, function(data){
+            fillContainer(Templates["views/tab/artists"]({artists: data, filters: filter}));
+        }, "json")
+        .fail(function(jqXHR, textStatus){
+            console.log(textStatus);
+            console.log(jqXHR.responseText);
+        })
+        .always(function(jqXHR, textStatus){
+            hideLoadingOverlay('.wrapper-albums');
+        });
+    }, 10);
 }

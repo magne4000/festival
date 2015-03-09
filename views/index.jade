@@ -2,27 +2,26 @@ doctype html
 html(lang='fr')
   head
     meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
-    meta(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no")
-    link(rel='shortcut icon', type='image/png', href='images/favicon.png')
-    link(rel='stylesheet', type='text/css', href='stylesheets/bootstrap.min.css')
-    link(rel='stylesheet', type='text/css', href='stylesheets/bootstrap-slider.css')
+    link(rel='icon', type='image/png', href='images/favicon.png')
+    link(rel='stylesheet', type='text/css', href='stylesheets/normalize.css')
+    link(rel='stylesheet', type='text/css', href='stylesheets/font-awesome.min.css')
     link(rel='stylesheet', type='text/css', href='stylesheets/style.css')
     if debug
-      script(type='text/javascript', src='js/modernizr.min.js')
       script(type='text/javascript', src='js/jquery.min.js')
-      script(type='text/javascript', src='js/jquery.hammer-full.min.js')
-      script(type='text/javascript', src='js/bootstrap.min.js')
-      script(type='text/javascript', src='js/bootstrap-slider.js')
       script(type='text/javascript', src='js/jquery.hotkeys.js')
       script(type='text/javascript', src='js/templates.js')
       script(type='text/javascript', src='js/utils.js')
-      script(type='text/javascript', src='js/jquery.store.js')
+      script(type='text/javascript', src='js/angular.min.js')
+      script(type='text/javascript', src='js/angular-init.js')
+      script(type='text/javascript', src='js/ng-infinite-scroll.min.js')
+      script(type='text/javascript', src='js/angular-lazy-img.min.js')
+      script(type='text/javascript', src='js/angular-directive.js')
+      script(type='text/javascript', src='js/angular-filter.js')
+      script(type='text/javascript', src='js/angular-controller.js')
       script(type='text/javascript', src='js/jquery.player.js')
-      script(type='text/javascript', src='js/jquery.fastsearch.js')
       script(type='text/javascript', src='js/runtime.js')
       script(type='text/javascript', src='js/views.js')
       script(type='text/javascript', src='js/ajax.js')
-      script(type='text/javascript', src='js/init.js')
       script(type='text/javascript', src='js/soundmanager2-jsmin.js')
     else
       script(type='text/javascript', src='js/festival.min.js')
@@ -35,37 +34,36 @@ html(lang='fr')
         useHTML5Audio: #{soundmanager.useHTML5Audio},
         preferFlash: #{soundmanager.preferFlash}
       });
-    //TODO plugins
-    
     title #{title}
-  body
-    header.container-fluid
+  body(ng-app="festival", ng-controller="PlayerController")
+    header
       include player
-    main.container-fluid
-      .row.fill
-        .wrapper.col-xd-12.col-md-3.wrapper-search
-          .search.wrapped
-            .input-group
-              input#search.form-control(type="search", placeholder="Search an artist", autocomplete="off")
-              span.input-group-addon
-                span.glyphicon.glyphicon-search
-            div.list-group
-              include tab/search
-        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-6.wrapper-albums
-          .panel.wrapped.albums
-            .panel-body
-        .wrapper.hidden-xs.hidden-sm.hidden.col-xd-12.col-md-6.wrapper-genres
-          .panel.wrapped.genres
-            .panel-body
-        .wrapper.hidden-xs.hidden-sm.col-xd-12.col-md-3.wrapper-playlists
-          ul.nav.nav-tabs.playlists-tabs
-            li.playing.active
-              a(href="#playing", data-toggle="tab") Now playing
-            li.selection
-              a(href="#selection", data-toggle="tab") Selection
-          .panel.playlists
-            .tab-content
-              #playing.tab-pane.active
-                include tab/playlist
-              #selection.tab-pane
-                include tab/playlist
+      .toolbar
+        .search(ng-controller="SearchController")
+          form(ng-submit="search()")
+            input#search(type="text", placeholder="Search for artist, album or track", ng-model="value")
+        .displaymode.ar
+        .displaymode.aral
+        .displaymode.araltr
+    main
+      .container#container(ng-controller="ArtistController")
+        artists(infinite-scroll="pageArtists()", infinite-scroll-distance="1", infinite-scroll-container="'main .container'")
+          .artist(ng-repeat="artist in artists track by $index")
+            h3(ng-click="loadAlbums(artist)") {{::artist.artist}}
+            .albums
+              .album(ng-repeat="album in artist.albums track by $index", ng-class="{notracks: !album.tracks}")
+                h4(ng-click="loadTracks(artist, album)") {{::album.name}}
+                .album-container
+                  img(lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")
+                  .tracks
+                    .track(ng-repeat="track in ::album.tracks track by $index")
+                      span {{::track.trackno}}
+                      span(ng-click="empty();play(track, album.tracks)") {{::track.name}}
+                      span {{::track.duration}}
+      .queue(ng-controller="QueueController")
+        .handle(ng-click="show = !show")
+        .tracks(ng-class="{show: show}")
+          .track(ng-repeat="track in tracks track by track._id")
+            span {{::track.trackno}}
+            span(ng-click="play(track, album.tracks)") {{::track.name}}
+            span {{::track.duration}}

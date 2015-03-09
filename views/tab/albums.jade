@@ -1,18 +1,13 @@
-ul
-  if artists
-    each artist in artists
-      li.artist
-        h3= artist.name
-        ul.list-inline
-          if artist.albums
-            each album in artist.albums
-              li.album
-                h5= album.name
-                div
-                  a.thumb(href="#", data-role="show-tracks", data-artist="#{artist.name}", data-album="#{album.name}")
-                    img.img-responsive(src=album.albumart, alt=album.name)
-                  .btn-group
-                    a.btn.btn-default.btn-sm(href="#", data-role="play", data-artist="#{artist.name}", data-album="#{album.name}") Play 
-                      span.glyphicon.glyphicon-play
-                    a.btn.btn-default.btn-sm(href="#", data-role="add", data-artist="#{artist.name}", data-album="#{album.name}") Add 
-                      span.glyphicon.glyphicon-plus
+if albums
+  each album in albums
+    .album(class=album.tracks?"":"notracks", data-album=album.album)
+      h4(data-role='show-tracks')= album.album
+      .album-container
+        img(src=album.albumart, alt=album.name)
+        .tracks
+          if album.tracks
+            each track in album.tracks
+              .track(data-track-id="#{track._id}", data-track-uniqid="#{track.uniqid}", data-role="play")
+                span= track.trackno
+                span= track.name
+                span= track.duration

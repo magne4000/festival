@@ -1,14 +1,15 @@
 var MODES = {
     TRACKS_BY_ARTISTS : "TRACKS_BY_ARTISTS",
     ALBUMS_BY_ARTISTS : "ALBUMS_BY_ARTISTS",
-    TRACKS_BY_ALBUMS : "TRACKS_BY_ALBUMS"
+    TRACKS_BY_ALBUMS : "TRACKS_BY_ALBUMS",
+    ARTISTS : "ARTISTS",
 };
 var postTimeout = {
     'tracks': null,
     'albums': null
 };
 
-function getList(mode, objs, callback, $applyOn){
+function getList(mode, objs, callback){
     var filter, retrieve;
     switch(mode){
         case MODES.TRACKS_BY_ARTISTS:
@@ -35,6 +36,10 @@ function getList(mode, objs, callback, $applyOn){
                 ]})
             });
             break;
+        case MODES.ARTISTS:
+            retrieve = 'artists';
+            filter = {};
+            break;
         default:
             return false;
     }
@@ -43,8 +48,7 @@ function getList(mode, objs, callback, $applyOn){
         $.get('ajax/list/'+retrieve,{
             filters : JSON.stringify(filter)
         }, function(objs){
-            $applyOn.empty();
-            callback(objs, $applyOn);
+            callback(objs);
         }, "json")
         .fail(function(jqXHR, textStatus){
             console.log(textStatus);

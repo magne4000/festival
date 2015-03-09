@@ -8,12 +8,14 @@ var express = require('express'),
     serveStatic = require('serve-static'),
     errorhandler = require('errorhandler'),
     bodyParser = require('body-parser'),
+    lessMiddleware = require('less-middleware'),
     path = require('path'),
     settings = require('./settings'),
     mongoose = require('mongoose'),
     index = require('./routes/index'),
     ajax = require('./routes/ajax'),
     music = require('./routes/music'),
+    albumart = require('./routes/albumart'),
     scanner = require('./scanner'),
     subsonicapi = require('./routes/api/subsonic'),
     fs = require('fs');
@@ -41,6 +43,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(morgan('combined'));
 app.use(compression());
+app.use(lessMiddleware(path.join(__dirname, '/public')));
 app.use(serveStatic(path.join(__dirname, 'public')));
 
 // development only
@@ -49,13 +52,14 @@ if ('development' === process.env.NODE_ENV) {
 }
 app.get('/', index.index.bind(index));
 app.get('/music/:id', music.index.bind(music));
-app.post('/ajax/search/artists', ajax.searchartists.bind(ajax));
+//app.post('/ajax/search/artists', ajax.searchartists.bind(ajax));
 app.get('/ajax/list/tracks', ajax.listtracks.bind(ajax));
 app.get('/ajax/list/albums', ajax.listalbums.bind(ajax));
 app.get('/ajax/list/artists', ajax.listartists.bind(ajax));
 app.get('/ajax/list/albumsbyartists', ajax.listalbumsbyartists.bind(ajax));
+app.get('/ajax/list/search', ajax.search.bind(ajax));
 app.get('/ajax/fileinfo', ajax.fileinfo.bind(ajax));
-app.get('/ajax/albumart', ajax.albumart.bind(ajax));
+app.get('/albumart', albumart.albumart.bind(albumart));
 app.use('/rest', subsonicapi.router());
 
 //Watcher
@@ -65,5 +69,5 @@ scanner.watch();
 scanner.scan();
 
 app.listen(app.get('port'), function() {
-    console.log('Express server listening on port ' + app.get('port'));
+    console.log('Express server listening on port', app.get('port'));
 });

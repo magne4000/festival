@@ -1,21 +1,26 @@
-#player
-  .controls
-    a.btn.btn-default.control.play(title='Play', href='javascript:void(0);')
-    a.btn.btn-default.control.hidden-xs.prev(title='Previous track', href='javascript:void(0);')
-    a.btn.btn-default.control.hidden-xs.next(title='Next track', href='javascript:void(0);')
-  .loader
-    .info
-      span.elapsed-time 00:00
-      span.name Waiting for a track
-      span.total-time 00:00
-    .progressbar
-      input.hidden(data-slider-id='progress', data-slider-handle="slim", data-slider-min="0", data-slider-max="1", data-slider-step="1", data-slider-enabled="false" data-slider-value="0")
-  .controls.pull-right
-    a.btn.btn-default.control.hidden-sm.hidden-md.hidden-lg.showmore(title='Show more', data-title='Hide', href='javascript:void(0);')
-      span More
-    a.btn.btn-default.control.hidden-xs.loop(title='Loop (currently off)', data-title='Loop (currently on)', href='javascript:void(0);')
-    a.btn.btn-default.control.hidden-xs.shuffle(title='Shuffle (currently off)', data-title='Shuffle (currently on)', href='javascript:void(0);')
-    .dropdown.hidden-xs
-      a.btn.btn-default.control.volume.volume-max(title='Volume', data-toggle='dropdown', href='javascript:void(0);')
-      .volume-wrapper.dropdown-menu
-        input(data-slider-min='0', data-slider-max='100', data-slider-step='1', data-slider-value='100', data-slider-orientation='vertical', data-slider-handle='slim', data-slider-tooltip='hide')
+.player
+  a.control.prev(title='Previous track', href='#', ng-click="prev(true)")
+    i.fa.fa-backward.fa-2x
+  a.control.play(title='Play', href='#', ng-click="togglePlayPause()")
+    i.fa.fa-2x(ng-class="{'fa-play': !playing, 'fa-pause': playing}")
+  a.control.next(title='Next track', href='#', ng-click="next(true)")
+    i.fa.fa-forward.fa-2x
+  .panel
+    .info-panel
+      span.elapsed-time {{progress() | duration}}
+      span.name {{currentTrack ? currentTrack.name : 'Waiting for a track'}}
+      span.total-time {{duration | duration}}
+    .slider-panel
+      .slider
+        input(type="range" min="0" max="{{duration}}" ng-model="progress", ng-model-options="{ getterSetter: true }")
+        .progress(ng-progress="progress()", ng-progress-duration="duration")
+        .loading(ng-loading="buffer", ng-loading-duration="duration", ng-repeat="buffer in buffered")
+  a.control.loop(title="{{loop?'Loop (currently on)':'Loop (currently off)'}}", href='#', ng-click="toggleLoop()")
+    i.fa.fa-refresh.fa-2x
+  a.control.shuffle(title="{{shuffle?'Shuffle (currently on)':'Shuffle (currently off)'}}", href='#', ng-click="toggleShuffle()")
+    i.fa.fa-random.fa-2x
+// TODO volume
+//  .dropdown.hidden-xs
+//    a.btn.btn-default.control.volume.volume-max(title='Volume', data-toggle='dropdown', href='javascript:void(0);')
+//    .volume-wrapper.dropdown-menu
+//      input(data-slider-min='0', data-slider-max='100', data-slider-step='1', data-slider-value='100', data-slider-orientation='vertical', data-slider-handle='slim', data-slider-tooltip='hide')
