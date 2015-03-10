@@ -266,7 +266,7 @@ angular.module('festival')
         return progress;
     };
 }])
-.controller('ArtistController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
+.controller('ListController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
     $rootScope.artists = [];
     
     function loadArtists(filter, skip, limit, next) {
@@ -279,7 +279,7 @@ angular.module('festival')
     }
     
     function loadAlbumsByArtists(filter, skip, limit, next) {
-        $ajax.albumsbyartists({}, skip, limit).success(function(data, status) {
+        $ajax.albumsbyartists(filter, skip, limit).success(function(data, status) {
             next((data.length > 0));
             $utils.extend($rootScope.artists, data);
         }).error(function(){
@@ -289,7 +289,7 @@ angular.module('festival')
     
     $displayMode.setCallback('artists', loadArtists);
     $displayMode.setCallback('albumsbyartists', loadAlbumsByArtists);
-    $displayMode.current('albumsbyartists', {});
+    $displayMode.current('artists', {});
     
     $scope.pageArtists = function() {
         $displayMode.call();
@@ -332,7 +332,7 @@ angular.module('festival')
     
     $rootScope.$on('tracks', computeTracks);
 }])
-.controller('SearchController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
+.controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
     $scope.value = "";
     
     function search(param, skip, limit, next) {

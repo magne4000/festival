@@ -1,6 +1,6 @@
 angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
 .config(['lazyImgConfigProvider', function(lazyImgConfigProvider) {
-    var scrollable = document.querySelector('main .container');
+    var scrollable = document.getElementById('container');
     lazyImgConfigProvider.setOptions({
         container: angular.element(scrollable)
     });
@@ -176,7 +176,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     function current(val, param) {
         if (val && modes[val]) {
             _current = val;
-            _param = param;
+            if (typeof param !== "undefined") _param = param;
             _moreToLoad = true;
             skip(0);
         }

@@ -9,8 +9,6 @@ html(lang='fr')
     if debug
       script(type='text/javascript', src='js/jquery.min.js')
       script(type='text/javascript', src='js/jquery.hotkeys.js')
-      script(type='text/javascript', src='js/templates.js')
-      script(type='text/javascript', src='js/utils.js')
       script(type='text/javascript', src='js/angular.min.js')
       script(type='text/javascript', src='js/angular-init.js')
       script(type='text/javascript', src='js/ng-infinite-scroll.min.js')
@@ -18,10 +16,6 @@ html(lang='fr')
       script(type='text/javascript', src='js/angular-directive.js')
       script(type='text/javascript', src='js/angular-filter.js')
       script(type='text/javascript', src='js/angular-controller.js')
-      script(type='text/javascript', src='js/jquery.player.js')
-      script(type='text/javascript', src='js/runtime.js')
-      script(type='text/javascript', src='js/views.js')
-      script(type='text/javascript', src='js/ajax.js')
       script(type='text/javascript', src='js/soundmanager2-jsmin.js')
     else
       script(type='text/javascript', src='js/festival.min.js')
@@ -38,21 +32,30 @@ html(lang='fr')
   body(ng-app="festival", ng-controller="PlayerController")
     header
       include player
-      .toolbar
-        .search(ng-controller="SearchController")
+      .toolbar(ng-controller="ToolbarController")
+        .search
           form(ng-submit="search()")
+            label(for="search")
+              i.fa.fa-search
             input#search(type="text", placeholder="Search for artist, album or track", ng-model="value")
-        .displaymode.ar
-        .displaymode.aral
-        .displaymode.araltr
     main
-      .container#container(ng-controller="ArtistController")
-        artists(infinite-scroll="pageArtists()", infinite-scroll-distance="1", infinite-scroll-container="'main .container'")
+      .container#container(ng-controller="ListController")
+        artists(infinite-scroll="pageArtists()", infinite-scroll-distance="1", infinite-scroll-container="'#container'")
           .artist(ng-repeat="artist in artists track by $index")
             h3(ng-click="loadAlbums(artist)") {{::artist.artist}}
+            .controls
+              .control(title="Play all albums")
+                i.fa.fa-play
+              .control(title="Add albums to queue")
+                i.fa.fa-plus
             .albums
               .album(ng-repeat="album in artist.albums track by $index", ng-class="{notracks: !album.tracks}")
                 h4(ng-click="loadTracks(artist, album)") {{::album.name}}
+                .controls
+                  .control(title="Play tracks")
+                    i.fa.fa-play
+                  .control(title="Add tracks to queue")
+                    i.fa.fa-plus
                 .album-container
                   img(lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")
                   .tracks

@@ -126,7 +126,7 @@ function treefy(tracks, skip, limit) {
 function search(req, res) {
     var term = req.query.term?req.query.term:'';
     var flat = req.query.flat?JSON.parse(req.query.flat):false;
-    // If flat is false, skip and limit applies to numbers or albums, not number of tracks
+    // If flat is false, skip and limit applies to numbers of albums, not number of tracks
     var skip = req.query.skip?parseInt(req.query.skip, 10):null;
     var limit = req.query.limit?parseInt(req.query.limit, 10):null;
     if (cacheSearch.has(term)) {

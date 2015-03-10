@@ -1,32 +1,58 @@
-@header-height: 72px;
+@header-height: 82px;
+@player-height: 48px;
+@toolbar-height: calc(@header-height - @player-height);
 @slider-height: 12px;
 @queue-handle-width: 10px;
+@player-background-color: #222;
+@toolbar-background-color: lighten(@player-background-color, 20%);
+@main-background-color: white;
 
 body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 a {
-    color: #00B7FF;
+    color: white;
 }
-html,
-body {
+html, body {
     height: 100%;
     width: 100%;
     overflow: hidden;
 }
+input[type=text] {
+	padding: 0.3125em;
+	border: none;
+	border-bottom: 1px solid #2196f3;
+	background-color: inherit;
+	-webkit-transition: border-color 0.3s;
+	transition: border-color 0.3s;
+	color: inherit;
+	font-family: inherit;
+	font-size: 1em;
+	font-weight: 400;
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+input[type=text]:focus {
+	border-bottom-width: 2px;
+	padding-bottom: 0.25em;
+	border-bottom-color: rgba(255, 255, 255, 0.6);
+}
 header {
     height: @header-height;
     box-sizing: border-box;
+    color: white;
 }
 header .player {
-    height: 48px;
+    height: @player-height;
     box-sizing: border-box;
     display: flex;
+    background-color: @player-background-color;
+    border-color: #121212;
 }
 header .player .control {
-    height: 48px;
+    height: 38px;
     width: 48px;
     text-align: center;
+    padding-top: 10px;
 }
 header .player .panel {
     height: 48px;
@@ -34,6 +60,7 @@ header .player .panel {
 }
 header .player .panel > .info-panel {
     width: 100%;
+    height: 20px;
     display: flex;
     
     .name {
@@ -43,7 +70,6 @@ header .player .panel > .info-panel {
 }
 header .player .slider-panel .slider {
     height: @slider-height;
-    width: 100%;
     position: relative;
     background: none repeat scroll 0% 0% #F2F1F1;
     margin: 3px;
@@ -81,10 +107,17 @@ header .player .slider-panel .slider {
     }
 }
 header .toolbar {
-    height: 24px;
+    height: @toolbar-height;
     box-sizing: border-box;
+    padding: 3px 5px;
+    background-color: @toolbar-background-color;
+    border-color: #121212;
+}
+#search {
+    width: 200px;
 }
 main {
+    background-color: @main-background-color;
     display: flex;
     flex: 1;
     position: absolute;
@@ -96,6 +129,43 @@ main {
 main .container {
     flex: 1;
     overflow: auto;
+}
+main .container .artist {
+    padding-left: 15px;
+}
+main .container .artist > h3,
+main .container .album > h4 {
+    display: inline-block;
+    cursor: default;
+}
+
+main .container .artist > .controls,
+main .container .album > .controls {
+    display: inline-block;
+    cursor: pointer;
+    margin-left: -30px;
+    opacity: 0;
+    white-space: nowrap;
+    transition: margin-left 0.3s ease-in, opacity 0.3s cubic-bezier(0, 0.9, 0.3, 1.15);
+    
+    .control {
+        display: inline-block;
+        padding-left: 10px;
+        
+        &:hover {
+            color: red;
+        }
+    }
+}
+main .container .artist:hover > .controls,
+main .container .album:hover > .controls {
+    transition: margin-left 0.3s ease-out, opacity 0.3s cubic-bezier(0.7, 0, 0.7, 0);
+    margin-left: 0;
+    opacity: 1;
+}
+main .container .artist > h3:hover,
+main .container .album > h4:hover {
+    background-color: #ddd;
 }
 main .container .albums {
     display: flex;
@@ -131,5 +201,5 @@ main .queue .tracks {
     overflow: auto;
 }
 main .queue .tracks.show {
-    display: block;
+    display: inline-block;
 }
