@@ -56,7 +56,7 @@ html(lang='fr')
                 .album-container
                   img(lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")
                   .tracks
-                    .track(ng-repeat="track in ::album.tracks track by $index")
+                    .track(ng-repeat="track in album.tracks track by $index")
                       span {{::track.trackno}}
                       span(ng-click="empty();play(track, album.tracks)") {{::track.name}}
                       span {{::track.duration}}

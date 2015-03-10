@@ -1,12 +1,8 @@
 angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
 .config(['lazyImgConfigProvider', function(lazyImgConfigProvider) {
-    var scrollable = document.querySelector('main .container')
+    var scrollable = document.querySelector('main .container');
     lazyImgConfigProvider.setOptions({
         container: angular.element(scrollable)
-        /*,
-        onError: function(image){
-            image.$elem.attr("src", "/images/nocover.png");
-        }*/
     });
 }])
 .factory('$tracks', ['$rootScope', function($rootScope){
@@ -210,6 +206,58 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         current: current,
         setCallback: setCallback,
         call: call
+    };
+}])
+.factory('$utils', [function(){
+    
+    function binaryIndexOf(array, key, searchElement) {
+        var minIndex = 0;
+        var maxIndex = array.length - 1;
+        var currentIndex;
+        var currentElement;
+        var compare;
+        if (typeof searchElement !== "string") searchElement = 'Unknown';
+        searchElement = searchElement.toLowerCase();
+        
+        while (minIndex <= maxIndex) {
+            currentIndex = (minIndex + maxIndex) / 2 | 0;
+            currentElement = array[currentIndex][key];
+            if (typeof currentElement !== "string") currentElement = 'Unknown';
+            currentElement = currentElement.toLowerCase();
+            compare = searchElement.localeCompare(currentElement);
+     
+            if (compare > 0) {
+                minIndex = currentIndex + 1;
+            } else if (compare < 0) {
+                maxIndex = currentIndex - 1;
+            } else {
+                return currentIndex;
+            }
+        }
+        return -1;
+    }
+    
+    function extend(target, source) {
+        var i, j, resArtist, resAlbum;
+        for (i=0; i<source.length; i++) {
+            resArtist = binaryIndexOf(target, 'artist', source[i].artist);
+            if (resArtist === -1) {
+                target.push(source[i]);
+            } else if (source[i].albums) {
+                for (j=0; j<source[i].albums.length; j++) {
+                    resAlbum = binaryIndexOf(target[resArtist].albums, 'name', source[i].albums[j].name);
+                    if (resAlbum === -1) {
+                        target[resArtist].albums.push(source[i].albums[j]);
+                    } else if (source[i].albums[j].tracks) {
+                        Array.prototype.push.apply(target[resArtist].albums[resAlbum].tracks, source[i].albums[j].tracks);
+                    }
+                }
+            }
+        }
+    }
+    
+    return {
+        extend: extend
     };
 }])
 .run([function(){

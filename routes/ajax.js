@@ -93,20 +93,20 @@ function treefy(tracks, skip, limit) {
         limit += skip;
     }
     tracks.forEach(function(element) {
-        if (element.artist && element.album) {
-            if (!(!skipundef && nbAlbums <= skip) && !(!limitundef && nbAlbums > limit)) {
-                if (typeof tree[element.artist] === 'undefined') {
-                    tree[element.artist] = [];
-                }
-                if (typeof tree[element.artist][element.album] === 'undefined') {
-                    tree[element.artist][element.album] = [];
-                }
-                tree[element.artist][element.album].push(element);
+        if (!element.artist) element.artist = 'Unknown';
+        if (!element.album) element.album = 'Unknown';
+        if (!(!skipundef && nbAlbums <= skip) && !(!limitundef && nbAlbums > limit)) {
+            if (typeof tree[element.artist] === 'undefined') {
+                tree[element.artist] = [];
             }
-            if (albums.indexOf(element.artist+"@@@"+element.album) === -1) {
-                albums.push(element.artist+"@@@"+element.album);
-                nbAlbums += 1;
+            if (typeof tree[element.artist][element.album] === 'undefined') {
+                tree[element.artist][element.album] = [];
             }
+            tree[element.artist][element.album].push(element);
+        }
+        if (albums.indexOf(element.artist+"@@@"+element.album) === -1) {
+            albums.push(element.artist+"@@@"+element.album);
+            nbAlbums += 1;
         }
     });
     for (var artist in tree) {

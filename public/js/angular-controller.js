@@ -266,13 +266,13 @@ angular.module('festival')
         return progress;
     };
 }])
-.controller('ArtistController', ['$scope', '$rootScope', '$ajax', '$displayMode', function($scope, $rootScope, $ajax, $displayMode) {
+.controller('ArtistController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
     $rootScope.artists = [];
     
     function loadArtists(filter, skip, limit, next) {
         $ajax.artists(filter, skip, limit).success(function(data, status) {
             next((data.length > 0));
-            Array.prototype.push.apply($rootScope.artists, data);
+            $utils.extend($rootScope.artists, data);
         }).error(function(){
             next(false);
         });
@@ -281,8 +281,7 @@ angular.module('festival')
     function loadAlbumsByArtists(filter, skip, limit, next) {
         $ajax.albumsbyartists({}, skip, limit).success(function(data, status) {
             next((data.length > 0));
-            //angular.extend($rootScope.artists, data);
-            Array.prototype.push.apply($rootScope.artists, data);
+            $utils.extend($rootScope.artists, data);
         }).error(function(){
             next(false);
         });
@@ -290,7 +289,7 @@ angular.module('festival')
     
     $displayMode.setCallback('artists', loadArtists);
     $displayMode.setCallback('albumsbyartists', loadAlbumsByArtists);
-    $displayMode.current('artists', {});
+    $displayMode.current('albumsbyartists', {});
     
     $scope.pageArtists = function() {
         $displayMode.call();
@@ -308,7 +307,7 @@ angular.module('festival')
     
     $scope.loadTracks = function(artist, album) {
         if (album.tracks && album.tracks.length > 0) return;
-        var filter = {artist: artist.artist, album: album.album};
+        var filter = {artist: artist.artist, album: album.name};
         $ajax.tracks(filter).success(function(data, status) {
             album.tracks = data;
         });
@@ -333,14 +332,13 @@ angular.module('festival')
     
     $rootScope.$on('tracks', computeTracks);
 }])
-.controller('SearchController', ['$scope', '$rootScope', '$ajax', '$displayMode', function($scope, $rootScope, $ajax, $displayMode) {
+.controller('SearchController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
     $scope.value = "";
     
     function search(param, skip, limit, next) {
         $ajax.search(param, false, skip, limit).success(function(data, status) {
             next((data.length > 0));
-            //$.extend($rootScope.artists, data);
-            Array.prototype.push.apply($rootScope.artists, data);
+            $utils.extend($rootScope.artists, data);
         }).error(function(){
             next(false);
         });
