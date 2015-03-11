@@ -61,14 +61,13 @@ html(lang='fr')
                   img(ng-click="loadTracks(artist, album)", lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")
                   .tracks
                     .track(ng-repeat="track in album.tracks track by $index", ng-class="{active: currentTrack._id == track._id}")
-                      span.trackno(ng-if="::track.trackno") {{::track.trackno}}
-                      span.name {{::track.name}}
+                      span.trackno(ng-if="track.trackno") {{track.trackno}}
+                      span.name {{track.name}}
                       span.controls
-                        span.animate
-                          span.control(title="Play", ng-click="empty();play(track, album.tracks)")
-                            i.fa.fa-play
-                          span.control(title="Add to queue", ng-click="add(track)")
-                            i.fa.fa-plus
+                        span.control(title="Play", ng-click="empty();play(track, album.tracks)")
+                          i.fa.fa-play
+                        span.control(title="Add to queue", ng-click="add(track)")
+                          i.fa.fa-plus
                       span.duration {{::track.duration | duration}}
       .queue(ng-controller="QueueController", ng-class="{show: show}")
         .handle(ng-click="show = !show")

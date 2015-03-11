@@ -259,14 +259,7 @@ main .container .albums .album .album-container .tracks {
             overflow: hidden;
             width: 40px;
             margin-left: 10px;
-            
-            .animate {
-                display: inline-block;
-                transition: margin-left 0.3s, opacity 0.3s cubic-bezier(0, 0.9, 0.3, 1.15);
-                overflow: hidden;
-                margin-left: -40px;
-                opacity: 0;
-            }
+            opacity: 0;
             
             .control {
                 display: inline-block;
@@ -282,9 +275,8 @@ main .container .albums .album .album-container .tracks {
         }
         
         &:hover {
-            .animate {
-                transition: opacity 0.3s cubic-bezier(0.7, 0, 0.7, 0);
-                margin-left: 0;
+            .controls {
+                transition: opacity 0.3s linear 0.1s;
                 opacity: 1;
             }
         }
