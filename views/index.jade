@@ -44,17 +44,17 @@ html(lang='fr')
           .artist(ng-repeat="artist in artists track by $index")
             h3(ng-click="loadAlbums(artist)") {{::artist.artist}}
             .controls
-              .control(title="Play all albums")
+              .control(title="Play all albums", ng-click="loadAlbumsAndTracksAndAdd(artist, true)")
                 i.fa.fa-play
-              .control(title="Add albums to queue")
+              .control(title="Add albums to queue", ng-click="loadAlbumsAndTracksAndAdd(artist, false)")
                 i.fa.fa-plus
             .albums
               .album(ng-repeat="album in artist.albums track by $index", ng-class="{notracks: !album.tracks}")
                 h4(ng-click="loadTracks(artist, album)") {{::album.name}}
                 .controls
-                  .control(title="Play tracks")
+                  .control(title="Play tracks", ng-click="loadTracksAndAdd(artist, album, true)")
                     i.fa.fa-play
-                  .control(title="Add tracks to queue")
+                  .control(title="Add tracks to queue", ng-click="loadTracksAndAdd(artist, album, false)")
                     i.fa.fa-plus
                 .album-container
                   img(lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")

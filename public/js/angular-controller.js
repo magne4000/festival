@@ -122,7 +122,7 @@ angular.module('festival')
          *      "url": "/music/52f24b6b89e9eb1e4aed8c1c"
          * }
          */
-        var tracklist = [], ind = 0, trackslen = uniqidsAlreadyPlayed.length, orilen = trackslen, randno = null;
+        var tracklist = [], ind = 0, trackslen = $tracks.size(), orilen = trackslen, randno = null;
         if (!!track._id){ // only one track
             tracklist.push(track);
         } else {
@@ -305,11 +305,46 @@ angular.module('festival')
         });
     };
     
-    $scope.loadTracks = function(artist, album) {
-        if (album.tracks && album.tracks.length > 0) return;
-        var filter = {artist: artist.artist, album: album.name};
-        $ajax.tracks(filter).success(function(data, status) {
-            album.tracks = data;
+    $scope.loadAlbumsAndTracks = function(artist, callback) {
+        if (!artist.everythingLoaded) {
+            var filter = {artist: artist.artist};
+            $ajax.tracks(filter, false).success(function(data, status) {
+                artist.albums = data[0].albums;
+                artist.everythingLoaded = true;
+                if (typeof callback === "function") callback(artist);
+            });
+        } else {
+            callback(artist);
+        }
+    };
+    
+    $scope.loadAlbumsAndTracksAndAdd = function(artist, autoplay) {
+        $scope.loadAlbumsAndTracks(artist, function(artist1) {
+            if (artist1.albums) {
+                for (var i=0; i<artist1.albums.length; i++) {
+                    console.log(autoplay);
+                    $scope.add(artist1.albums[i].tracks, autoplay);
+                    autoplay = false;
+                }
+            }
+        });
+    };
+    
+    $scope.loadTracks = function(artist, album, callback) {
+        if (album.tracks && album.tracks.length > 0) {
+            callback(artist, album);
+        } else {
+            var filter = {artist: artist.artist, album: album.name};
+            $ajax.tracks(filter, true).success(function(data, status) {
+                album.tracks = data;
+                if (typeof callback === "function") callback(artist, album);
+            });
+        }
+    };
+    
+    $scope.loadTracksAndAdd = function(artist, album, autoplay) {
+        $scope.loadTracks(artist, album, function(artist1, album1) {
+            $scope.add(album1.tracks, autoplay);
         });
     };
 }])

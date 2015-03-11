@@ -80,13 +80,26 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         $rootScope.$emit('tracks');
     }
     
+    function size() {
+        if (head === null) return 0;
+        else {
+            var count = 1, track = head;
+            while (track.next) {
+                count += 1;
+                track = track.next;
+            }
+            return count;
+        }
+    }
+    
     return {
         getHead: getHead,
         getTail: getTail,
         empty: empty,
         add: add,
         move: move,
-        remove: remove
+        remove: remove,
+        size: size
     };
 }])
 .factory('$ajax', ['$http', function($http){
@@ -111,8 +124,10 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         return $http.get('ajax/list/albumsbyartists', {params: filterFactory(filter, skip, limit)});
     }
     
-    function tracks(filter) {
-        return $http.get('ajax/list/tracks', {params: filterFactory(filter)});
+    function tracks(filter, flat) {
+        var params = filterFactory(filter);
+        if (typeof flat !== "undefined") params.flat = flat;
+        return $http.get('ajax/list/tracks', {params: params});
     }
     
     function search(term, flat, skip, limit) {

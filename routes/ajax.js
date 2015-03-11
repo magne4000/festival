@@ -10,38 +10,30 @@ var cacheSearch = LRU({
  * JSON list of tracks
  */
 function listtracks(req, res) {
-    var filter = req.query.filters?JSON.parse(req.query.filters):{},
-        render = req.query.render?req.query.render:false,
-        playing = req.query.playing?req.query.playing:false;
+    var filter = req.query.filters?JSON.parse(req.query.filters):{};
+    var flat = req.query.flat?JSON.parse(req.query.flat):true;
     request.listtracks(filter, function (err, docs) {
         if (err) {
             console.error(err);
             res.sendStatus(500);
-        } else if (render){
-            res.render("tab/playlist", {
-                tracks: docs,
-                filters: filter,
-                playing: playing
-            });
         } else {
-            res.json(docs);
+            if (flat) {
+                res.json(docs);
+            } else {
+                res.json(treefy(docs));
+            }
         }
     });
 }
 
 function listalbumsbyartists(req, res) {
-    var filter = req.query.filters?JSON.parse(req.query.filters):{},
-        render = req.query.render?req.query.render:false;
+    var filter = req.query.filters?JSON.parse(req.query.filters):{};
     var skip = req.query.skip?parseInt(req.query.skip, 10):null;
     var limit = req.query.limit?parseInt(req.query.limit, 10):null;
     request.listalbumsbyartists(filter, function(err, albumsByArtists) {
         if (err) {
             console.error(err);
             res.sendStatus(500);
-        } else if (render) {
-            res.render("tab/albums", {
-                artists: albumsByArtists
-            });
         } else {
             res.json(albumsByArtists);
         }

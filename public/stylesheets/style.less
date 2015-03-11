@@ -129,16 +129,25 @@ main {
 main .container {
     flex: 1;
     overflow: auto;
+    background-color: whitesmoke;
 }
 main .container .artist {
     padding-left: 15px;
+    white-space: nowrap;
 }
 main .container .artist > h3,
 main .container .album > h4 {
     display: inline-block;
     cursor: default;
+    margin: 5px 0;
 }
-
+main .container .artist > h3 {
+    text-shadow: 0 0 5px white, 1px 1px 3px #666;
+}
+main .container .album > h4 {
+    width: 140px;
+    white-space: normal;
+}
 main .container .artist > .controls,
 main .container .album > .controls {
     display: inline-block;
@@ -170,9 +179,11 @@ main .container .album > h4:hover {
 main .container .albums {
     display: flex;
     flex-wrap: wrap;
+    align-items: baseline;
 }
 main .container .albums .album {
     width: 100%;
+    padding: 15px;
 }
 main .container .albums .album .album-container {
     display: flex;
@@ -185,8 +196,8 @@ main .container .albums .album .album-container .tracks {
     flex: 1;
 }
 main .container .albums .album.notracks {
-    width: 200px;
-    height: 200px;
+    width: 180px;
+    height: 180px;
 }
 main .queue .handle {
     width: @queue-handle-width;
