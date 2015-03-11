@@ -104,8 +104,13 @@ function treefy(tracks, skip, limit) {
     for (var artist in tree) {
         var retArtist = {artist: artist, albums: []};
         for (var album in tree[artist]) {
+            var year = null;
+            if (tree[artist][album][0] && tree[artist][album][0].year) {
+                year = tree[artist][album][0].year;
+            }
             retArtist.albums.push({
                 name: album,
+                year: year,
                 albumart: '/albumart?album=' + encodeURIComponent(album) + '&artist=' + encodeURIComponent(artist),
                 tracks: tree[artist][album]
             });

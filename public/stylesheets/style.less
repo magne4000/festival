@@ -7,6 +7,7 @@
 @toolbar-background-color: lighten(@player-background-color, 20%);
 @main-background-color: white;
 @container-background-color: whitesmoke;
+@primary-color: #239bd6;
 
 body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -54,6 +55,26 @@ header .player .control {
     width: 48px;
     text-align: center;
     padding-top: 10px;
+    transition: color 0.2s;
+    
+    .fa {
+        transition: text-shadow 0.2s;
+    }
+    
+    &:hover {
+        color: @primary-color;
+        
+        .fa {
+            text-shadow: 0 0 3px @primary-color;
+        }
+    }
+}
+header .player .control.active, header .player .control:active {
+    color: darken(@primary-color, 10%);
+        
+    .fa {
+        text-shadow: 0 0 3px @primary-color;
+    }
 }
 header .player .panel {
     height: 48px;
@@ -67,6 +88,11 @@ header .player .panel > .info-panel {
     .name {
         flex: 1;
         text-align: center;
+        padding: 2px 0;
+    }
+    
+    .elapsed-time, .total-time {
+        padding: 2px 4px;
     }
 }
 header .player .slider-panel .slider {
@@ -92,7 +118,7 @@ header .player .slider-panel .slider {
         top: 0;
         width: 0;
         height: @slider-height;
-        background: #239bd6;
+        background-color: @primary-color;
         z-index: 1;
     }
     
@@ -147,6 +173,13 @@ main .container .album > h4 {
 main .container .album > h4 {
     width: 140px;
     white-space: normal;
+    
+    .year {
+        font-weight: normal;
+        font-size: 0.8em;
+        color: #666;
+        text-shadow: none;
+    }
 }
 main .container .artist > h3:hover,
 main .container .album > h4:hover {
@@ -167,7 +200,7 @@ main .container .album > .controls {
     }
 }
 .controls .control:hover {
-    color: red;
+    color: @primary-color;
 }
 main .container .artist:hover > .controls,
 main .container .album:hover > .controls {

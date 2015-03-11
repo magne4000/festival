@@ -15,9 +15,9 @@
         input(type="range" min="0" max="{{duration}}" ng-model="progress", ng-model-options="{ getterSetter: true }")
         .progress(ng-progress="progress()", ng-progress-duration="duration")
         .loading(ng-loading="buffer", ng-loading-duration="duration", ng-repeat="buffer in buffered")
-  a.control.loop(title="{{loop?'Loop (currently on)':'Loop (currently off)'}}", href='#', ng-click="toggleLoop()")
+  a.control.loop(title="{{loop?'Loop (currently on)':'Loop (currently off)'}}", href='#', ng-click="toggleLoop()", ng-class="{active: loop}")
     i.fa.fa-refresh.fa-2x
-  a.control.shuffle(title="{{shuffle?'Shuffle (currently on)':'Shuffle (currently off)'}}", href='#', ng-click="toggleShuffle()")
+  a.control.shuffle(title="{{shuffle?'Shuffle (currently on)':'Shuffle (currently off)'}}", href='#', ng-click="toggleShuffle()", ng-class="{active: shuffle}")
     i.fa.fa-random.fa-2x
 // TODO volume
 //  .dropdown.hidden-xs

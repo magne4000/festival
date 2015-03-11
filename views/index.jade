@@ -51,6 +51,7 @@ html(lang='fr')
             .albums
               .album(ng-repeat="album in artist.albums track by $index", ng-class="{notracks: !album.tracks}")
                 h4(ng-click="loadTracks(artist, album)") {{::album.name}}
+                  span.year(ng-if="::album.year")  ({{::album.year}})
                 .controls
                   .control(title="Play tracks", ng-click="empty();loadTracksAndAdd(artist, album, true)")
                     i.fa.fa-play
