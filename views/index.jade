@@ -44,7 +44,7 @@ html(lang='fr')
           .artist(ng-repeat="artist in artists track by $index")
             h3(ng-click="loadAlbums(artist)") {{::artist.artist}}
             .controls
-              .control(title="Play all albums", ng-click="loadAlbumsAndTracksAndAdd(artist, true)")
+              .control(title="Play all albums", ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)")
                 i.fa.fa-play
               .control(title="Add albums to queue", ng-click="loadAlbumsAndTracksAndAdd(artist, false)")
                 i.fa.fa-plus
@@ -52,20 +52,27 @@ html(lang='fr')
               .album(ng-repeat="album in artist.albums track by $index", ng-class="{notracks: !album.tracks}")
                 h4(ng-click="loadTracks(artist, album)") {{::album.name}}
                 .controls
-                  .control(title="Play tracks", ng-click="loadTracksAndAdd(artist, album, true)")
+                  .control(title="Play tracks", ng-click="empty();loadTracksAndAdd(artist, album, true)")
                     i.fa.fa-play
                   .control(title="Add tracks to queue", ng-click="loadTracksAndAdd(artist, album, false)")
                     i.fa.fa-plus
                 .album-container
-                  img(lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")
+                  img(ng-click="loadTracks(artist, album)", lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")
                   .tracks
-                    .track(ng-repeat="track in album.tracks track by $index")
-                      span {{::track.trackno}}
-                      span(ng-click="empty();play(track, album.tracks)") {{::track.name}}
-                      span {{::track.duration}}
-      .queue(ng-controller="QueueController")
+                    .track(ng-repeat="track in album.tracks track by $index", ng-class="{active: currentTrack._id == track._id}")
+                      span.trackno(ng-if="::track.trackno") {{::track.trackno}}
+                      span.name {{::track.name}}
+                      span.controls
+                        span.animate
+                          span.control(title="Play", ng-click="empty();play(track, album.tracks)")
+                            i.fa.fa-play
+                          span.control(title="Add to queue", ng-click="add(track)")
+                            i.fa.fa-plus
+                      span.duration {{::track.duration | duration}}
+      .queue(ng-controller="QueueController", ng-class="{show: show}")
         .handle(ng-click="show = !show")
-        .tracks(ng-class="{show: show}")
+          i.fa.fa-angle-double-left
+        .tracks
           .track(ng-repeat="track in tracks track by track._id")
             span {{::track.trackno}}
             span(ng-click="play(track, album.tracks)") {{::track.name}}
