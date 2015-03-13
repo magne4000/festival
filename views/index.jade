@@ -68,12 +68,17 @@ html(lang='fr')
                           i.fa.fa-play
                         span.control(title="Add to queue", ng-click="add(track)")
                           i.fa.fa-plus
-                      span.duration {{::track.duration | duration}}
+                      span.duration {{track.duration ? (track.duration | duration) : '-'}}
       .queue(ng-controller="QueueController", ng-class="{show: show}")
         .handle(ng-click="show = !show")
           i.fa.fa-angle-double-left
         .tracks
-          .track(ng-repeat="track in tracks track by track._id")
-            span {{::track.trackno}}
-            span(ng-click="play(track, album.tracks)") {{::track.name}}
-            span {{::track.duration}}
+          .track(ng-repeat="track in tracks track by $index", ng-class="{active: currentTrack == track}")
+            span.trackno(ng-if="track.trackno") {{track.trackno}}
+            span.name {{track.name}}
+            span.controls
+              span.control(title="Play", ng-click="play(track)")
+                i.fa.fa-play
+              span.control(title="Remove", ng-click="remove(track)")
+                i.fa.fa-remove
+            span.duration {{track.duration ? (track.duration | duration) : '-'}}

@@ -242,49 +242,6 @@ main .container .albums .album .album-container .tracks {
     opacity: 1;
     transition: opacity 0.3s linear;
     padding: 10px;
-    
-    .track {
-        margin: 1px 2px;
-        display: flex;
-        
-        .trackno {
-            font-weight: bold;
-            margin-right: 5px;
-            text-align: right;
-        }
-        
-        .controls {
-            display: inline-block;
-            cursor: pointer;
-            overflow: hidden;
-            width: 40px;
-            margin-left: 10px;
-            opacity: 0;
-            
-            .control {
-                display: inline-block;
-                margin: 0 3px;
-            }
-        }
-        
-        .name {
-            flex: 1;
-        }
-        
-        .duration {
-        }
-        
-        &:hover {
-            .controls {
-                transition: opacity 0.3s linear 0.1s;
-                opacity: 1;
-            }
-        }
-    }
-    
-    .track.active > span {
-        font-weight: bold;
-    }
 }
 main .container .albums .album.notracks {
     
@@ -330,4 +287,50 @@ main .queue .tracks {
 }
 main .queue.show .tracks {
     width: 300px;
+}
+.track.active > span {
+    font-weight: bold;
+}
+.track {
+    margin: 1px 2px;
+    display: flex;
+    cursor: default;
+    
+    .trackno {
+        font-weight: bold;
+        margin-right: 5px;
+        text-align: right;
+    }
+    
+    .controls {
+        display: inline-block;
+        cursor: pointer;
+        overflow: hidden;
+        width: 40px;
+        margin-left: 10px;
+        opacity: 0;
+        
+        .control {
+            display: inline-block;
+            margin: 0 3px;
+        }
+    }
+    
+    .name {
+        flex: 1;
+    }
+    
+    .duration {
+        min-width: 36px;
+        text-align: right;
+    }
+    
+    &:hover {
+        background-color: #eee;
+        
+        .controls {
+            transition: opacity 0.2s linear 0.1s;
+            opacity: 1;
+        }
+    }
 }

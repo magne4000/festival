@@ -1,9 +1,11 @@
 angular.module('festival')
 .controller('PlayerController', ['$scope', '$tracks', '$timeout', function($scope, $tracks, $timeout) {
-    var uniqidsAlreadyPlayed = [];
-    var uniqidsToBePlayed = [];
+    var indicesAlreadyPlayed = [];
+    var indicesToBePlayed = [];
+    var currentIndice = 0;
     var timer = null;
     var progress = 0;
+    var usingAdd = false;
     
     $scope.currentTrack = null;
     $scope.currentSound = null;
@@ -17,15 +19,23 @@ angular.module('festival')
     function next() {
         if ($scope.currentTrack) {
             if ($scope.shuffle){
-                if ($scope.loop && uniqidsToBePlayed.length === 0){
-                    // in loop and the playlist has been finished, so reset
-                    uniqidsToBePlayed = uniqidsAlreadyPlayed;
+                if (indicesToBePlayed.length === 0){
+                    if ($scope.loop) {
+                        // in loop and the playlist has been finished, so reset
+                        indicesToBePlayed = indicesAlreadyPlayed;
+                        indicesAlreadyPlayed = [];
+                    } else {
+                        return null;
+                    }
                 }
-                var randno = Math.floor(Math.random()*uniqidsToBePlayed.length),
-                    uniqid = uniqidsToBePlayed[randno];
-                uniqidsAlreadyPlayed.push(uniqid);
-                uniqidsToBePlayed.splice(randno, 1);
-                return $tracks.get(uniqid);
+                if (indicesToBePlayed.length > 0){
+                    var randno = Math.floor(Math.random()*indicesToBePlayed.length),
+                        ind = indicesToBePlayed[randno];
+                    indicesAlreadyPlayed.push(ind);
+                    indicesToBePlayed.splice(randno, 1);
+                    currentIndice = ind;
+                    return $tracks.get(ind);
+                }
             }
             
             if (!$scope.currentTrack.next && $scope.loop) {
@@ -40,11 +50,12 @@ angular.module('festival')
     function prev() {
         if ($scope.currentTrack) {
             if ($scope.shuffle){
-                if (uniqidsAlreadyPlayed.length === 0){
+                if (indicesAlreadyPlayed.length === 0){
                     return null;
                 }
-                uniqidsToBePlayed.push(uniqidsAlreadyPlayed.pop());
-                return $tracks.get(uniqidsToBePlayed[uniqidsToBePlayed.length-1]);
+                indicesToBePlayed.push(indicesAlreadyPlayed.pop());
+                currentIndice = indicesToBePlayed[indicesToBePlayed.length-1];
+                return $tracks.get(currentIndice);
             }
             
             if ($scope.currentTrack.prev === null && $scope.loop) {
@@ -82,9 +93,6 @@ angular.module('festival')
     
     $scope.next = function(autoPlay) {
         var nextTrack = next();
-        if ($scope.currentTrack) {
-            uniqidsAlreadyPlayed.push($scope.currentTrack.uniqid);
-        }
         stop();
         if (nextTrack) {
             $scope.load(nextTrack, autoPlay);
@@ -93,9 +101,6 @@ angular.module('festival')
     
     $scope.prev = function(autoPlay) {
         var prevTrack = prev();
-        if (uniqidsAlreadyPlayed.length > 0) {
-            delete uniqidsAlreadyPlayed[uniqidsAlreadyPlayed.length-1];
-        }
         stop();
         if (prevTrack) {
             $scope.load(prevTrack, autoPlay);
@@ -108,7 +113,6 @@ angular.module('festival')
          * A track object is defined like this example:
          * track = {
          *      "_id": "52f24b6b89e9eb1e4aed8c1c",
-         *      "uniqid": "532028e157259",
          *      "bitrate": 320,
          *      "duration": 86,
          *      "frequency": 44100,
@@ -122,28 +126,38 @@ angular.module('festival')
          *      "url": "/music/52f24b6b89e9eb1e4aed8c1c"
          * }
          */
-        var tracklist = [], ind = 0, trackslen = $tracks.size(), orilen = trackslen, randno = null;
-        if (!!track._id){ // only one track
-            tracklist.push(track);
-        } else {
-            tracklist = track;
-        }
-        if ($scope.shuffle) {
-            randno = Math.floor(Math.random()*tracklist.length);
-        }
-        for (ind in tracklist){
-            uniqidsToBePlayed.push(tracklist[ind].uniqid);
-            $tracks.add(tracklist[ind]);
-            if (idToPlay === tracklist[ind]._id) {
-                $scope.load(tracklist[ind], autoPlay);
-            } else if (trackslen === 0 && !$scope.shuffle) {
-                // First track, load it (if not in shuffle mode)
-                $scope.load(tracklist[ind], autoPlay);
-            } else if (randno === trackslen && orilen === 0 && $scope.shuffle) {
-                // load random track
-                $scope.load(tracklist[ind], autoPlay);
+        if (!usingAdd) {
+            usingAdd = true;
+            var tracklist = [], ind = 0, trackslen = $tracks.size(), orilen = trackslen, randno = null;
+            if (!!track._id){ // only one track
+                tracklist.push(track);
+            } else {
+                tracklist = track;
             }
-            trackslen++;
+            if ($scope.shuffle) {
+                randno = Math.floor(Math.random()*tracklist.length);
+            }
+            for (ind in tracklist){
+                indicesToBePlayed.push(indicesToBePlayed.length);
+                var addedTrack = $tracks.add(tracklist[ind]);
+                if (idToPlay === tracklist[ind]._id) {
+                    $scope.load(addedTrack, autoPlay);
+                } else if (trackslen === 0 && !$scope.shuffle) {
+                    // First track, load it (if not in shuffle mode)
+                    $scope.load(addedTrack, autoPlay);
+                } else if (randno === trackslen && orilen === 0 && $scope.shuffle) {
+                    // load random track
+                    $scope.load(addedTrack, autoPlay);
+                }
+                trackslen++;
+            }
+            usingAdd = false;
+        }
+    };
+    
+    $scope.remove = function(track) {
+        if (track) {
+            $tracks.remove(track);
         }
     };
     
@@ -155,7 +169,6 @@ angular.module('festival')
                 if (autoPlay) {
                     stop();
                 }
-                $scope.currentUniqId = track.uniqid;
                 var soundId = 't_'+track._id;
                 $scope.currentSound = soundManager.getSoundById(soundId);
                 if ($scope.currentSound) {
@@ -244,7 +257,7 @@ angular.module('festival')
     $scope.toggleShuffle = function() {
         $scope.shuffle = !$scope.shuffle;
         //clear already played tracks list
-        uniqidsAlreadyPlayed = [];
+        indicesAlreadyPlayed = [];
     };
     
     $scope.toggleLoop = function() {
@@ -252,8 +265,9 @@ angular.module('festival')
     };
     
     $scope.empty = function() {
-        uniqidsAlreadyPlayed = [];
-        uniqidsToBePlayed = [];
+        indicesAlreadyPlayed = [];
+        indicesToBePlayed = [];
+        currentIndice = 0;
         $tracks.empty();
     };
     
@@ -266,7 +280,7 @@ angular.module('festival')
         return progress;
     };
 }])
-.controller('ListController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
+.controller('ListController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout) {
     $rootScope.artists = [];
     
     function loadArtists(filter, skip, limit, next) {
@@ -314,7 +328,9 @@ angular.module('festival')
                 if (typeof callback === "function") callback(artist);
             });
         } else {
-            callback(artist);
+            $timeout(function() {
+                callback(artist);
+            }, 0);
         }
     };
     
@@ -322,7 +338,6 @@ angular.module('festival')
         $scope.loadAlbumsAndTracks(artist, function(artist1) {
             if (artist1.albums) {
                 for (var i=0; i<artist1.albums.length; i++) {
-                    console.log(autoplay);
                     $scope.add(artist1.albums[i].tracks, autoplay);
                     autoplay = false;
                 }
@@ -332,7 +347,9 @@ angular.module('festival')
     
     $scope.loadTracks = function(artist, album, callback) {
         if (album.tracks && album.tracks.length > 0) {
-            callback(artist, album);
+            $timeout(function() {
+                callback(artist, album);
+            }, 0);
         } else {
             var filter = {artist: artist.artist, album: album.name};
             $ajax.tracks(filter, true).success(function(data, status) {
@@ -353,16 +370,18 @@ angular.module('festival')
     $scope.show = false;
     
     function computeTracks() {
-        var head = $tracks.getHead();
-        var track = head;
-        $scope.tracks = [];
-        if (track) {
-            $scope.tracks.push(track);
-            while (track.next && track.next._id !== head._id) {
-                $scope.tracks.push(track.next);
-                track = track.next;
+        $scope.$apply(function(){
+            var head = $tracks.getHead();
+            var track = head;
+            $scope.tracks = [];
+            if (track) {
+                $scope.tracks.push(track);
+                while (track.next) {
+                    $scope.tracks.push(track.next);
+                    track = track.next;
+                }
             }
-        }
+        });
     }
     
     $rootScope.$on('tracks', computeTracks);

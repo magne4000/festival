@@ -8,6 +8,14 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
 .factory('$tracks', ['$rootScope', function($rootScope){
     var head = null;
     var tail = null;
+    var promise = null;
+    
+    function emitChange() {
+        clearTimeout(promise);
+        promise = setTimeout(function(){
+            $rootScope.$emit('tracks');
+        }, 100);
+    }
     
     function getHead() {
         return head;
@@ -20,13 +28,14 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     function empty() {
         head = null;
         tail = null;
-        $rootScope.$emit('tracks');
+        emitChange();
     }
     
     function add(track) {
+        track = angular.copy(track);
         track.prev = null; // init
         track.next = null; // init
-        if (!head) {
+        if (head === null) {
             head = track;
         }
         if (tail !== null) {
@@ -34,24 +43,25 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
             tail.next = track;
         }
         tail = track;
-        $rootScope.$emit('tracks');
+        emitChange();
+        return track;
     }
     
     function move(track, after) {
         var oldHead = head;
-        if (track.prev) {
+        if (track.prev !== null) {
             track.prev.next = track.next;
         } else {
             head = track.next;
         }
-        if (track.next) {
+        if (track.next !== null) {
             track.next.prev = track.prev;
         }
         
         if (after) {
             track.prev = after;
             track.next = after.next;
-            if (after.next) {
+            if (after.next !== null) {
                 after.next.prev = track;
             } else {
                 tail = track;
@@ -63,28 +73,40 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
             track.next = oldHead;
             head = track;
         }
-        $rootScope.$emit('tracks');
+        emitChange();
     }
     
     function remove(track) {
-        if (track.next) {
+        if (track.next !== null) {
             track.next.prev = track.prev;
         } else {
             tail = track.prev;
         }
-        if (track.prev) {
+        if (track.prev !== null) {
             track.prev.next = track.next;
         } else {
             head = track.next;
         }
-        $rootScope.$emit('tracks');
+        emitChange();
+    }
+    
+    function get(ind) {
+        ind = parseInt(ind, 10);
+        if (ind < 0) ind = 0;
+        if (ind === 0) return head;
+        var count = 1, track = head;
+        while (track.next !== null && count <= ind) {
+            count += 1;
+            track = track.next;
+        }
+        return track;
     }
     
     function size() {
         if (head === null) return 0;
         else {
             var count = 1, track = head;
-            while (track.next) {
+            while (track.next !== null) {
                 count += 1;
                 track = track.next;
             }
@@ -99,7 +121,8 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         add: add,
         move: move,
         remove: remove,
-        size: size
+        size: size,
+        get: get
     };
 }])
 .factory('$ajax', ['$http', function($http){
