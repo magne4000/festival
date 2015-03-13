@@ -17,16 +17,13 @@ module.exports = function(grunt) {
         stripBanners: true
       },
       dist: {
-        src: ['public/js/bootstrap-slider.js', 'public/js/jquery.hotkeys.js',
-		'node_modules/jade/runtime.js', 'public/js/templates.js', 'public/js/utils.js',
-		'public/js/jquery.store.js', 'public/js/jquery.player.js',
-		'public/js/jquery.fastsearch.js', 'public/js/views.js', 'public/js/ajax.js',
-                'public/js/init.js'],
+        src: ['public/js/jquery.hotkeys.js', 'public/js/angular-init.js', 'public/js/ng-infinite-scroll.min.js',
+      		'public/js/angular-directive.js', 'public/js/angular-filter.js', 'public/js/angular-controller.js'],
         dest: 'public/js/temp.js'
       },
       all: {
-        src: ['public/js/modernizr.min.js', 'public/js/jquery.min.js', 'public/js/jquery.hammer-full.min.js',
-        'public/js/bootstrap.min.js', '<%= uglify.dist.dest %>'],
+        src: ['public/js/jquery.min.js', 'public/js/angular.min.js',
+        'public/js/ng-infinite-scroll.min.js', 'public/js/angular-lazy-img.min.js', '<%= uglify.dist.dest %>'],
         dest: 'public/js/<%= pkg.name %>.min.js'
       }
     },
@@ -39,22 +36,11 @@ module.exports = function(grunt) {
         dest: 'public/js/temp.min.js'
       }
     },
-    jade: {
-      compile: {
-        options: {
-          client: true,
-          namespace: 'Templates'
-        },
-        files: {
-          "public/js/templates.js": ["views/*.jade", "views/tab/*.jade"]
-        }
-      }
-    },
     clean: ['<%= uglify.dist.dest %>', '<%= concat.dist.dest %>'],
     watch: {
       gruntfile: {
-        files: ["views/*.jade", "views/tab/*.jade", '<%= concat.dist.src %>'],
-        tasks: ['jade', 'concat:dist', 'uglify:dist', 'concat:all', 'clean']
+        files: ['<%= concat.dist.src %>'],
+        tasks: ['concat:dist', 'uglify:dist', 'concat:all', 'clean']
       }
     }
   });
@@ -64,9 +50,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-jade');
 
   // Default task.
-  grunt.registerTask('default', ['jade', 'concat:dist', 'uglify:dist', 'concat:all', 'clean']);
+  grunt.registerTask('default', ['concat:dist', 'uglify:dist', 'concat:all', 'clean']);
 
 };

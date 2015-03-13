@@ -1,5 +1,5 @@
 module.exports = {
-    debug: true,
+    debug: false,
     mongodb: {
         uri: 'mongodb://localhost/festival'
     },
