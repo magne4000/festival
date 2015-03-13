@@ -5,13 +5,13 @@ angular.module('festival')
     var currentIndice = 0;
     var timer = null;
     var progress = 0;
+    var volume = 100;
     var usingAdd = false;
     
     $scope.currentTrack = null;
     $scope.currentSound = null;
     $scope.shuffle = false;
     $scope.loop = false;
-    $scope.volume = 100;
     $scope.buffered = 0;
     $scope.duration = 0;
     $scope.playing = false;
@@ -230,7 +230,7 @@ angular.module('festival')
                                 $scope.playing = true;
                             });
                         },
-                        volume: $scope.volume || 100
+                        volume: $scope.volume() || 100
                     });
                 }
             }, 10);
@@ -243,15 +243,6 @@ angular.module('festival')
                 $scope.currentSound.togglePause();
             }
         }, 0);
-    };
-    
-    $scope.setVolume = function(vol) {
-        if (!!$scope.currentSound) {
-            $timeout(function() {
-                $scope.currentSound.setVolume(vol);
-            }, 0);
-        }
-        $scope.volume = vol;
     };
     
     $scope.toggleShuffle = function() {
@@ -278,6 +269,18 @@ angular.module('festival')
             }, 0);
         }
         return progress;
+    };
+    
+    $scope.volume = function(val) {
+        if (val) {
+            volume = val;
+            if ($scope.currentSound) {
+                $timeout(function() {
+                    $scope.currentSound.setVolume(val);
+                }, 0);
+            }
+        }
+        return volume;
     };
 }])
 .controller('ListController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout) {

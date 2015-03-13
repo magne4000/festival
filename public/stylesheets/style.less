@@ -1,6 +1,8 @@
 @header-height: 82px;
 @player-height: 48px;
+@queue-width: 300px;
 @toolbar-height: calc(@header-height - @player-height);
+@toolbar-volume-height: calc(@header-height - @player-height - 10px);
 @slider-height: 12px;
 @queue-handle-width: 10px;
 @player-background-color: #222;
@@ -95,7 +97,7 @@ header .player .panel > .info-panel {
         padding: 2px 4px;
     }
 }
-header .player .slider-panel .slider {
+header .slider {
     height: @slider-height;
     position: relative;
     background: none repeat scroll 0% 0% #F2F1F1;
@@ -139,6 +141,28 @@ header .toolbar {
     padding: 3px 5px;
     background-color: @toolbar-background-color;
     border-color: #121212;
+    
+    .search, .volume {
+        display: inline-block;
+    }
+    
+    .volume {
+        float: right;
+        padding-top: 4px;
+        padding-left: 6px;
+        display: flex;
+        height: @toolbar-volume-height;
+        border-left: 1px solid #999;
+        
+        .slider {
+            width: 100px;
+        }
+        
+        .fa {
+            padding: 3px;
+            width: 18px;
+        }
+    }
 }
 #search {
     width: 200px;
@@ -286,7 +310,7 @@ main .queue .tracks {
     overflow: auto;
 }
 main .queue.show .tracks {
-    width: 300px;
+    width: @queue-width;
 }
 .track.active > span {
     font-weight: bold;
@@ -335,7 +359,6 @@ main .queue.show .tracks {
         background-color: #eee;
         
         .controls {
-            transition: opacity 0.2s linear 0.1s;
             opacity: 1;
         }
     }

@@ -38,6 +38,11 @@ html(lang='fr')
             label(for="search")
               i.fa.fa-search
             input#search(type="text", placeholder="Search for artist, album or track", ng-model="value")
+        .volume
+          .slider
+            input(type="range" min="0" max="100" ng-model="volume", ng-model-options="{ getterSetter: true }")
+            .progress(ng-progress="volume()", ng-progress-duration="100")
+          i.fa(ng-class="{'fa-volume-up': volume() >= 35, 'fa-volume-down': volume() < 35 && volume() > 0, 'fa-volume-off': volume() == 0}")
     main
       .container#container(ng-controller="ListController")
         artists(infinite-scroll="pageArtists()", infinite-scroll-distance="1", infinite-scroll-container="'#container'")
@@ -73,12 +78,12 @@ html(lang='fr')
         .handle(ng-click="show = !show")
           i.fa.fa-angle-double-left
         .tracks
-          .track(ng-repeat="track in tracks track by $index", ng-class="{active: currentTrack == track}")
-            span.trackno(ng-if="track.trackno") {{track.trackno}}
-            span.name {{track.name}}
+          .track(ng-repeat="track in tracks", ng-class="{active: currentTrack == track}")
+            span.trackno(ng-if="::track.trackno") {{::track.trackno}}
+            span.name {{::track.name}}
             span.controls
               span.control(title="Play", ng-click="play(track)")
                 i.fa.fa-play
               span.control(title="Remove", ng-click="remove(track)")
                 i.fa.fa-remove
-            span.duration {{track.duration ? (track.duration | duration) : '-'}}
+            span.duration {{::track.duration ? (track.duration | duration) : '-'}}
