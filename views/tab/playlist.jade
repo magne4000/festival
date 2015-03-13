@@ -1,7 +1,0 @@
-.list-group
-  if tracks
-    each track in tracks
-      if playing
-        a.list-group-item.track(href="#", data-track-id="#{track._id}", data-track-uniqid="#{track.uniqid}", data-role="play") #{track.name}
-      else
-        a.list-group-item.track(href="#", data-track-id="#{track._id}", data-track-uniqid="#{track.uniqid}", data-role="play", data-artist="#{track.artist}", data-album="#{track.album}") #{track.name}

@@ -71,25 +71,4 @@ angular.module('festival')
             });
         }
     };
-}])
-.directive('suspendable', ['$rootScope', function($rootScope) {
-    return {
-        link: function(scope) {
-            // Heads up: this might break is suspend/resume called out of order
-            // or if watchers are added while suspended
-            var watchers;
-
-            $rootScope.$on('suspend', function() {
-                watchers = scope.$$watchers;
-                scope.$$watchers = [];
-            });
-
-            $rootScope.$on('resume', function() {
-                if (watchers) scope.$$watchers = watchers;
-
-                // discard our copy of the watchers
-                watchers = void 0;
-            });
-        }
-    };
 }]);
