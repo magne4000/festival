@@ -71,8 +71,8 @@ html(lang='fr')
                       span.trackno(ng-if="track.trackno") {{track.trackno}}
                       span.name {{track.name}}
                       span.controls
-                        span.control(title="Play", ng-click="empty();play(track, album.tracks)")
-                          i.fa.fa-play
+                        span.control(title="Play", ng-click="playOrPause(track, album.tracks)")
+                          i.fa(ng-class="{'fa-pause': currentTrack._id == track._id && playing, 'fa-play': currentTrack._id != track._id || !playing}")
                         span.control(title="Add to queue", ng-click="add(track)")
                           i.fa.fa-plus
                       span.duration {{track.duration ? (track.duration | duration) : '-'}}
@@ -84,8 +84,8 @@ html(lang='fr')
             span.trackno(ng-if="::track.trackno") {{::track.trackno}}
             span.name {{::track.name}}
             span.controls
-              span.control(title="Play", ng-click="play(track)")
-                i.fa.fa-play
+              span.control(title="Play", ng-click="playOrPause(track)")
+                i.fa(ng-class="{'fa-pause': currentTrack == track && playing, 'fa-play': currentTrack != track || !playing}")
               span.control(title="Remove", ng-click="remove(track)")
                 i.fa.fa-remove
             span.duration {{::track.duration ? (track.duration | duration) : '-'}}

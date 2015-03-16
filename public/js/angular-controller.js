@@ -239,8 +239,22 @@ angular.module('festival')
     
     $scope.togglePlayPause = function() {
         $timeout(function() {
-            if (!!$scope.currentSound) {
+            if ($scope.currentSound) {
                 $scope.currentSound.togglePause();
+            }
+        }, 0);
+    };
+    
+    $scope.playOrPause = function(track, tracks) {
+        $timeout(function() {
+            console.log(track);
+            if (!track || ($scope.currentTrack && $scope.currentTrack._id === track._id)) {
+                $scope.currentSound.togglePause();
+            } else {
+                if (tracks) {
+                    $scope.empty();
+                }
+                $scope.play(track, tracks);
             }
         }, 0);
     };
@@ -282,6 +296,19 @@ angular.module('festival')
         }
         return volume;
     };
+    
+    $(document).on('keydown', null, 'space', function(e) {
+        e.preventDefault();
+        $scope.togglePlayPause();
+    });
+    $(document).on('keydown', null, 'left', function(e) {
+        e.preventDefault();
+        $scope.prev($scope.playing);
+    });
+    $(document).on('keydown', null, 'right', function(e) {
+        e.preventDefault();
+        $scope.next($scope.playing);
+    });
 }])
 .controller('ListController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout) {
     $rootScope.artists = [];
