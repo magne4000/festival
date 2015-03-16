@@ -47,13 +47,15 @@ html(lang='fr')
       .container#container(ng-controller="ListController")
         artists(infinite-scroll="pageArtists()", infinite-scroll-distance="1", infinite-scroll-container="'#container'")
           .artist(ng-repeat="artist in artists track by $index")
-            h3(ng-click="loadAlbums(artist)") {{::artist.artist}}
+            h3(ng-click="loadAlbums(artist)")
+              i.fa(ng-class="{'fa-minus': artist.expanded, 'fa-plus': !artist.expanded}")
+              {{::artist.artist ? artist.artist : 'Unknown'}}
             .controls
               .control(title="Play all albums", ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)")
                 i.fa.fa-play
               .control(title="Add albums to queue", ng-click="loadAlbumsAndTracksAndAdd(artist, false)")
                 i.fa.fa-plus
-            .albums
+            .albums(ng-show="artist.expanded")
               .album(ng-repeat="album in artist.albums track by $index", ng-class="{notracks: !album.tracks}")
                 h4(ng-click="loadTracks(artist, album)") {{::album.name}}
                   span.year(ng-if="::album.year")  ({{::album.year}})

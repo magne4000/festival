@@ -313,11 +313,17 @@ angular.module('festival')
     };
     
     $scope.loadAlbums = function(artist) {
-        if (artist.albums && artist.albums.length > 0) return;
+        if (artist.albums && artist.albums.length > 0) {
+            artist.expanded = !artist.expanded;
+            return;
+        }
         var filter = {artist: artist.artist};
         $ajax.albumsbyartists(filter).success(function(data, status) {
             if (data.length > 0) {
+                artist.expanded = true;
                 artist.albums = data[0].albums;
+            } else {
+                artist.expanded = false;
             }
         });
     };
@@ -327,10 +333,12 @@ angular.module('festival')
             var filter = {artist: artist.artist};
             $ajax.tracks(filter, false).success(function(data, status) {
                 artist.albums = data[0].albums;
+                artist.expanded = (artist.albums.length > 0);
                 artist.everythingLoaded = true;
                 if (typeof callback === "function") callback(artist);
             });
         } else {
+            artist.expanded = !artist.expanded;
             $timeout(function() {
                 callback(artist);
             }, 0);
@@ -340,6 +348,7 @@ angular.module('festival')
     $scope.loadAlbumsAndTracksAndAdd = function(artist, autoplay) {
         $scope.loadAlbumsAndTracks(artist, function(artist1) {
             if (artist1.albums) {
+                artist1.expanded = (artist.albums.length > 0);
                 for (var i=0; i<artist1.albums.length; i++) {
                     $scope.add(artist1.albums[i].tracks, autoplay);
                     autoplay = false;
@@ -395,6 +404,9 @@ angular.module('festival')
     function search(param, skip, limit, next) {
         $ajax.search(param, false, skip, limit).success(function(data, status) {
             next((data.length > 0));
+            for (var i=0; i<data.length ; i++) {
+                data[i].expanded = true;
+            }
             $utils.extend($rootScope.artists, data);
         }).error(function(){
             next(false);
@@ -405,7 +417,11 @@ angular.module('festival')
     
     $scope.search = function() {
         $rootScope.artists = [];
-        $displayMode.current('search', $scope.value);
+        if ($scope.value.length > 0) {
+            $displayMode.current('search', $scope.value);
+        } else {
+            $displayMode.current('artists', {});
+        }
         $displayMode.call();
     };
 }]);
