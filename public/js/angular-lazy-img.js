@@ -28,7 +28,6 @@ function($window, lazyImgConfig, lazyImgHelpers) {
     }, 60);
 
     function checkImages() {
-        console.log("checkImages", images.length);
         for (var i = 0; i < images.length; i++) {
             var image = images[i];
             if (lazyImgHelpers.isElementInView(image.$elem[0], options.offset, winDimensions)) {
