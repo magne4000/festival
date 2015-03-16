@@ -18,12 +18,13 @@ module.exports = function(grunt) {
       },
       dist: {
         src: ['public/js/jquery.hotkeys.js', 'public/js/angular-init.js', 'public/js/ng-infinite-scroll.min.js',
-      		'public/js/angular-directive.js', 'public/js/angular-filter.js', 'public/js/angular-controller.js'],
+      		'public/js/angular-lazy-img.js', 'public/js/angular-directive.js', 'public/js/angular-filter.js',
+      		'public/js/angular-controller.js'],
         dest: 'public/js/temp.js'
       },
       all: {
         src: ['public/js/jquery.min.js', 'public/js/angular.min.js',
-        'public/js/ng-infinite-scroll.min.js', 'public/js/angular-lazy-img.min.js', '<%= uglify.dist.dest %>'],
+        'public/js/ng-infinite-scroll.min.js', '<%= uglify.dist.dest %>'],
         dest: 'public/js/<%= pkg.name %>.min.js'
       }
     },
