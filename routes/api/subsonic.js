@@ -2,14 +2,14 @@ var express = require('express'),
     SubsonicJson = require('./subsonicjson'),
     jsonix = require('./jsonix'),
     jsonixcontext = require('./jsonix-context'),
-    settings = require('../../settings'),
+    //settings = require('../../settings'),
     mongoose = require('mongoose'),
+    albumartRoute = require('../albumart'),
+    musicRoute = require('../music'),
     subsonicjson = new SubsonicJson();
 
 var api = function() {
     var self = this;
-    this.musicRoute = require('../music');
-    this.ajaxRoute = require('../ajax');
     this.context = new jsonix.Jsonix.Context([jsonixcontext]);
     this.routes = {};
     
@@ -334,7 +334,7 @@ var api = function() {
             callback(response, true);
         } else {
             req.query.id = subsonicjson.clearId(id);
-            self.musicRoute.index(req, res);
+            musicRoute.index(req, res);
         }
     };
 
@@ -351,7 +351,7 @@ var api = function() {
                 if (cid[0] && cid[1]) {
                     req.query.album = cid[0];
                     req.query.artist = cid[1];
-                    self.ajaxRoute.albumart(req, res);
+                    albumartRoute.albumart(req, res);
                 } else {
                     res.sendStatus(404);
                 }
@@ -365,7 +365,7 @@ var api = function() {
                     } else {
                         req.query.album = track.album;
                         req.query.artist = track.artist;
-                        self.ajaxRoute.albumart(req, res);
+                        albumartRoute.albumart(req, res);
                     }
                 });
             } else {

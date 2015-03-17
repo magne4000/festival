@@ -37,13 +37,12 @@ var app = express();
 app.set('port', process.env.PORT || settings.express.port || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-//app.use(express.favicon(path.join(__dirname, 'public', 'images', 'favicon.png')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(morgan('combined'));
 app.use(compression());
-app.use(lessMiddleware(path.join(__dirname, '/public')));
+app.use(lessMiddleware(path.join(__dirname, 'public')));
 app.use(serveStatic(path.join(__dirname, 'public')));
 
 // development only
@@ -52,7 +51,6 @@ if ('development' === process.env.NODE_ENV) {
 }
 app.get('/', index.index.bind(index));
 app.get('/music/:id', music.index.bind(music));
-//app.post('/ajax/search/artists', ajax.searchartists.bind(ajax));
 app.get('/ajax/list/tracks', ajax.listtracks.bind(ajax));
 app.get('/ajax/list/albums', ajax.listalbums.bind(ajax));
 app.get('/ajax/list/artists', ajax.listartists.bind(ajax));
