@@ -87,7 +87,7 @@ function treefy(tracks, skip, limit) {
     tracks.forEach(function(element) {
         if (!element.artist) element.artist = 'Unknown';
         if (!element.album) element.album = 'Unknown';
-        if (!(!skipundef && nbAlbums <= skip) && !(!limitundef && nbAlbums > limit)) {
+        if (!(!skipundef && nbAlbums < skip) && !(!limitundef && nbAlbums >= limit)) {
             if (typeof tree[element.artist] === 'undefined') {
                 tree[element.artist] = [];
             }
