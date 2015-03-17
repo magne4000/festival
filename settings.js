@@ -11,8 +11,7 @@ module.exports = {
     },
     scanner: {
         path: '/mnt/data/musique',
-        musicExts: '.mp3,.ogg',
-        coverExts: '.png,.jpg,.jpeg,.gif'
+        musicExts: '.mp3,.ogg'
     },
     soundmanager: {
         url: 'swf/',

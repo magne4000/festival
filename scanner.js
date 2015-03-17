@@ -205,14 +205,6 @@ Scanner.prototype.isMusicFile = function(filepath){
 };
 
 /**
- * Test if filepath is a cover file.
- */
-Scanner.prototype.isCoverFile = function(filepath){
-    var exts = settings.scanner.coverExts.split(',');
-    return this.isTypeFile(filepath, exts);
-};
-
-/**
  * Fetch cover with lastfm API, then create thumbnail
  */
 Scanner.prototype.fetchCoverOnline = function(artist, album, callback){
