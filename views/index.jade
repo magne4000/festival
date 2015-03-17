@@ -45,7 +45,14 @@ html(lang='fr')
           i.fa(ng-class="{'fa-volume-up': volume() >= 35, 'fa-volume-down': volume() < 35 && volume() > 0, 'fa-volume-off': volume() == 0}")
     main
       .container#container(ng-controller="ListController")
+        .spinner(ng-if="loading")
+          .rect1
+          .rect2
+          .rect3
+          .rect4
+          .rect5
         artists(infinite-scroll="pageArtists()", infinite-scroll-distance="1", infinite-scroll-container="'#container'")
+          .noresult(ng-show="!loading && artists.length == 0") No result matching the search criteria.
           .artist(ng-repeat="artist in artists track by $index")
             h3(ng-click="loadAlbums(artist)")
               i.fa(ng-class="{'fa-minus': artist.expanded, 'fa-plus': !artist.expanded}")

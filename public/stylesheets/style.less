@@ -189,6 +189,9 @@ main .container .artist {
     padding-right: 15px;
     white-space: nowrap;
 }
+main .container .noresult {
+    margin: 10px;
+}
 main .container .artist > h3,
 main .container .album > h4 {
     display: inline-block;
@@ -369,5 +372,64 @@ main .queue.show .tracks {
         .controls {
             opacity: 1;
         }
+    }
+}
+
+/* Spinner */
+
+.spinner {
+    width: 100px;
+    text-align: center;
+    font-size: 10px;
+    height: 100px;
+    margin: 0 auto;
+    position: absolute;
+    top: ~"calc(50% - 50px)";
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0.4;
+}
+.spinner > div {
+    background-color: @primary-color;
+    height: 100%;
+    width: 16px;
+    margin: 2px;
+    display: inline-block;
+    -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
+    animation: stretchdelay 1.2s infinite ease-in-out;
+}
+.spinner .rect2 {
+    -webkit-animation-delay: -1.1s;
+    animation-delay: -1.1s;
+}
+.spinner .rect3 {
+    -webkit-animation-delay: -1.0s;
+    animation-delay: -1.0s;
+}
+.spinner .rect4 {
+    -webkit-animation-delay: -0.9s;
+    animation-delay: -0.9s;
+}
+.spinner .rect5 {
+    -webkit-animation-delay: -0.8s;
+    animation-delay: -0.8s;
+}
+@-webkit-keyframes stretchdelay {
+    0%, 40%, 100% {
+        -webkit-transform: scaleY(0.5)
+    }
+    20% {
+        -webkit-transform: scaleY(1.0)
+    }
+}
+@keyframes stretchdelay {
+    0%, 40%, 100% {
+        transform: scaleY(0.5);
+        -webkit-transform: scaleY(0.5);
+    }
+    20% {
+        transform: scaleY(1.0);
+        -webkit-transform: scaleY(1.0);
     }
 }

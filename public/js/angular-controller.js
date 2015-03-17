@@ -312,21 +312,28 @@ angular.module('festival')
 }])
 .controller('ListController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout) {
     $rootScope.artists = [];
+    $rootScope.loading = false;
     
     function loadArtists(filter, skip, limit, next) {
+        $rootScope.loading = true;
         $ajax.artists(filter, skip, limit).success(function(data, status) {
+            $rootScope.loading = false;
             next((data.length > 0));
             $utils.extend($rootScope.artists, data);
         }).error(function(){
+            $rootScope.loading = false;
             next(false);
         });
     }
     
     function loadAlbumsByArtists(filter, skip, limit, next) {
+        $rootScope.loading = true;
         $ajax.albumsbyartists(filter, skip, limit).success(function(data, status) {
+            $rootScope.loading = false;
             next((data.length > 0));
             $utils.extend($rootScope.artists, data);
         }).error(function(){
+            $rootScope.loading = false;
             next(false);
         });
     }
@@ -429,13 +436,16 @@ angular.module('festival')
     $scope.value = "";
     
     function search(param, skip, limit, next) {
+        $rootScope.loading = true;
         $ajax.search(param, false, skip, limit).success(function(data, status) {
+            $rootScope.loading = false;
             next((data.length > 0));
             for (var i=0; i<data.length ; i++) {
                 data[i].expanded = true;
             }
             $utils.extend($rootScope.artists, data);
         }).error(function(){
+            $rootScope.loading = false;
             next(false);
         });
     }
