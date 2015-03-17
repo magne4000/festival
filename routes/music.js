@@ -4,7 +4,7 @@ var fs = require('fs'),
     mongoose = require('mongoose');
 
 exports.index = function(req, res){
-    var id = req.query.id,
+    var id = req.query.id?req.query.id:req.params.id,
         Track = mongoose.model('track');
     Track.findOne({ _id : id }, function (err, track) {
         if (err) {
