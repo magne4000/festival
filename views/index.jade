@@ -72,7 +72,7 @@ html(lang='fr')
                   .control(title="Add tracks to queue", ng-click="loadTracksAndAdd(artist, album, false)")
                     i.fa.fa-plus
                 .album-container
-                  img(ng-click="loadTracks(artist, album)", lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="/images/nocover.png")
+                  img(ng-click="loadTracks(artist, album)", lazy-img="{{::album.albumart}}", alt="{{::album.name}}", src="images/nocover.png")
                   .tracks
                     .track(ng-repeat="track in album.tracks track by $index", ng-class="{active: currentTrack._id == track._id}")
                       span.trackno(ng-if="track.trackno") {{track.trackno}}

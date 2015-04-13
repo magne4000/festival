@@ -111,7 +111,7 @@ function treefy(tracks, skip, limit) {
             retArtist.albums.push({
                 name: album,
                 year: year,
-                albumart: '/albumart?album=' + encodeURIComponent(album) + '&artist=' + encodeURIComponent(artist),
+                albumart: 'albumart?album=' + encodeURIComponent(album) + '&artist=' + encodeURIComponent(artist),
                 tracks: tree[artist][album]
             });
         }

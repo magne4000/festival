@@ -23,7 +23,7 @@ trackSchema.virtual('uniqid').get(function () {
 });
 
 trackSchema.virtual('url').get(function () {
-    return '/music/'+this._id;
+    return 'music/'+this._id;
 });
 
 trackSchema.set('toJSON', { virtuals: true });
