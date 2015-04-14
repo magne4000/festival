@@ -314,14 +314,15 @@ main .queue.show .handle .fa {
 }
 main .queue .tracks {
     display: inline-block;
-    width: 0;
-    transition: width 0.3s;
+    width: @queue-width;
+    margin-right: calc(0 - @queue-width);
+    transition: margin-right 0.3s;
     height: 100%;
     line-height: 17px;
     overflow: auto;
 }
 main .queue.show .tracks {
-    width: @queue-width;
+    margin-right: 0;
 }
 .track.active > span {
     font-weight: bold;
