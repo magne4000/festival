@@ -41,8 +41,9 @@ html(lang='fr')
         .volume
           .slider
             input(type="range" min="0" max="100" ng-model="volume", ng-model-options="{ getterSetter: true }")
-            .progress(ng-progress="volume()", ng-progress-duration="100")
-          i.fa(ng-class="{'fa-volume-up': volume() >= 35, 'fa-volume-down': volume() < 35 && volume() > 0, 'fa-volume-off': volume() == 0}")
+            .progress(ng-progress="volumeval", ng-progress-duration="100")
+          a(href="#", ng-click="toggleVolume()")
+            i.fa(ng-class="{'fa-volume-up': volumeval >= 35, 'fa-volume-down': volumeval < 35 && volumeval > 0, 'fa-volume-off': volumeval == 0}")
     main
       .container#container(ng-controller="ListController")
         .spinner(ng-if="loading")

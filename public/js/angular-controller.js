@@ -5,7 +5,7 @@ angular.module('festival')
     var currentIndice = 0;
     var timer = null;
     var progress = 0;
-    var volume = 100;
+    var lastvolume = 100;
     var usingAdd = false;
     
     $scope.currentTrack = null;
@@ -15,6 +15,7 @@ angular.module('festival')
     $scope.buffered = 0;
     $scope.duration = 0;
     $scope.playing = false;
+    $scope.volumeval = 100;
     
     function next() {
         if ($scope.currentTrack) {
@@ -286,15 +287,27 @@ angular.module('festival')
     };
     
     $scope.volume = function(val) {
-        if (val) {
-            volume = val;
+        if (typeof val === "string") {
+            val = parseInt(val, 10);
+        }
+        if (typeof val === "number") {
+            $scope.volumeval = val;
             if ($scope.currentSound) {
                 $timeout(function() {
                     $scope.currentSound.setVolume(val);
                 }, 0);
             }
         }
-        return volume;
+        return $scope.volumeval;
+    };
+    
+    $scope.toggleVolume = function() {
+        if ($scope.volumeval === 0) {
+            $scope.volume(lastvolume);
+        } else {
+            lastvolume = $scope.volumeval;
+            $scope.volume(0);
+        }
     };
     
     $(document).on('keydown', null, 'space', function(e) {
@@ -393,9 +406,11 @@ angular.module('festival')
     
     $scope.loadTracks = function(artist, album, callback) {
         if (album.tracks && album.tracks.length > 0) {
-            $timeout(function() {
-                callback(artist, album);
-            }, 0);
+            if (typeof callback === "function") {
+                $timeout(function() {
+                    callback(artist, album);
+                }, 0);
+            }
         } else {
             var filter = {artist: artist.artist, album: album.name};
             $ajax.tracks(filter, true).success(function(data, status) {
