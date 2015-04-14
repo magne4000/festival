@@ -91,6 +91,15 @@ header .player .panel > .info-panel {
         flex: 1;
         text-align: center;
         padding: 2px 0;
+        
+        .album, .artist {
+            font-size: 11px;
+            color: #aaa;
+            
+            &:before {
+                content: " - ";
+            }
+        }
     }
     
     .elapsed-time, .total-time {

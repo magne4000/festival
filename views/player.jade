@@ -8,7 +8,11 @@
   .panel
     .info-panel
       span.elapsed-time {{progress() | duration}}
-      span.name {{currentTrack ? currentTrack.name : 'Waiting for a track'}}
+      span.name(ng-if="currentTrack")
+        span.title {{currentTrack.name}}
+        span.artist {{currentTrack.artist}}
+        span.album {{currentTrack.album}}
+      span.name(ng-if="!currentTrack")  Waiting for a track
       span.total-time {{duration | duration}}
     .slider-panel
       .slider

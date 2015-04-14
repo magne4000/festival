@@ -90,7 +90,7 @@ html(lang='fr')
         .tracks
           .track(ng-repeat="track in tracks", ng-class="{active: currentTrack == track}")
             span.trackno(ng-if="::track.trackno") {{::track.trackno}}
-            span.name {{::track.name}}
+            span.name(title="Artist: {{::track.artist}}\nAlbum: {{::track.album}}") {{::track.name}}
             span.controls
               span.control(title="Play", ng-click="playOrPause(track)")
                 i.fa(ng-class="{'fa-pause': currentTrack == track && playing, 'fa-play': currentTrack != track || !playing}")
