@@ -474,11 +474,18 @@ angular.module('festival')
     
     $displayMode.setCallback('search', search);
     
+    $scope.$watch('checkboxFilter', function(newValue, oldValue) {
+        if (!angular.equals(newValue, oldValue)) {
+            $timeout.cancel(promise);
+            promise = $timeout($scope.searchnow, 600);
+        }
+    }, true);
+    
     $scope.search = function() {
         if (lastValue !== $scope.value) {
             lastValue = $scope.value;
             $timeout.cancel(promise);
-            promise = $timeout($scope.searchnow, 200);
+            promise = $timeout($scope.searchnow, 300);
         }
     };
     
