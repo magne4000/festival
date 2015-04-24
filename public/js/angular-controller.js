@@ -449,10 +449,15 @@ angular.module('festival')
 }])
 .controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
     $scope.value = "";
+    $scope.checkboxFilter = {
+        artists: true,
+        albums: true,
+        tracks: true
+    };
     
     function search(param, skip, limit, next) {
         $rootScope.loading = true;
-        $ajax.search(param, false, skip, limit).success(function(data, status) {
+        $ajax.search(param, $scope.checkboxFilter, false, skip, limit).success(function(data, status) {
             $rootScope.loading = false;
             next((data.length > 0));
             for (var i=0; i<data.length ; i++) {

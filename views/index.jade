@@ -37,7 +37,21 @@ html(lang='fr')
           form(ng-submit="search()")
             label(for="search")
               i.fa.fa-search
-            input#search(type="text", placeholder="Search for artist, album or track", ng-model="value")
+            input#search(type="text", placeholder="Search", ng-model="value")
+            span.filters
+              span in
+              span(ng-class="{off: !checkboxFilter.artists}")
+                input#sfartists(type="checkbox", ng-model="checkboxFilter.artists")
+                label.checkbox(for="sfartists")
+                label(for="sfartists")  Artists
+              span(ng-class="{off: !checkboxFilter.albums}")
+                input#sfalbums(type="checkbox", ng-model="checkboxFilter.albums")
+                label.checkbox(for="sfalbums")
+                label(for="sfalbums")  Albums
+              span(ng-class="{off: !checkboxFilter.tracks}")
+                input#sftracks(type="checkbox", ng-model="checkboxFilter.tracks")
+                label.checkbox(for="sftracks")
+                label(for="sftracks")  Tracks
         .volume
           .slider
             input(type="range" min="0" max="100" ng-model="volume", ng-model-options="{ getterSetter: true }")

@@ -153,10 +153,11 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         return $http.get('ajax/list/tracks', {params: params});
     }
     
-    function search(term, flat, skip, limit) {
+    function search(term, filters, flat, skip, limit) {
         flat = !!flat;
         var params = {
-            term: term, 
+            term: term,
+            filters: filters,
             skip: skip,
             limit: limit,
             flat: flat

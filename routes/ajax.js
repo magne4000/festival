@@ -126,15 +126,24 @@ function search(req, res) {
     // If flat is false, skip and limit applies to numbers of albums, not number of tracks
     var skip = req.query.skip?parseInt(req.query.skip, 10):null;
     var limit = req.query.limit?parseInt(req.query.limit, 10):null;
-    if (cacheSearch.has(term)) {
-        var docs = cacheSearch.get(term);
+    var filters = req.query.filters?JSON.parse(req.query.filters):null;
+    var key = term;
+    if (filters) {
+        key += (filters.artists)?"1":"0";
+        key += (filters.albums)?"1":"0";
+        key += (filters.tracks)?"1":"0";
+    } else {
+        key += "000";
+    }
+    if (cacheSearch.has(key)) {
+        var docs = cacheSearch.get(key);
         if (flat) {
             res.json(docs);
         } else {
             res.json(treefy(docs, skip, limit));
         }
     } else {
-        request.search(term, function(err, docs) {
+        request.search(term, filters, function(err, docs) {
             if (err) {
                 console.error(err);
                 res.sendStatus(500);

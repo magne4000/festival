@@ -155,6 +155,90 @@ header .toolbar {
         display: inline-block;
     }
     
+    .search .filters {
+        margin-left: 10px;
+        top: 5px;
+        position: relative;
+        
+        input {
+            display: none;
+        }
+        
+        label {
+            cursor: pointer;
+        }
+        
+        .checkbox {
+            border-radius: 0.1em;
+            border-style: solid;
+            border-width: 0.15em;
+            border-color: #5A5A5A;
+            cursor: pointer;
+            display: inline-block;
+            height: 1em;
+            width: 1em;
+            margin-left: 6px;
+            margin-top: 0px;
+            visibility: visible;
+            background: none repeat scroll 0% 0% transparent;
+            transition: all 0.2s ease 0s;
+            position: relative;
+            box-shadow: 0px 0px 0px transparent;
+            color: @primary-color;
+        }
+        
+        label.checkbox:before {
+            content: "";
+            margin-left: -0.15em;
+            margin-top: -0.15em;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: ~"calc(100% + 0.3em)";
+            height: ~"calc(100% + 0.3em)";
+            border-radius: 0.1em;
+            transition: transform 0.2s ease 0s, #000 0.1s ease 0s;
+            transition: all 0.2s ease 0s;
+            transform: scale(0.1);
+        }
+        
+        input[type="checkbox"]:checked + label.checkbox:before {
+            background-color: currentcolor;
+            opacity: 1;
+            transform: none;
+        }
+        
+        label.checkbox:after {
+            content: " ";
+            border-style: solid;
+            border-width: 0px 0px 0.15em 0.15em;
+            border-color: transparent;
+            cursor: pointer;
+            height: 0.4em;
+            left: 50%;
+            margin-left: -0.4em;
+            margin-top: -0.4em;
+            position: absolute;
+            top: 50%;
+            width: 0.7em;
+            transform: rotate(-45deg);
+            color: #4CAF50;
+            transition: all 0.2s ease 0s;
+        }
+        
+        input[type="checkbox"]:checked + label.checkbox:after {
+            border-color: rgba(255, 255, 255, 0.87);
+        }
+        
+        .off {
+            opacity: 0.5;
+            
+            &:hover {
+                opacity: 0.8;
+            }
+        }
+    }
+    
     .volume {
         float: right;
         padding-top: 4px;
