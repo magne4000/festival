@@ -70,7 +70,7 @@ html(lang='fr')
           .noresult(ng-show="!loading && artists.length == 0") No result matching the search criteria.
           .artist(ng-repeat="artist in artists track by $index")
             h3(ng-click="loadAlbums(artist)")
-              i.fa(ng-class="{'fa-minus': artist.expanded, 'fa-plus': !artist.expanded}")
+              i.fa(ng-class="{'fa-chevron-down': artist.expanded, 'fa-chevron-right': !artist.expanded}")
               {{::artist.artist ? artist.artist : 'Unknown'}}
             .controls
               .control(title="Play all albums", ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)")
