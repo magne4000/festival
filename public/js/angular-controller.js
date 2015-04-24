@@ -447,13 +447,15 @@ angular.module('festival')
     
     $rootScope.$on('tracks', computeTracks);
 }])
-.controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', function($scope, $rootScope, $ajax, $displayMode, $utils) {
+.controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout) {
     $scope.value = "";
     $scope.checkboxFilter = {
         artists: true,
         albums: true,
         tracks: true
     };
+    var promise = null;
+    var lastValue = "";
     
     function search(param, skip, limit, next) {
         $rootScope.loading = true;
@@ -473,6 +475,14 @@ angular.module('festival')
     $displayMode.setCallback('search', search);
     
     $scope.search = function() {
+        if (lastValue !== $scope.value) {
+            lastValue = $scope.value;
+            $timeout.cancel(promise);
+            promise = $timeout($scope.searchnow, 200);
+        }
+    };
+    
+    $scope.searchnow = function() {
         $rootScope.artists = [];
         if ($scope.value.length > 0) {
             $displayMode.current('search', $scope.value);

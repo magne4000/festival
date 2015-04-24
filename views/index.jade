@@ -34,10 +34,10 @@ html(lang='fr')
       include player
       .toolbar(ng-controller="ToolbarController")
         .search
-          form(ng-submit="search()")
-            label(for="search")
+          form(ng-submit="searchnow()")
+            label(for="search", ng-click="searchnow()")
               i.fa.fa-search
-            input#search(type="text", placeholder="Search", ng-model="value")
+            input#search(type="text", placeholder="Search", ng-model="value", ng-keyup="search()")
             span.filters
               span in
               span(ng-class="{off: !checkboxFilter.artists}")
