@@ -148,7 +148,7 @@ function search(req, res) {
                 console.error(err);
                 res.sendStatus(500);
             } else {
-                cacheSearch.set(term, docs);
+                cacheSearch.set(key, docs);
                 if (flat) {
                     res.json(docs);
                 } else {
