@@ -425,6 +425,15 @@ angular.module('festival')
             $scope.add(album1.tracks, autoplay);
         });
     };
+    
+    $scope.toggleTracks = function(artist, album) {
+        if (typeof album.trackshidden === "undefined") {
+            album.trackshidden = (album.tracks && album.tracks.length > 0);
+            $scope.loadTracks(artist, album);
+        } else {
+            album.trackshidden = !album.trackshidden;
+        }
+    };
 }])
 .controller('QueueController', ['$scope', '$rootScope', '$tracks', function($scope, $rootScope, $tracks) {
     $scope.tracks = [];

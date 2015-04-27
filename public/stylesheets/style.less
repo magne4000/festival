@@ -289,7 +289,7 @@ main .container .artist > h3,
 main .container .album > h4 {
     display: inline-block;
     text-shadow: 0 0 5px white, 1px 1px 2px #666;
-    cursor: default;
+    cursor: pointer;
     margin: 5px 0;
     
     .fa-minus, .fa-plus {
@@ -371,28 +371,15 @@ main .container .albums .album img {
     min-width: 140px;
     max-width: 140px;
     max-height: 140px;
+    cursor: pointer;
 }
 main .container .albums .album .album-container .tracks {
     flex: 1;
     width: auto;
-    opacity: 1;
-    transition: opacity 0.3s linear;
     padding: 10px;
 }
-main .container .albums .album.notracks {
-    
-    img {
-        cursor: pointer;
-    }
-    
-    h4 {
-        cursor: pointer;
-    }
-    
-    .album-container .tracks {
-        width: 0;
-        opacity: 0;
-    }
+main .container .albums .album.hidetracks .album-container .tracks {
+    display: none;
 }
 main .queue .handle {
     width: @queue-handle-width;
