@@ -102,7 +102,7 @@ html(lang='fr')
         .handle(ng-click="show = !show")
           i.fa.fa-angle-double-left
         .tracks
-          .track(ng-repeat="track in tracks", ng-class="{active: currentTrack == track}")
+          .track(ng-repeat="track in tracks", ng-class="{active: currentTrack == track, failed: track.failed}")
             span.trackno(ng-if="::track.trackno") {{::track.trackno}}
             span.name(title="Artist: {{::track.artist}}\nAlbum: {{::track.album}}") {{::track.name}}
             span.controls

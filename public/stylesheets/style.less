@@ -413,15 +413,6 @@ main .queue .tracks {
 main .queue.show .tracks {
     margin-right: 0;
 }
-.track.active > span {
-    font-weight: bold;
-}
-.track.active:before {
-    content: "\f025";
-    font-family: FontAwesome;
-    padding-right: 3px;
-    padding-top: 1px;
-}
 .track {
     margin: 1px 2px;
     display: flex;
@@ -463,6 +454,26 @@ main .queue.show .tracks {
             opacity: 1;
         }
     }
+}
+.track.active > span {
+    font-weight: bold;
+}
+.track.active:before {
+    content: "\f025";
+    font-family: FontAwesome;
+    padding-right: 3px;
+    padding-top: 1px;
+}
+.track.failed {
+    color: red;
+    opacity: 0.6;
+}
+.track.failed:before {
+    content: "\f071";
+    font-family: FontAwesome;
+    padding-right: 3px;
+    padding-top: 1px;
+    color: red;
 }
 
 /* Spinner */

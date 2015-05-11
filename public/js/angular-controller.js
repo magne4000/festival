@@ -219,12 +219,21 @@ angular.module('festival')
                                 $scope.playing = true;
                             });
                         },
-                        onload: function(){
+                        onload: function(success){
                             var self = this;
-                            $scope.$apply(function(){
-                                $scope.duration = Math.floor(self.duration / 1000);
-                                $scope.buffered = self.buffered;
-                            });
+                            if (success) {
+                                $scope.$apply(function(){
+                                    $scope.duration = Math.floor(self.duration / 1000);
+                                    $scope.buffered = self.buffered;
+                                });
+                            } else {
+                                $scope.$apply(function(){
+                                    track.failed = true;
+                                    progress = 0;
+                                    $scope.playing = false;
+                                    $scope.next(true);
+                                });
+                            }
                         },
                         onresume: function(){
                             $scope.$apply(function(){
