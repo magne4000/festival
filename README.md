@@ -52,9 +52,11 @@ and optionally
 
 Configuration
 -------------
-In order to configure the app, you need to customize settings.js file.
+In order to configure the app, you need to create a custom `settings-user.js` file:
 
-The only value that really needs to be modified is the path where your musics are stored:
+    cp settings.js settings-user.js
+
+In the newly created file `settings-user.js`, the only value that really needs to be modified is the path where your musics are stored:
 
     scanner: {
         path: '</path/to/your/musics/>',
