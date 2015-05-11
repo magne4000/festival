@@ -10,8 +10,9 @@ module.exports = {
         api_key: 'd9ba5638b0b058105af31af8c6a4b252'
     },
     scanner: {
-        path: '/mnt/data/musique',
-        musicExts: '.mp3,.ogg'
+        path: '/path/to/music',
+        musicExts: '.mp3,.ogg',
+        refreshInterval: 300 // in seconds
     },
     soundmanager: {
         url: 'swf/',

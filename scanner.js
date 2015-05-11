@@ -1,6 +1,5 @@
-var fs = require('fs'),
-    http = require('http'),
-    settings = require('./settings'),
+var http = require('http'),
+    settings = require('./lib/settings')(),
     temp = require('./lib/temp').track(),
     thumbs = require('./lib/thumbs'),
     coverurl = require('./lib/coverurl'),
@@ -176,9 +175,10 @@ Scanner.prototype.updateAlbumArts = function(callback){
  * Update the scanInProgess boolean
  */
 Scanner.prototype.clearProgressTimeout = function(){
+    var self = this;
     clearTimeout(this.progressTimeout);
     this.progressTimeout = setTimeout(function(){
-        scanInProgess = false;
+        self.scanInProgess = false;
     }, t);
 };
 
@@ -246,8 +246,7 @@ Scanner.prototype.fetchCoverOnline = function(artist, album, callback){
  */
 Scanner.prototype.scan = function(){
     var self = this,
-        Track = mongoose.model('track'),
-        Albumart = mongoose.model('albumart');
+        Track = mongoose.model('track');
     if (!this.scanInProgess){
         this.scanInProgess = true;
         if (settings.debug) {
@@ -344,10 +343,9 @@ Watcher.prototype.scan = function(){
  */
 Watcher.prototype.watch = function(){
     var self = this;
-    // Try to scan every 5 minutes
     setInterval(function(){
         self.scan();
-    }, 300000);
+    }, settings.scanner.refreshInterval * 1000);
 };
 
 module.exports = new Watcher();

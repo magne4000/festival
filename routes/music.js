@@ -1,6 +1,6 @@
 var fs = require('fs'),
     path = require('path'),
-    settings = require('../settings'),
+    settings = require('../lib/settings')(),
     mongoose = require('mongoose');
 
 exports.index = function(req, res){

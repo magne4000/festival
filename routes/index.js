@@ -1,8 +1,7 @@
 /*
  * GET home page.
  */
-var settings = require('../settings'),
-    request = require('../lib/request');
+var settings = require('../lib/settings')();
 
 exports.index = function(req, res) {
     res.render('index', {
