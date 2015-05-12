@@ -5,6 +5,7 @@ var express = require('express'),
     mongoose = require('mongoose'),
     albumartRoute = require('../albumart'),
     musicRoute = require('../music'),
+    request = require('../../lib/request'),
     subsonicjson = new SubsonicJson();
 
 var api = function() {
@@ -30,11 +31,7 @@ var api = function() {
     this.routes.getArtists = this.routes.getIndexes = function(req, res, callback){
         // var musicFolderId = req.param('musicFolderId');
         // var ifModifiedSince = req.param('ifModifiedSince');
-        self.db.track.find({}).group({
-            key: {artist: 1},
-            reduce: function(curr, result) {},
-            initial: {}
-        }).sort({artist: 1}).exec(function(err, docs) {
+        request.listartists({}, function(err, docs) {
             if (err){
                 console.error(err);
             }else{
@@ -75,11 +72,7 @@ var api = function() {
     };
     
     this.routes.getGenres = function(req, res, callback){
-        self.db.track.find({}).group({
-            key: {genre: 1},
-            reduce: function(curr, result) {},
-            initial: {}
-        }).sort({genre: 1}).exec(function(err, docs) {
+        request.listgenres({}, function(err, docs) {
             if (err){
                 console.error(err);
             }else{
@@ -357,7 +350,9 @@ var api = function() {
             } else if (subsonicjson.isSongId(id)) {
                 cid = subsonicjson.clearId(id);
                 filter = {_id: cid};
-                self.db.track.findOne(filter, function (err, track) {
+                var Track = mongoose.model('track');
+                var query = Track.findOne(filter);
+                query.exec(function (err, track) {
                     if (err) {
                         console.error(err);
                         res.sendStatus(404);
@@ -386,8 +381,8 @@ api.prototype.getAlbumsByArtists = function(filter, callback, sort, skip, limit)
     var Track = mongoose.model('track');
     var query = Track.aggregate(
         {$match: filter},
-        {$project: {artist: 1, album: 1}},
-        {$group: {_id: {album: '$album'}, year: {$first: '$year'}, last_updated: {$first: '$last_updated'}, duration: {$sum: '$duration'}, songCount: {$sum: 1}}}
+        {$group: {_id: {album: '$album'}, year: {$first: '$year'}, artist: {$first: '$artist'}, last_updated: {$first: '$last_updated'}, duration: {$sum: '$duration'}, songCount: {$sum: 1}}},
+        {$project: {artist: 1, album: '$_id.album', year: 1, last_updated: 1, duration: 1, songCount: 1}}
     );
     if (sort) query.sort(sort);
     if (skip) query.skip(skip);
