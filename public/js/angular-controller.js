@@ -223,6 +223,7 @@ angular.module('festival')
                             var self = this;
                             if (success) {
                                 $scope.$apply(function(){
+                                    if (track.failed) track.failed = false;
                                     $scope.duration = Math.floor(self.duration / 1000);
                                     $scope.buffered = self.buffered;
                                 });
@@ -465,7 +466,7 @@ angular.module('festival')
     
     $rootScope.$on('tracks', computeTracks);
 }])
-.controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout) {
+.controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', '$location', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout, $location) {
     $scope.value = "";
     $scope.checkboxFilter = {
         artists: true,
@@ -494,8 +495,11 @@ angular.module('festival')
     
     $scope.$watch('checkboxFilter', function(newValue, oldValue) {
         if (!angular.equals(newValue, oldValue)) {
+            $location.search('sar', newValue.artists);
+            $location.search('sal', newValue.albums);
+            $location.search('str', newValue.tracks);
             $timeout.cancel(promise);
-            promise = $timeout($scope.searchnow, 600);
+            promise = $timeout($scope.searchnow, 700);
         }
     }, true);
     
@@ -503,7 +507,7 @@ angular.module('festival')
         if (lastValue !== $scope.value) {
             lastValue = $scope.value;
             $timeout.cancel(promise);
-            promise = $timeout($scope.searchnow, 300);
+            promise = $timeout($scope.searchnow, 400);
         }
     };
     
@@ -514,6 +518,34 @@ angular.module('festival')
         } else {
             $displayMode.current('artists', {});
         }
+        $location.search('s', $scope.value);
         $displayMode.call();
     };
+    
+    var unbind = $scope.$on('$locationChangeSuccess', function() {
+        unbind();
+        var triggersearchnow = true;
+        var params = $location.search();
+        if (typeof params.sar !== "undefined") {
+            params.sar = (params.sar === true);
+            if ($scope.checkboxFilter.artists !== params.sar) triggersearchnow = false;
+            $scope.checkboxFilter.artists = params.sar;
+        }
+        if (typeof params.sal !== "undefined") {
+            params.sal = (params.sal === true);
+            if ($scope.checkboxFilter.albums !== params.sal) triggersearchnow = false;
+            $scope.checkboxFilter.albums = params.sal;
+        }
+        if (typeof params.str !== "undefined") {
+            params.str = (params.str === true);
+            if ($scope.checkboxFilter.tracks !== params.str) triggersearchnow = false;
+            $scope.checkboxFilter.tracks = params.str;
+        }
+        if (typeof params.s !== "undefined") {
+            $scope.value = params.s;
+        }
+        if (triggersearchnow) {
+            $scope.searchnow();
+        }
+    });
 }]);

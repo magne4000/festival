@@ -1,9 +1,14 @@
 angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
-.config(['lazyImgConfigProvider', function(lazyImgConfigProvider) {
+.config(['lazyImgConfigProvider', '$locationProvider', function(lazyImgConfigProvider, $locationProvider) {
     var scrollable = document.getElementById('container');
     lazyImgConfigProvider.setOptions({
         container: angular.element(scrollable)
     });
+    
+    $locationProvider.html5Mode({
+        enabled: true,
+        requireBase: false
+    }).hashPrefix('!');
 }])
 .factory('$tracks', ['$rootScope', function($rootScope){
     var head = null;
