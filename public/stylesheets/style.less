@@ -58,6 +58,7 @@ header .player .control {
     text-align: center;
     padding-top: 10px;
     transition: color 0.2s;
+    text-decoration: none;
     
     .fa {
         transition: text-shadow 0.2s;
@@ -70,6 +71,9 @@ header .player .control {
             text-shadow: 0 0 3px @primary-color;
         }
     }
+}
+header .player .control.loop > span {
+    font-weight: 800;
 }
 header .player .control.active, header .player .control:active {
     color: darken(@primary-color, 10%);

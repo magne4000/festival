@@ -11,17 +11,21 @@ angular.module('festival')
     $scope.currentTrack = null;
     $scope.currentSound = null;
     $scope.shuffle = false;
-    $scope.loop = false;
+    $scope.loop = 0;
     $scope.buffered = 0;
     $scope.duration = 0;
     $scope.playing = false;
     $scope.volumeval = 100;
     
-    function next() {
+    function next(bypassLoop) {
         if ($scope.currentTrack) {
+            if (!bypassLoop && $scope.loop === 2) {
+                return $scope.currentTrack;
+            }
+            
             if ($scope.shuffle){
                 if (indicesToBePlayed.length === 0){
-                    if ($scope.loop) {
+                    if ($scope.loop === 1) {
                         // in loop and the playlist has been finished, so reset
                         indicesToBePlayed = indicesAlreadyPlayed;
                         indicesAlreadyPlayed = [];
@@ -39,7 +43,7 @@ angular.module('festival')
                 }
             }
             
-            if (!$scope.currentTrack.next && $scope.loop) {
+            if (!$scope.currentTrack.next && $scope.loop === 1) {
                 return $tracks.getHead();
             }
             
@@ -59,7 +63,7 @@ angular.module('festival')
                 return $tracks.get(currentIndice);
             }
             
-            if ($scope.currentTrack.prev === null && $scope.loop) {
+            if ($scope.currentTrack.prev === null && $scope.loop === 1) {
                 return $tracks.getTail();
             }
             
@@ -81,6 +85,10 @@ angular.module('festival')
         }
     }
     
+    $scope.showind = function() {
+        return arguments[arguments[0]+1];
+    };
+    
     $scope.play = function(track, tracks) {
         stop();
         if (!track) { // 0 param, Currently loaded track
@@ -92,8 +100,8 @@ angular.module('festival')
         }
     };
     
-    $scope.next = function(autoPlay) {
-        var nextTrack = next();
+    $scope.next = function(autoPlay, bypassLoop) {
+        var nextTrack = next(bypassLoop);
         stop();
         if (nextTrack) {
             $scope.load(nextTrack, autoPlay);
@@ -276,8 +284,8 @@ angular.module('festival')
         indicesAlreadyPlayed = [];
     };
     
-    $scope.toggleLoop = function() {
-        $scope.loop = !$scope.loop;
+    $scope.circleLoop = function() {
+        $scope.loop = ($scope.loop + 1) % 3;
     };
     
     $scope.empty = function() {
