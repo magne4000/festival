@@ -10,6 +10,10 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         requireBase: false
     }).hashPrefix('!');
 }])
+.config(['$interpolateProvider', function($interpolateProvider) {
+    $interpolateProvider.startSymbol('{[');
+    $interpolateProvider.endSymbol(']}');
+}])
 .factory('$tracks', ['$rootScope', function($rootScope){
     var head = null;
     var tail = null;

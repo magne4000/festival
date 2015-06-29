@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" type="text/css" href="static/stylesheets/normalize.css">
+    <link rel="stylesheet" type="text/css" href="static/stylesheets/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="static/stylesheets/style.css">
+    {% if config.DEBUG %}
+    <script type='text/javascript' src='static/js/jquery.min.js'></script>
+    <script type='text/javascript' src='static/js/jquery.hotkeys.js'></script>
+    <script type='text/javascript' src='static/js/angular.min.js'></script>
+    <script type='text/javascript' src='static/js/angular-init.js'></script>
+    <script type='text/javascript' src='static/js/ng-infinite-scroll.min.js'></script>
+    <script type='text/javascript' src='static/js/angular-lazy-img.js'></script>
+    <script type='text/javascript' src='static/js/angular-directive.js'></script>
+    <script type='text/javascript' src='static/js/angular-filter.js'></script>
+    <script type='text/javascript' src='static/js/angular-controller.js'></script>
+    <script type='text/javascript' src='static/js/soundmanager2-jsmin.js'></script>
+    {% else %}
+    <script type="text/javascript" src="static/js/festival.min.js"></script>
+    <script type="text/javascript" src="static/js/soundmanager2-nodebug-jsmin.js"></script>
+    {% endif %}
+    <script type="text/javascript">
+      soundManager.setup({
+        url: {{config.SM_URL|tojson}},
+        flashVersion: {{config.SM_FLASH_VERSION|tojson}},
+        useFlashBlock: {{config.SM_USE_FLASH_BLOCK|tojson}},
+        useHTML5Audio: {{config.SM_USE_HTML_AUDIO|tojson}},
+        preferFlash: {{config.SM_PREFER_FLASH|tojson}}
+      });
+    </script>
+    <title>{{config.TITLE}}</title>
+  </head>
+  <body ng-app="festival" ng-controller="PlayerController">
+    <header>
+      <div class="player"><a title="Previous track" href="#" ng-click="prev(true)" class="control prev"><i class="fa fa-backward fa-2x"></i></a><a title="Play" href="#" ng-click="togglePlayPause()" class="control play"><i ng-class="{'fa-play': !playing, 'fa-pause': playing}" class="fa fa-2x"></i></a><a title="Next track" href="#" ng-click="next(true, true)" class="control next"><i class="fa fa-forward fa-2x"></i></a>
+        <div class="panel">
+          <div class="info-panel"><span class="elapsed-time">{[progress() | duration]}</span><span ng-if="currentTrack" class="name"><span class="title">{[currentTrack.name]}</span><span class="artist">{[currentTrack.artist]}</span><span class="album">{[currentTrack.album]}</span></span><span ng-if="!currentTrack" class="name">Waiting for a track</span><span class="total-time">{[duration | duration]}</span>
+          </div>
+          <div class="slider-panel">
+            <div class="slider">
+              <input type="range" ng-model-options="{ getterSetter: true }">
+              <div ng-progress="progress()" ng-progress-duration="duration" class="progress"></div>
+              <div ng-loading="buffer" ng-loading-duration="duration" ng-repeat="buffer in buffered" class="loading"></div>
+            </div>
+          </div>
+        </div><a title="{[showind(loop, 'Loop (currently off)', 'Loop (currently on)', 'Loop current track')]}" href="#" ng-click="circleLoop()" ng-class="{active: loop > 0}" class="control loop"><i class="fa fa-repeat fa-2x"></i><span ng-show="loop == 2">1</span></a><a title="{[shuffle?'Shuffle (currently on)':'Shuffle (currently off)']}" href="#" ng-click="toggleShuffle()" ng-class="{active: shuffle}" class="control shuffle"><i class="fa fa-random fa-2x"></i></a>
+      </div>
+      <div ng-controller="ToolbarController" class="toolbar">
+        <div class="search">
+          <form ng-submit="searchnow()">
+            <label for="search" ng-click="searchnow()"><i class="fa fa-search"></i>
+            </label>
+            <input id="search" type="text" placeholder="Search" ng-model="value" ng-keyup="search()"><span class="filters"><span>in</span><span ng-class="{off: !checkboxFilter.artists}">
+                <input id="sfartists" type="checkbox" ng-model="checkboxFilter.artists">
+                <label for="sfartists" class="checkbox"></label>
+                <label for="sfartists">Artists</label></span><span ng-class="{off: !checkboxFilter.albums}">
+                <input id="sfalbums" type="checkbox" ng-model="checkboxFilter.albums">
+                <label for="sfalbums" class="checkbox"></label>
+                <label for="sfalbums">Albums</label></span><span ng-class="{off: !checkboxFilter.tracks}">
+                <input id="sftracks" type="checkbox" ng-model="checkboxFilter.tracks">
+                <label for="sftracks" class="checkbox"></label>
+                <label for="sftracks">Tracks</label></span></span>
+          </form>
+        </div>
+        <div class="volume">
+          <div class="slider">
+            <input type="range" ng-model-options="{ getterSetter: true }">
+            <div ng-progress="volumeval" ng-progress-duration="100" class="progress"></div>
+          </div><a href="#" ng-click="toggleVolume()"><i ng-class="{'fa-volume-up': volumeval >= 35, 'fa-volume-down': volumeval < 35 && volumeval > 0, 'fa-volume-off': volumeval == 0}" class="fa"></i></a>
+        </div>
+      </div>
+    </header>
+    <main>
+      <div id="container" ng-controller="ListController" class="container">
+        <div ng-if="loading" class="spinner">
+          <div class="rect1"></div>
+          <div class="rect2"></div>
+          <div class="rect3"></div>
+          <div class="rect4"></div>
+          <div class="rect5"></div>
+        </div>
+        <artists infinite-scroll="pageArtists()" infinite-scroll-distance="1" infinite-scroll-container="'#container'">
+          <div ng-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
+          <div ng-repeat="artist in artists track by $index" class="artist">
+            <h3 ng-click="loadAlbums(artist)"><i ng-class="{'fa-chevron-down': artist.expanded, 'fa-chevron-right': !artist.expanded}" class="fa"></i>{[::artist.artist ? artist.artist : 'Unknown']}
+
+            </h3>
+            <div class="controls">
+              <div title="Play all albums" ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control"><i class="fa fa-play"></i>
+              </div>
+              <div title="Add albums to queue" ng-click="loadAlbumsAndTracksAndAdd(artist, false)" class="control"><i class="fa fa-plus"></i>
+              </div>
+            </div>
+            <div ng-show="artist.expanded" class="albums">
+              <div ng-repeat="album in artist.albums track by $index" ng-class="{hidetracks: !album.tracks || album.trackshidden}" class="album">
+                <h4 ng-click="toggleTracks(artist, album)">{[::album.name]}<span ng-if="::album.year" class="year">({[::album.year]})</span>
+                </h4>
+                <div class="controls">
+                  <div title="Play tracks" ng-click="empty();loadTracksAndAdd(artist, album, true)" class="control"><i class="fa fa-play"></i>
+                  </div>
+                  <div title="Add tracks to queue" ng-click="loadTracksAndAdd(artist, album, false)" class="control"><i class="fa fa-plus"></i>
+                  </div>
+                </div>
+                <div class="album-container"><img ng-click="toggleTracks(artist, album)" lazy-img="{[::album.albumart]}" alt="{[::album.name]}" src="images/nocover.png">
+                  <div class="tracks">
+                    <div ng-repeat="track in album.tracks track by $index" ng-class="{active: currentTrack._id == track._id}" class="track"><span ng-if="track.trackno" class="trackno">{[track.trackno]}</span><span class="name">{[track.name]}</span><span class="controls"><span title="Play" ng-click="playOrPause(track, album.tracks)" class="control"><i ng-class="{'fa-pause': currentTrack._id == track._id && playing, 'fa-play': currentTrack._id != track._id || !playing}" class="fa"></i></span><span title="Add to queue" ng-click="add(track)" class="control"><i class="fa fa-plus"></i></span></span><span class="duration">{[track.duration ? (track.duration | duration) : '-']}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </artists>
+      </div>
+      <div ng-controller="QueueController" ng-class="{show: show}" class="queue">
+        <div ng-click="show = !show" class="handle"><i class="fa fa-angle-double-left"></i>
+        </div>
+        <div class="tracks">
+          <div ng-repeat="track in tracks" ng-class="{active: currentTrack == track, failed: track.failed}" class="track"><span ng-if="::track.trackno" class="trackno">{[::track.trackno]}</span><span title="Artist: {[::track.artist]}\nAlbum: {[::track.album]}" class="name">{[::track.name]}</span><span class="controls"><span title="Play" ng-click="playOrPause(track)" class="control"><i ng-class="{'fa-pause': currentTrack == track && playing, 'fa-play': currentTrack != track || !playing}" class="fa"></i></span><span title="Remove" ng-click="remove(track)" class="control"><i class="fa fa-remove"></i></span></span><span class="duration">{[::track.duration ? (track.duration | duration) : '-']}</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

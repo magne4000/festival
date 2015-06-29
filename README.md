@@ -1,6 +1,6 @@
 Festival
 ========
-Festival is an HTML5 web application that can play music files with the help of NodeJS.  
+Festival is an HTML5 web application that can play music files.  
 It also implements a piece of subsonic api which allows subsonic client apps to connect (like android apps) !
 
 ![Webmusic screenshot](https://github.com/magne4000/magne4000.github.com/raw/master/images/festival.screen1.jpg)
@@ -9,15 +9,9 @@ It also implements a piece of subsonic api which allows subsonic client apps to 
 
 Dependencies (ubuntu)
 ---------------------
-First of all, add nodejs repositories to apt (more recent than default ones)
+Install Flask with SQLAlchemy, and python3-imaging
 
-    sudo add-apt-repository ppa:chris-lea/node.js
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-    sudo apt-get update
-
-Then install nodejs, mongodb, taglib and graphicsmagick
-
-    sudo apt-get install nodejs libtag1-dev libtag1c2a libtag1-vanilla graphicsmagick git build-essential mongodb-server
+    sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-imaging
 
 Taglib installation (other systems)
 -----------------------------------
