@@ -11,7 +11,7 @@ Dependencies (ubuntu)
 ---------------------
 Install Flask with SQLAlchemy, and python3-imaging
 
-    sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-imaging
+    sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-imaging python3-mysql.connector
 
 Taglib installation (other systems)
 -----------------------------------

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from datetime import datetime
-from model.model import update_albumart, add_track, Track, session_scope
+from lib.model import Context, Track, session_scope
 import sys
 sys.path.append('./libs')
-import mutagen
+from libs.mediafile import MediaFile, UnreadableFileError
 import os
-from queue import Queue
-from threading import Thread
+from queue import Queue, Empty
+from threading import Thread, Timer, Event
 import uuid
 import traceback
 from lib import coverurl, thumbs
@@ -24,27 +24,51 @@ def coroutine(func):
         return generator
     return wrapper
 
+
+def set_interval(interval, times = -1):
+    # This will be the actual decorator,
+    # with fixed interval and times parameter
+    def outer_wrap(function):
+        # This will be the function to be
+        # called
+        def wrap(*args, **kwargs):
+            stop = Event()
+            # This is another function to be executed
+            # in a different thread to simulate setInterval
+            def inner_wrap():
+                i = 0
+                while i != times and not stop.isSet():
+                    stop.wait(interval)
+                    function(*args, **kwargs)
+                    i += 1
+
+            t = Timer(0, inner_wrap)
+            t.daemon = True
+            t.start()
+            return stop
+        return wrap
+    return outer_wrap
+
 class CoverThread(Thread):
-    
-    q = Queue()
     
     def run(self):
         self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
-        album_ids = []
-        while True:
-            album = CoverThread.q.get()
-            if album.id not in album_ids:
+        with Context() as db:
+            albums = db.get_albums_without_cover()
+            for album in albums:
                 path = self.cu.download(album.artist.name, album.name, self.save)
-                update_albumart(album, path)
-                album_ids.append(album.id)
-            CoverThread.q.task_done()
-        CoverThread.q.join()
+                db.update_albumart(album, path)
+                if path is None:
+                    sys.stdout.write('-')
+                    sys.stdout.flush()
+                else:
+                    sys.stdout.write('x')
+                    sys.stdout.flush()
     
     def save(self, fd):
         if fd is not None:
             thumb = thumbs.Thumb()
             path = thumb.create(fd, uuid.uuid4())
-            print("Successfully saved thumb", path)
             return path
         return None
 
@@ -59,70 +83,41 @@ class Scanner(object):
     def init_tracks(self):
         self.tracks = {}
         with session_scope() as session:
-            for track in session.query(Track).all():
-                self.tracks[track.path] = track.last_updated
+            self.tracks = {x.path: x.last_updated for x in session.query(Track.path, Track.last_updated).all()}
     
     def scan(self, mfile):
         stats = os.stat(mfile)
         last_mod_time = datetime.fromtimestamp(stats.st_mtime)
-        if mfile in self.tracks:
-            if self.tracks[mfile] is not None and self.tracks[mfile] >= last_mod_time:
-                del self.tracks[mfile]
-                return False, last_mod_time
+        if mfile in self.tracks and self.tracks[mfile] is not None and last_mod_time <= self.tracks[mfile]:
+            return False, last_mod_time
         return True, last_mod_time
     
     @coroutine
     def add_track(self):
-        while True:
-            mfile, mtime, = (yield)
+        with Context(True) as db:
             try:
-                mutagen_tags = mutagen.File(mfile, easy=True)
-                tags = {}
-                try:
-                    tags['title'] = mutagen_tags['title'][0]
-                except KeyError:
-                    tags['title'] = os.path.basename(mfile).rsplit('.', 1)[0].lower()
-                try:
-                    tags['artist'] = mutagen_tags['artist'][0]
-                except KeyError:
-                    tags['artist'] = 'Unknown'
-                try:
-                    tags['genre'] = mutagen_tags['genre'][0]
-                except KeyError:
-                    tags['genre'] = 'Other'
-                try:
-                    tags['album'] = mutagen_tags['album'][0]
-                except KeyError:
-                    tags['album'] = 'Unknown'
-                try:
-                    tags['tracknumber'] = mutagen_tags['tracknumber'][0].split('/')[0]
-                except KeyError:
-                    tags['tracknumber'] = None
-                try:
-                    tags['year'] = mutagen_tags['date'][0]
-                    if len(tags['year']) > 4:
-                        tags['year'] = tags['year'][:4]
-                except KeyError:
-                    tags['year'] = None
-                track = add_track(
-                    tags['title'],
-                    mfile,
-                    tags['artist'],
-                    tags['genre'],
-                    tags['album'],
-                    tags['tracknumber'],
-                    tags['year'],
-                    mutagen_tags.info.length,
-                    mutagen_tags.info.bitrate,
-                    mutagen_tags.info.sample_rate,
-                    mtime
-                )
-                #print("Succesfully added/updated %s" % mfile)
-                print('.', end='')
-                CoverThread.q.put(track.album)
-            except Exception as e:
-                print('Error in scanner.add_track', file=sys.stderr)
-                print(traceback.format_exc(), file=sys.stderr)
+                while True:
+                    mfile, mtime, = (yield)
+                    try:
+                        mutagen_tags = MediaFile(mfile)
+                        tags = {}
+                        info = {}
+                        tags['title'] = mutagen_tags.title
+                        tags['artist'] = mutagen_tags.artist if mutagen_tags.artist is not None else 'Unknown'
+                        tags['genre'] = mutagen_tags.genre
+                        tags['album'] = mutagen_tags.album if mutagen_tags.album is not None else 'Unknown'
+                        tags['tracknumber'] = mutagen_tags.track
+                        tags['year'] = mutagen_tags.year
+                        info['length'] = mutagen_tags.length
+                        info['bitrate'] = mutagen_tags.bitrate
+                        track = db.add_track_full(mfile, mtime, tags, info)
+                        sys.stdout.write('*')
+                        sys.stdout.flush()
+                    except UnreadableFileError as e:
+                        print('Error in scanner.add_track', file=sys.stderr)
+                        print(traceback.format_exc(), file=sys.stderr)
+            except GeneratorExit:
+                pass
     
     @coroutine
     def handle(self):
@@ -134,19 +129,29 @@ class Scanner(object):
                 should_add, mtime = self.scan(mfile)
                 if should_add:
                     h.send((mfile, mtime))
+                else:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
         except GeneratorExit:
             self.tracks = {}
     
+    @set_interval(300.0)
+    def start(self, root):
+        self.walk(root)
+        t = CoverThread()
+        t.start()
+        t.join()
+    
     def walk(self, root):
         h = self.handle()
-        ct = CoverThread()
-        ct.start()
-        for root, _, files in os.walk(root):
+        for root, _, files in os.walk(root, topdown=False):
             for name in files:
                 if filter_music_file(name):
                     h.send(os.path.join(root, name))
-        #ct.join()
 
 if __name__ == "__main__":
     s = Scanner()
     s.walk('/mnt/data/musique/')
+    t = CoverThread()
+    t.start()
+    t.join()

@@ -288,7 +288,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     function extend(target, source) {
         var i, j, resArtist, resAlbum;
         for (i=0; i<source.length; i++) {
-            resArtist = binaryIndexOf(target, 'artist', source[i].artist);
+            resArtist = binaryIndexOf(target, 'name', source[i].artist);
             if (resArtist === -1) {
                 target.push(source[i]);
             } else if (source[i].albums) {

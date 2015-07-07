@@ -84,7 +84,7 @@
         <artists infinite-scroll="pageArtists()" infinite-scroll-distance="1" infinite-scroll-container="'#container'">
           <div ng-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
           <div ng-repeat="artist in artists track by $index" class="artist">
-            <h3 ng-click="loadAlbums(artist)"><i ng-class="{'fa-chevron-down': artist.expanded, 'fa-chevron-right': !artist.expanded}" class="fa"></i>{[::artist.artist ? artist.artist : 'Unknown']}
+            <h3 ng-click="loadAlbums(artist)"><i ng-class="{'fa-chevron-down': artist.expanded, 'fa-chevron-right': !artist.expanded}" class="fa"></i>{[::artist.name ? artist.name : 'Unknown']}
 
             </h3>
             <div class="controls">
@@ -103,7 +103,7 @@
                   <div title="Add tracks to queue" ng-click="loadTracksAndAdd(artist, album, false)" class="control"><i class="fa fa-plus"></i>
                   </div>
                 </div>
-                <div class="album-container"><img ng-click="toggleTracks(artist, album)" lazy-img="{[::album.albumart]}" alt="{[::album.name]}" src="images/nocover.png">
+                <div class="album-container"><img ng-click="toggleTracks(artist, album)" lazy-img="albumart/{[::album.id]}" alt="{[::album.name]}" src="static/images/nocover.png">
                   <div class="tracks">
                     <div ng-repeat="track in album.tracks track by $index" ng-class="{active: currentTrack._id == track._id}" class="track"><span ng-if="track.trackno" class="trackno">{[track.trackno]}</span><span class="name">{[track.name]}</span><span class="controls"><span title="Play" ng-click="playOrPause(track, album.tracks)" class="control"><i ng-class="{'fa-pause': currentTrack._id == track._id && playing, 'fa-play': currentTrack._id != track._id || !playing}" class="fa"></i></span><span title="Add to queue" ng-click="add(track)" class="control"><i class="fa fa-plus"></i></span></span><span class="duration">{[track.duration ? (track.duration | duration) : '-']}</span>
                     </div>
