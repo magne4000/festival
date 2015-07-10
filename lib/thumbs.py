@@ -13,7 +13,7 @@ class Thumb(Data):
     
     def create(self, fd, newname):
         self.mkdirp(Thumb.NAME)
-        save_to = os.path.join(self.getdir(Thumb.NAME), "%s.jpg" % newname)
+        save_to = os.path.join(Thumb.getdir(), "%s.jpg" % newname)
         try:
             img = Image.open(io.BytesIO(fd.read()))
             img.thumbnail((140, 140))
@@ -23,3 +23,7 @@ class Thumb(Data):
             print("Cannot create thumbnail")
             print(traceback.format_exc(), file=sys.stderr)
             return None
+    
+    @staticmethod
+    def getdir():
+        return Data.getdir(Thumb.NAME)

@@ -96,7 +96,7 @@ angular.module('festival')
         } else if (!tracks) { // 1 param, Load another track
             $scope.load(track, true);
         } else { // 2 params, load multiple tracks, play one of them
-            $scope.add(tracks, true, track._id);
+            $scope.add(tracks, true, track.id);
         }
     };
     
@@ -121,7 +121,7 @@ angular.module('festival')
          * @track can be a single track object, or a list of track objects
          * A track object is defined like this example:
          * track = {
-         *      "_id": "52f24b6b89e9eb1e4aed8c1c",
+         *      "id": "52f24b6b89e9eb1e4aed8c1c",
          *      "bitrate": 320,
          *      "duration": 86,
          *      "frequency": 44100,
@@ -129,7 +129,7 @@ angular.module('festival')
          *      "year": 2013,
          *      "last_updated": "2013-04-20T14:24:46.000Z",
          *      "name": "Gift Of Tongues",
-         *      "album": "Entities",
+         *      "album_id": "Entities",
          *      "artist": "Pomegranate Tiger",
          *      "genre": "Instrumental Progressice Metal",
          *      "url": "/music/52f24b6b89e9eb1e4aed8c1c"
@@ -138,7 +138,7 @@ angular.module('festival')
         if (!usingAdd) {
             usingAdd = true;
             var tracklist = [], ind = 0, trackslen = $tracks.size(), orilen = trackslen, randno = null;
-            if (!!track._id){ // only one track
+            if (!!track.id){ // only one track
                 tracklist.push(track);
             } else {
                 tracklist = track;
@@ -149,7 +149,7 @@ angular.module('festival')
             for (ind in tracklist){
                 indicesToBePlayed.push(indicesToBePlayed.length);
                 var addedTrack = $tracks.add(tracklist[ind]);
-                if (idToPlay === tracklist[ind]._id) {
+                if (idToPlay === tracklist[ind].id) {
                     $scope.load(addedTrack, autoPlay);
                 } else if (trackslen === 0 && !$scope.shuffle) {
                     // First track, load it (if not in shuffle mode)
@@ -178,7 +178,7 @@ angular.module('festival')
                 if (autoPlay) {
                     stop();
                 }
-                var soundId = 't_'+track._id;
+                var soundId = 't_'+track.id;
                 $scope.currentSound = soundManager.getSoundById(soundId);
                 if ($scope.currentSound) {
                     if (autoPlay) {
@@ -267,7 +267,7 @@ angular.module('festival')
     $scope.playOrPause = function(track, tracks) {
         $timeout(function() {
             console.log(track);
-            if (!track || ($scope.currentTrack && $scope.currentTrack._id === track._id)) {
+            if (!track || ($scope.currentTrack && $scope.currentTrack.id === track.id)) {
                 $scope.currentSound.togglePause();
             } else {
                 if (tracks) {

@@ -6,7 +6,10 @@ from datetime import datetime
 from flask import Flask
 from sqlalchemy.orm import relationship, backref, sessionmaker, scoped_session, subqueryload_all, joinedload
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method, Comparator
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.pool import NullPool
@@ -14,7 +17,7 @@ from contextlib import contextmanager
 
 app = Flask(__name__)
 app.config.from_pyfile('../settings.cfg')
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread':False})
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread':False}, echo=True)
 
 Base = declarative_base()
 
@@ -53,11 +56,11 @@ class Artist(Base):
     def __repr__(self):
         return "<Artist %r>" % self.name
     
-    def as_dict(self, albums=True):
+    def _asdict(self, albums=False, tracks=False):
         return {
             'id': self.id,
             'name': self.name,
-            'albums': [x.as_dict() for x in self.albums] if (albums and 'albums' in self.__dict__) else None
+            'albums': [x._asdict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
         }
 
 class Album(Base):
@@ -73,14 +76,14 @@ class Album(Base):
     def __repr__(self):
         return "<Album %r.%r>" % (self.artist_id, self.name)
     
-    def as_dict(self, artist=True, tracks=True):
+    def _asdict(self, artist=False, tracks=False):
         return {
             'id': self.id,
             'artist_id': self.artist_id,
-            'artist': self.artist.as_dict(albums=False) if (artist and 'artist' in self.__dict__) else None,
+            'artist': self.artist._asdict() if (artist and 'artist' in self.__dict__) else None,
             'name': self.name,
             'year': self.year,
-            'tracks': [x.as_dict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
+            'tracks': [x._asdict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
         }
 
 class Genre(Base):
@@ -94,6 +97,12 @@ class Genre(Base):
     
     def __repr__(self):
         return "<Genre %r>" % self.name
+    
+    def _asdict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
 
 class Track(Base):
     __tablename__ = "track"
@@ -108,8 +117,25 @@ class Track(Base):
     bitrate = Column(String(10), nullable=True)
     trackno = Column(Integer, nullable=True)
     last_updated = Column(DateTime)
+    album_name = association_proxy('album','name')
     
-    def __init__(self, name, path, duration=0, year=0, bitrate='', trackno='', last_updated=''):
+    @hybrid_property
+    def artist_name(self):
+        """
+        if self.album and self.album.artist:
+            return self.album.artist.name
+        """
+        return None
+    
+    @hybrid_method
+    def url(self):
+        return 'music/%d' % self.id
+        
+    @url.expression
+    def url(self):
+        return column('music/', String).concat(self.id)
+    
+    def __init__(self, name, path, trackno='', year=0, duration=0, bitrate='', last_updated=''):
         self.name = name
         self.path = path
         self.duration = duration
@@ -138,6 +164,22 @@ class Track(Base):
     
     def __repr__(self):
         return "<Track %r>" % self.path
+    
+    def _asdict(self, genre=False, album=False):
+        return {
+            'id': self.id,
+            'genre_id': self.genre_id,
+            'album_id': self.album_id,
+            'genre': self.genre._asdict() if (genre and 'genre' in self.__dict__) else None,
+            'album': self.album._asdict(artist=False) if (album and 'album' in self.__dict__) else None,
+            'album_name': self.album_name,
+            'artist_name': self.artist_name,
+            'name': self.name,
+            'duration': self.duration,
+            'bitrate': self.bitrate,
+            'trackno': self.trackno,
+            'url': self.url()
+        }
 
 def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254):
     if default is None and allow_none is False:
@@ -252,7 +294,7 @@ class Context():
             self.session.add(al)
             return al
     
-    def add_track(self, path, name, artist, genre, album, trackno=None, year=None, duration=0.0, bitrate=None, last_mod_time=None, albumart=None):
+    def add_track(self, path, name, artist, genre, album, trackno=None, year=None, duration=0.0, bitrate=None, last_mod_time=None):
         name = _clean_tag(name)
         artist = _clean_tag(artist)
         genre = _clean_tag(genre)

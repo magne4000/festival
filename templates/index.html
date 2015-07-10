@@ -36,7 +36,7 @@
     <header>
       <div class="player"><a title="Previous track" href="#" ng-click="prev(true)" class="control prev"><i class="fa fa-backward fa-2x"></i></a><a title="Play" href="#" ng-click="togglePlayPause()" class="control play"><i ng-class="{'fa-play': !playing, 'fa-pause': playing}" class="fa fa-2x"></i></a><a title="Next track" href="#" ng-click="next(true, true)" class="control next"><i class="fa fa-forward fa-2x"></i></a>
         <div class="panel">
-          <div class="info-panel"><span class="elapsed-time">{[progress() | duration]}</span><span ng-if="currentTrack" class="name"><span class="title">{[currentTrack.name]}</span><span class="artist">{[currentTrack.artist]}</span><span class="album">{[currentTrack.album]}</span></span><span ng-if="!currentTrack" class="name">Waiting for a track</span><span class="total-time">{[duration | duration]}</span>
+          <div class="info-panel"><span class="elapsed-time">{[progress() | duration]}</span><span ng-if="currentTrack" class="name"><span class="title">{[currentTrack.name]}</span><span class="artist">{[currentTrack.artist_name]}</span><span class="album">{[currentTrack.album_name]}</span></span><span ng-if="!currentTrack" class="name">Waiting for a track</span><span class="total-time">{[duration | duration]}</span>
           </div>
           <div class="slider-panel">
             <div class="slider">
@@ -105,7 +105,7 @@
                 </div>
                 <div class="album-container"><img ng-click="toggleTracks(artist, album)" lazy-img="albumart/{[::album.id]}" alt="{[::album.name]}" src="static/images/nocover.png">
                   <div class="tracks">
-                    <div ng-repeat="track in album.tracks track by $index" ng-class="{active: currentTrack._id == track._id}" class="track"><span ng-if="track.trackno" class="trackno">{[track.trackno]}</span><span class="name">{[track.name]}</span><span class="controls"><span title="Play" ng-click="playOrPause(track, album.tracks)" class="control"><i ng-class="{'fa-pause': currentTrack._id == track._id && playing, 'fa-play': currentTrack._id != track._id || !playing}" class="fa"></i></span><span title="Add to queue" ng-click="add(track)" class="control"><i class="fa fa-plus"></i></span></span><span class="duration">{[track.duration ? (track.duration | duration) : '-']}</span>
+                    <div ng-repeat="track in album.tracks track by $index" ng-class="{active: currentTrack.id == track.id}" class="track"><span ng-if="track.trackno" class="trackno">{[track.trackno]}</span><span class="name">{[track.name]}</span><span class="controls"><span title="Play" ng-click="playOrPause(track, album.tracks)" class="control"><i ng-class="{'fa-pause': currentTrack.id == track.id && playing, 'fa-play': currentTrack.id != track.id || !playing}" class="fa"></i></span><span title="Add to queue" ng-click="add(track)" class="control"><i class="fa fa-plus"></i></span></span><span class="duration">{[track.duration ? (track.duration | duration) : '-']}</span>
                     </div>
                   </div>
                 </div>

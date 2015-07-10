@@ -1,8 +1,13 @@
 from lib.model import session_scope, Track, Album, Artist
-from sqlalchemy.orm import joinedload
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload, joinedload_all, contains_eager
 
-def escapelike(subject):
-    return subject.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+def limitoffset(query, skip, limit):
+    if skip is not None:
+        query = query.offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    return query
 
 def getalbum(album_id):
     with session_scope() as session:
@@ -10,48 +15,108 @@ def getalbum(album_id):
         session.expunge_all()
         return obj
 
-def listartists(ffilter=None, skip=0, limit=20):
+def gettrack(track_id):
+    with session_scope() as session:
+        obj = session.query(Track).get(track_id)
+        session.expunge_all()
+        return obj
+
+def listartists(ffilter=None, skip=None, limit=None):
     with session_scope() as session:
         query = session.query(Artist)
         if ffilter is not None:
             query = ffilter(query)
-        query = query.order_by(Artist.name).slice(skip, limit)
+        query = limitoffset(query.order_by(Artist.name), skip, limit)
         qall = query.all()
         session.expunge_all()
         return qall
 
-def listalbums(ffilter=None, skip=0, limit=20):
+def listalbums(ffilter=None, skip=None, limit=None):
     with session_scope() as session:
-        query = session.query(Album).join(Album.artist).options(joinedload(Album.artist, innerjoin=True))
+        query = session.query(Album).join(Album.artist).options(contains_eager(Album.artist))
         if ffilter is not None:
             query = ffilter(query)
-        query = query.order_by(Artist.name, Album.year).slice(skip, limit)
+        query = limitoffset(query.order_by(Artist.name, Album.year.desc()), skip, limit)
         qall = query.all()
         session.expunge_all()
         return qall
 
-def listalbumsbyartists(ffilter=None, skip=0, limit=20):
+def listalbumsbyartists(ffilter=None, skip=None, limit=None):
     with session_scope() as session:
-        query = session.query(Artist).join(Artist.albums).options(joinedload(Artist.albums, innerjoin=True))
+        query = session.query(Artist).join(Artist.albums).options(contains_eager(Artist.albums))
         if ffilter is not None:
             query = ffilter(query)
-        query = query.order_by(Artist.name, Album.year).slice(skip, limit)
+        query = limitoffset(query.order_by(Artist.name, Album.year.desc()), skip, limit)
         qall = query.all()
         session.expunge_all()
         return qall
+
+def listtracks(ffilter=None, skip=None, limit=None):
+    with session_scope() as session:
+        query = session.query(Track).join(Track.album).join(Album.artist).options(contains_eager(Track.album, Album.artist))
+        if ffilter is not None:
+            query = ffilter(query)
+        query = limitoffset(query.order_by(Track.trackno), skip, limit)
+        qall = query.all()
+        session.expunge_all()
+        return qall
+
+def listtracksbyalbumsbyartists(ffilter=None, skip=None, limit=None):
+    with session_scope() as session:
+        query = session.query(Artist).join(Artist.albums).join(Album.tracks).options(contains_eager(Artist.albums, Album.tracks, Track.album, Album.artist))
+        if ffilter is not None:
+            query = ffilter(query)
+        query = limitoffset(query.order_by(Artist.name, Album.year.desc(), Track.trackno), skip, limit)
+        qall = query.all()
+        session.expunge_all()
+        return qall
+
+def searchartists(term, skip=None, limit=None):
+    ffilter = lambda query: query.filter(Artist.name.contains(term))
+    return listartists(ffilter, skip, limit)
+
+def searchalbums(term, skip=None, limit=None):
+    ffilter = lambda query: query.filter(Album.name.contains(term))
+    return listalbums(ffilter, skip, limit)
+
+def search(term, artists=True, albums=True, tracks=True, skip=None, limit=None):
+    def ffilter(query):
+        filters = []
+        if artists:
+            filters.append(Artist.name.contains(term))
+        if albums:
+            filters.append(Album.name.contains(term))
+        if tracks:
+            filters.append(Track.name.contains(term))
+        if len(filters) > 0:
+            query = query.filter(or_(*filters))
+        return query
+    return listtracksbyalbumsbyartists(ffilter, skip, limit)
 
 if __name__ == "__main__":
     """
     print(listartists())
     print(listartists(skip=10, limit=20))
-    print(listartists(lambda query: query.filter(Artist.name.contains(escapelike('shall')))))
+    print(listartists(lambda query: query.filter(Artist.name.contains('shall'))))
     
     print(listalbums())
     print(listalbums(skip=10, limit=20))
-    print(listalbums(lambda query: query.filter(Album.name.contains(escapelike('break')))))
-    """
-    aba = listalbumsbyartists()
-    print(aba)
-    for artist in aba:
+    print(listalbums(lambda query: query.filter(Album.name.contains('break'))))
+    
+    artists = listalbumsbyartists()
+    print(artists)
+    for artist in artists:
         print(artist.albums)
+    
+    artists = search('beyond', artists=True, albums=True, tracks=True)
+    for artist in artists:
+        print(artist)
+        if 'albums' in artist.__dict__:
+            for album in artist.albums:
+                print(album)
+                if 'tracks' in album.__dict__:
+                    print(album.tracks)
+    """
+    
+    print([x._asdict() for x in listtracks(skip=10, limit=20)])
     

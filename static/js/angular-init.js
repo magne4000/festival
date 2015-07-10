@@ -193,7 +193,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
             callback: function(){}
         },
         search: {
-            limit: 10,
+            limit: 200,
             callback: function(){}
         },
     };

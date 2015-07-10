@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, request, json, send_file, abort
+from flask import Flask, render_template, request, json, send_file, send_from_directory, abort
 from flask.json import jsonify
-from lib.model import Artist
-from lib.request import listartists, listalbumsbyartists, getalbum
+from lib.model import Artist, Album, Track
+from lib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
+from lib.thumbs import Thumb
 import json
+import os
 app = Flask(__name__)
 
 @app.route("/")
 def hello():
     return render_template('index.html')
 
-@app.route("/music/<id>")
+@app.route("/music/<sid>")
 def music(sid):
-    pass
+    tr = gettrack(sid)
+    if tr.path is None:
+        abort(404)
+    else:
+        return send_file(tr.path, conditional=True)
 
 @app.route("/download/<artist>")
 def downloada(sartist):
@@ -25,7 +31,25 @@ def downloadaa(sartist, salbum):
 
 @app.route("/ajax/list/tracks")
 def tracks():
-    pass
+    skip = request.args.get('skip', None, type=int)
+    limit = request.args.get('limit', None, type=int)
+    flat = request.args.get('flat', True, type=json.loads)
+    if skip is None:
+        limit = None
+    elif limit is not None:
+        limit = limit + skip
+    filters = request.args.get('filters', type=json.loads)
+    if filters is not None:
+        def ffilter(query):
+            if 'artist' in filters:
+                query = query.filter(Album.artist_id == filters['artist'])
+            if 'album' in filters:
+                query = query.filter(Track.album_id == filters['album'])
+            return query
+    if flat:
+        return jsonify(data=[x._asdict() for x in listtracks(ffilter=ffilter, skip=skip, limit=limit)])
+    else:
+        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 @app.route("/ajax/list/albums")
 def albums():
@@ -35,7 +59,7 @@ def albums():
 def artists():
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
-    return jsonify(data=[x.as_dict() for x in listartists(skip=skip, limit=limit+skip)])
+    return jsonify(data=[x._asdict() for x in listartists(skip=skip, limit=limit+skip)])
 
 @app.route("/ajax/list/albumsbyartists")
 def albumsbyartists():
@@ -45,11 +69,15 @@ def albumsbyartists():
     ffilter = None
     if filters is not None and 'artist' in filters:
         ffilter = lambda query: query.filter(Artist.id == filters['artist'])
-    return jsonify(data=[x.as_dict() for x in listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit+skip)])
+    return jsonify(data=[x._asdict() for x in listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit+skip)])
 
 @app.route("/ajax/list/search")
-def search():
-    pass
+def search_():
+    filters = request.args.get('filters', type=json.loads)
+    filters['skip'] = request.args.get('skip', 0, type=int)
+    filters['limit'] = request.args.get('limit', 100, type=int) + filters['skip']
+    term = request.args.get('term', None)
+    return jsonify(data=[x._asdict(albums=True, tracks=True) for x in search(term, **filters)])
 
 @app.route("/ajax/fileinfo")
 def fileinfo():
@@ -61,7 +89,7 @@ def albumart(album):
     if al.albumart is None:
         abort(404)
     else:
-        return send_file(al.albumart)
+        return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
 
 def main():
     app.config.from_pyfile('settings.cfg')
