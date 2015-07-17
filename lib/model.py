@@ -4,10 +4,11 @@ import re
 import sys
 from datetime import datetime
 from flask import Flask
-from sqlalchemy.orm import relationship, backref, sessionmaker, scoped_session, subqueryload_all, joinedload
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct
+from sqlalchemy.orm import relationship, backref, sessionmaker, scoped_session, subqueryload_all, joinedload, column_property
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, select, func
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import column
+from sqlalchemy.sql.expression import func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method, Comparator
 from sqlalchemy.orm.exc import NoResultFound
@@ -43,66 +44,6 @@ def session_scope():
     finally:
         session.close()
 
-class Artist(Base):
-    __tablename__ = "artist"
-    
-    id = Column(Integer, primary_key=True)
-    name = Column(String(254), nullable=False, unique=True, index=True)
-    albums = relationship("Album", backref="artist")
-    
-    def __init__(self, name):
-        self.name = name
-    
-    def __repr__(self):
-        return "<Artist %r>" % self.name
-    
-    def _asdict(self, albums=False, tracks=False):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'albums': [x._asdict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
-        }
-
-class Album(Base):
-    __tablename__ = "album"
-    
-    id = Column(Integer, primary_key=True)
-    artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
-    name = Column(String(254), nullable=False, index=True)
-    year = Column(Integer, nullable=True)
-    albumart = Column(String(254), nullable=True)
-    tracks = relationship("Track", backref="album")
-    
-    def __repr__(self):
-        return "<Album %r.%r>" % (self.artist_id, self.name)
-    
-    def _asdict(self, artist=False, tracks=False):
-        return {
-            'id': self.id,
-            'artist_id': self.artist_id,
-            'artist': self.artist._asdict() if (artist and 'artist' in self.__dict__) else None,
-            'name': self.name,
-            'year': self.year,
-            'tracks': [x._asdict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
-        }
-
-class Genre(Base):
-    __tablename__ = "genre"
-    
-    id = Column(Integer, primary_key=True)
-    name = Column(String(254), nullable=False, unique=True)
-    
-    def __init__(self, name):
-        self.name = name
-    
-    def __repr__(self):
-        return "<Genre %r>" % self.name
-    
-    def _asdict(self):
-        return {
-            'id': self.id,
-            'name': self.name
-        }
 
 class Track(Base):
     __tablename__ = "track"
@@ -121,10 +62,18 @@ class Track(Base):
     
     @hybrid_property
     def artist_name(self):
-        """
-        if self.album and self.album.artist:
+        if self.album and 'artist' in self.album.__dict__:
             return self.album.artist.name
-        """
+        return None
+    
+    @artist_name.expression
+    def artist_name(cls):
+        return Album.artist.name
+    
+    @hybrid_property
+    def genre_name(self):
+        if self.genre:
+            return self.genre.name
         return None
     
     @hybrid_method
@@ -132,8 +81,8 @@ class Track(Base):
         return 'music/%d' % self.id
         
     @url.expression
-    def url(self):
-        return column('music/', String).concat(self.id)
+    def url(cls):
+        return column('music/', String).concat(cls.id)
     
     def __init__(self, name, path, trackno='', year=0, duration=0, bitrate='', last_updated=''):
         self.name = name
@@ -180,6 +129,84 @@ class Track(Base):
             'trackno': self.trackno,
             'url': self.url()
         }
+
+class Artist(Base):
+    __tablename__ = "artist"
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(254), nullable=False, unique=True, index=True)
+    albums = relationship("Album", backref="artist", innerjoin=True)
+    
+    @hybrid_method
+    def album_count(self):
+        return len(self.albums)
+    
+    def __init__(self, name):
+        self.name = name
+    
+    def __repr__(self):
+        return "<Artist %r>" % self.name
+    
+    def _asdict(self, albums=False, tracks=False):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'albums': [x._asdict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
+        }
+
+class Album(Base):
+    __tablename__ = "album"
+    
+    id = Column(Integer, primary_key=True)
+    artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
+    name = Column(String(254), nullable=False, index=True)
+    year = Column(Integer, nullable=True)
+    albumart = Column(String(254), nullable=True)
+    tracks = relationship("Track", backref="album", innerjoin=True)
+    track_count = column_property(
+        select([func.count(Track.id)]).\
+            where(Track.album_id==id).\
+            correlate_except(Track)
+    )
+    
+    duration = column_property(
+        select([func.sum(Track.duration)]).\
+            where(Track.album_id==id).\
+            correlate_except(Track)
+    )
+    
+    def __repr__(self):
+        return "<Album %r.%r>" % (self.artist_id, self.name)
+    
+    def _asdict(self, artist=False, tracks=False):
+        return {
+            'id': self.id,
+            'artist_id': self.artist_id,
+            'artist': self.artist._asdict() if (artist and 'artist' in self.__dict__) else None,
+            'name': self.name,
+            'year': self.year,
+            'tracks': [x._asdict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
+        }
+
+class Genre(Base):
+    __tablename__ = "genre"
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(254), nullable=False, unique=True)
+    tracks = relationship("Track", backref="genre")
+    
+    def __init__(self, name):
+        self.name = name
+    
+    def __repr__(self):
+        return "<Genre %r>" % self.name
+    
+    def _asdict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
 
 def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254):
     if default is None and allow_none is False:

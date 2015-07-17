@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, request, json, send_file, send_from_directory, abort
+from flask import render_template, request, json, send_file, send_from_directory, abort
 from flask.json import jsonify
 from lib.model import Artist, Album, Track
 from lib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
 from lib.thumbs import Thumb
+from app import app
 import json
 import os
-app = Flask(__name__)
 
 @app.route("/")
 def hello():
@@ -34,10 +34,6 @@ def tracks():
     skip = request.args.get('skip', None, type=int)
     limit = request.args.get('limit', None, type=int)
     flat = request.args.get('flat', True, type=json.loads)
-    if skip is None:
-        limit = None
-    elif limit is not None:
-        limit = limit + skip
     filters = request.args.get('filters', type=json.loads)
     if filters is not None:
         def ffilter(query):
@@ -75,7 +71,7 @@ def albumsbyartists():
 def search_():
     filters = request.args.get('filters', type=json.loads)
     filters['skip'] = request.args.get('skip', 0, type=int)
-    filters['limit'] = request.args.get('limit', 100, type=int) + filters['skip']
+    filters['limit'] = request.args.get('limit', 100, type=int)
     term = request.args.get('term', None)
     return jsonify(data=[x._asdict(albums=True, tracks=True) for x in search(term, **filters)])
 
@@ -91,8 +87,9 @@ def albumart(album):
     else:
         return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
 
+from api import *
+
 def main():
-    app.config.from_pyfile('settings.cfg')
     app.run(host='0.0.0.0', debug=True)
 
 if __name__ == "__main__":

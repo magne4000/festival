@@ -193,7 +193,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
             callback: function(){}
         },
         search: {
-            limit: 200,
+            limit: 100,
             callback: function(){}
         },
     };
@@ -258,22 +258,46 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
 }])
 .factory('$utils', [function(){
     
-    function binaryIndexOf(array, key, searchElement) {
+    function fixelement(element, type) {
+        var typeofelt = typeof element;
+        type = type || "string";
+        
+        if (typeofelt !== type) {
+            if (type === "number") {
+                element = Number.MAX_VALUE;
+            } else if (type === "string") {
+                element = 'unknown';
+            }
+        }
+        
+        if (type === "string") {
+            element = element.toLowerCase();
+        }
+        
+        return element;
+    }
+    
+    function binaryIndexOf(array, key, searchElement, type, reverse) {
         var minIndex = 0;
         var maxIndex = array.length - 1;
         var currentIndex;
         var currentElement;
         var compare;
-        if (typeof searchElement !== "string") searchElement = 'Unknown';
-        searchElement = searchElement.toLowerCase();
+        type = type || "string";
         
+        searchElement = fixelement(searchElement, type);
         while (minIndex <= maxIndex) {
             currentIndex = (minIndex + maxIndex) / 2 | 0;
             currentElement = array[currentIndex][key];
-            if (typeof currentElement !== "string") currentElement = 'Unknown';
-            currentElement = currentElement.toLowerCase();
-            compare = searchElement.localeCompare(currentElement);
-     
+            currentElement = fixelement(currentElement, type);
+            if (type === "string") {
+                compare = searchElement.localeCompare(currentElement);
+            } else if (type === "number") {
+                compare = searchElement - currentElement;
+            }
+            if (reverse) {
+                compare = -compare;
+            }
             if (compare > 0) {
                 minIndex = currentIndex + 1;
             } else if (compare < 0) {
@@ -288,12 +312,12 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     function extend(target, source) {
         var i, j, resArtist, resAlbum;
         for (i=0; i<source.length; i++) {
-            resArtist = binaryIndexOf(target, 'name', source[i].artist);
+            resArtist = binaryIndexOf(target, 'name', source[i].name);
             if (resArtist === -1) {
                 target.push(source[i]);
             } else if (source[i].albums) {
                 for (j=0; j<source[i].albums.length; j++) {
-                    resAlbum = binaryIndexOf(target[resArtist].albums, 'name', source[i].albums[j].name);
+                    resAlbum = binaryIndexOf(target[resArtist].albums, 'year', source[i].albums[j].year, "number", true);
                     if (resAlbum === -1) {
                         target[resArtist].albums.push(source[i].albums[j]);
                     } else if (source[i].albums[j].tracks) {

@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
-from datetime import datetime
-from lib.model import Context, Track, session_scope
 import sys
 sys.path.append('./libs')
-from libs.mediafile import MediaFile, UnreadableFileError
 import os
-from queue import Queue, Empty
-from threading import Thread, Timer, Event
 import uuid
 import traceback
+from queue import Queue, Empty
+from threading import Thread, Timer, Event
+from datetime import datetime
+from lib.model import Context, Track, session_scope
 from lib import coverurl, thumbs
-from flask import Flask, render_template
-app = Flask(__name__)
-app.config.from_pyfile('settings.cfg')
+from libs.mediafile import MediaFile, UnreadableFileError
+from flask import render_template
+from app import app
 
 def filter_music_file(path):
     return os.path.splitext(path)[1].lower() in app.config['SCANNER_EXTS']
