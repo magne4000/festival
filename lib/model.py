@@ -139,7 +139,9 @@ class Artist(Base):
     
     @hybrid_method
     def album_count(self):
-        return len(self.albums)
+        if 'albums' in self.__dict__:
+            return len(self.albums)
+        return None
     
     def __init__(self, name):
         self.name = name
@@ -163,17 +165,18 @@ class Album(Base):
     year = Column(Integer, nullable=True)
     albumart = Column(String(254), nullable=True)
     tracks = relationship("Track", backref="album", innerjoin=True)
-    track_count = column_property(
-        select([func.count(Track.id)]).\
-            where(Track.album_id==id).\
-            correlate_except(Track)
-    )
     
-    duration = column_property(
-        select([func.sum(Track.duration)]).\
-            where(Track.album_id==id).\
-            correlate_except(Track)
-    )
+    @hybrid_method
+    def track_count(self):
+        if 'tracks' in self.__dict__:
+            return len(self.tracks)
+        return None
+    
+    @hybrid_method
+    def duration(self):
+        if 'tracks' in self.__dict__:
+            return sum((tr.duration for tr in self.tracks))
+        return None
     
     def __repr__(self):
         return "<Album %r.%r>" % (self.artist_id, self.name)

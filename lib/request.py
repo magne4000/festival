@@ -15,15 +15,37 @@ def getartist(artist_id):
         session.expunge_all()
         return obj
 
-def getalbum(album_id):
+def getalbum(album_id=None, ffilter=None):
     with session_scope() as session:
-        obj = session.query(Album).get(album_id)
-        session.expunge_all()
-        return obj
+        if album_id is not None:
+            obj = session.query(Album).get(album_id)
+            session.expunge_all()
+            return obj
+        elif ffilter is not None:
+            query = session.query(Album).join(Album.artist).options(contains_eager(Album.artist))
+            query = ffilter(query)
+            obj = query.one()
+            session.expunge_all()
+            return obj
+    return None
 
-def gettrack(track_id):
+def gettrack(track_id=None, ffilter=None):
     with session_scope() as session:
-        obj = session.query(Track).get(track_id)
+        if track_id is not None:
+            obj = session.query(Track).get(track_id)
+            session.expunge_all()
+            return obj
+        elif ffilter is not None:
+            query = session.query(Track).join(Track.album).join(Album.artist).options(joinedload(Track.genre), contains_eager(Track.album, Album.artist))
+            query = ffilter(query)
+            obj = query.one()
+            session.expunge_all()
+            return obj
+    return None
+
+def gettrackfull(track_id):
+    with session_scope() as session:
+        obj = session.query(Track).join(Track.album).join(Album.artist).options(joinedload(Track.genre), contains_eager(Track.album, Album.artist)).filter(Track.id == track_id).one()
         session.expunge_all()
         return obj
 
@@ -37,12 +59,15 @@ def listartists(ffilter=None, skip=None, limit=None):
         session.expunge_all()
         return qall
 
-def listalbums(ffilter=None, skip=None, limit=None):
+def listalbums(ffilter=None, skip=None, limit=None, order_by=(Artist.name, Album.year.desc())):
     with session_scope() as session:
         query = session.query(Album).join(Album.artist).options(contains_eager(Album.artist))
         if ffilter is not None:
             query = ffilter(query)
-        query = limitoffset(query.order_by(Artist.name, Album.year.desc()), skip, limit)
+        if order_by is not None:
+            query = limitoffset(query.order_by(*order_by), skip, limit)
+        else:
+            query = limitoffset(query, skip, limit)
         qall = query.all()
         session.expunge_all()
         return qall
@@ -66,6 +91,21 @@ def listtracks(ffilter=None, skip=None, limit=None):
         qall = query.all()
         session.expunge_all()
         return qall
+
+def counttracks(ffilter=None):
+    with session_scope() as session:
+        query = session.query(Track)
+        if ffilter is not None:
+            query = ffilter(query)
+        return query.count()
+        
+def countalbums(ffilter=None):
+    with session_scope() as session:
+        query = session.query(Album)
+        if ffilter is not None:
+            query = ffilter(query)
+        return query.count()
+        
 
 def listtracksbyalbums(ffilter=None, skip=None, limit=None):
     with session_scope() as session:
