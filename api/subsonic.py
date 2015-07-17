@@ -1,10 +1,12 @@
+import os
 import re
 import random
 from datetime import datetime
-from flask import request
+from flask import request, send_from_directory
 from app import app
 from lib.model import session_scope
-from lib.request import listartists, listalbums, listalbumsbyartists, listtracksbyalbums, gettrackfull, gettrack, getalbum, counttracks, countalbums, Artist, Album, Track
+from lib.thumbs import Thumb
+from lib.request import listartists, listalbums, listalbumsbyartists, listtracksbyalbums, listtracks, gettrackfull, gettrack, getalbum, counttracks, countalbums, Artist, Album, Track
 
 def get_by_id(req, sqlclass, param='id'):
     eid = req.args.get(param)
@@ -76,6 +78,14 @@ def is_album_id(eid):
 
 def clean_id(eid):
     return eid[2:]
+
+def format_artist(artist):
+    info = {
+        'id': format_artist_id(artist.id),
+        'name': artist.name,
+        'albumCount': artist.album_count()
+    }
+    return info
 
 def format_album(album, child=False):
     info = {
@@ -360,3 +370,58 @@ def album_list2():
     return request.formatter({ 'albumList2': {
         'album': [format_album(album) for album in albums]
     }})
+
+@app.route('/rest/search2.view', methods = [ 'GET', 'POST' ])
+@app.route('/rest/search3.view', methods = [ 'GET', 'POST' ])
+def search2and3():
+    q = request.args.get('query')
+    if not q:
+        return request.error_formatter(10, 'Missing query parameter')
+    ok, artistCount = check_parameter(request, 'artistCount', fct=lambda val: int(val) if val else 20)
+    if not ok:
+        return False, artistCount
+    ok, artistOffset = check_parameter(request, 'artistOffset', fct=lambda val: int(val) if val else 0)
+    if not ok:
+        return False, artistOffset
+    ok, albumCount = check_parameter(request, 'albumCount', fct=lambda val: int(val) if val else 20)
+    if not ok:
+        return False, albumCount
+    ok, albumOffset = check_parameter(request, 'albumOffset', fct=lambda val: int(val) if val else 0)
+    if not ok:
+        return False, albumOffset
+    ok, songCount = check_parameter(request, 'songCount', fct=lambda val: int(val) if val else 20)
+    if not ok:
+        return False, songCount
+    ok, songOffset = check_parameter(request, 'songOffset', fct=lambda val: int(val) if val else 0)
+    if not ok:
+        return False, songOffset
+    
+    artists = listartists(lambda query: query.filter(Artist.name.contains(q)), skip=artistOffset, limit=artistCount)
+    albums = listalbums(lambda query: query.filter(Album.name.contains(q)), skip=albumOffset, limit=albumCount)
+    tracks = listtracks(lambda query: query.filter(Track.name.contains(q)), skip=songOffset, limit=songCount)
+    
+    return request.formatter({ 'searchResult2': {
+        'artist': [format_artist(artist) for artist in artists],
+        'album': [format_album(album) for album in albums],
+        'track': [format_track(track) for track in tracks]
+    }})
+
+@app.route('/rest/getCoverArt.view', methods = [ 'GET', 'POST' ])
+def cover_art():
+    eid = request.args.get('id')
+    cid = clean_id(eid)
+    if not is_track_id(eid) and not is_album_id(eid):
+        return request.error_formatter(10, 'Invalid id')
+    
+    if is_album_id(eid):
+        al = getalbum(cid)
+        if al is None or al.albumart is None:
+            return request.error_formatter(70, 'Cover art not found'), 404
+        else:
+            return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
+    else:
+        tr = gettrackfull(cid)
+        if tr is None or tr.album is None or tr.album.albumart is None:
+            return request.error_formatter(70, 'Cover art not found'), 404
+        else:
+            return send_from_directory(Thumb.getdir(), os.path.basename(tr.album.albumart), conditional=True)

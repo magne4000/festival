@@ -82,7 +82,7 @@ def fileinfo():
 @app.route("/albumart/<album>")
 def albumart(album):
     al = getalbum(album)
-    if al.albumart is None:
+    if al is None or al.albumart is None:
         abort(404)
     else:
         return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)

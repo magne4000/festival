@@ -66,13 +66,9 @@ class Track(Base):
             return self.album.artist.name
         return None
     
-    @artist_name.expression
-    def artist_name(cls):
-        return Album.artist.name
-    
     @hybrid_property
     def genre_name(self):
-        if self.genre:
+        if 'genre' in self.__dict__:
             return self.genre.name
         return None
     
