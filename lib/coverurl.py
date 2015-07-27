@@ -36,7 +36,8 @@ class CoverURL:
         try:
             with urllib.request.urlopen(url) as f:
                 return self._large(json.loads(f.read().decode('utf-8')))
-        except urllib.error.URLError:
+        except:
+            print("Error while searching album cover")
             print(traceback.format_exc(), file=sys.stderr)
             return None
     
@@ -46,7 +47,8 @@ class CoverURL:
             try:
                 with urllib.request.urlopen(url) as f:
                     return callback(f)
-            except urllib.error.URLError:
+            except:
+                print("Error while fetching album cover")
                 print(traceback.format_exc(), file=sys.stderr)
                 return callback(None)
         else:

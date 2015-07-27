@@ -129,9 +129,9 @@ def format_track(track, child=False):
         "track": track.trackno,
         "year": track.year,
         "genre": track.genre_name,
-        # TODO "size": elt.size,
-        # TODO "suffix": path.extname(elt.path),
-        # TODO "contentType": elt.mimetype,
+        "size": track.size,
+        "contentType": track.mimetype,
+        # TODO "suffix": path.extname(track.path),
     };
     if track.bitrate:
         info['bitRate'] = int(float(track.bitrate) / 1000)
@@ -406,7 +406,7 @@ def cover_art():
     
     if is_album_id(eid):
         al = getalbum(cid)
-        if al is None or al.albumart is None:
+        if al is None or al.albumart is None or al.albumart == '-':
             return request.error_formatter(70, 'Cover art not found'), 404
         else:
             return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)

@@ -267,9 +267,10 @@ class Context():
         self.session.close()
     
     def update_albumart(self, album, path):
-        if path is not None:
-            album.albumart = path
-            self.session.commit()
+        if path is None:
+            path = "-"
+        album.albumart = path
+        self.session.commit()
     
     def delete_orphans(self):
         self.session.query(Genre).filter(~Genre.id.in_(self.session.query(distinct(Track.genre_id)))).delete(False)
