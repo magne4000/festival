@@ -1,6 +1,7 @@
 from .model import session_scope, Track, Album, Artist, Genre
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, joinedload_all, contains_eager, aliased
+from sqlalchemy.util import KeyedTuple
 
 def limitoffset(query, skip, limit):
     if skip is not None:
@@ -70,6 +71,9 @@ def listalbums(ffilter=None, skip=None, limit=None, order_by=(Artist.name, Album
             query = limitoffset(query, skip, limit)
         qall = query.all()
         session.expunge_all()
+        if len(qall) > 0 and isinstance(qall[0], KeyedTuple):
+            for i, item in enumerate(qall):
+                qall[i] = item[0]
         return qall
 
 def listalbumsbyartists(ffilter=None, skip=None, limit=None):

@@ -7,6 +7,8 @@ from app import app
 from lib.model import session_scope
 from lib.thumbs import Thumb
 from lib.request import listartists, listalbums, listalbumsbyartists, listtracksbyalbums, listtracks, gettrackfull, gettrack, getalbum, counttracks, countalbums, Artist, Album, Track
+from sqlalchemy.orm import aliased
+from sqlalchemy import func, desc
 
 def get_by_id(req, sqlclass, param='id'):
     eid = req.args.get(param)
@@ -29,21 +31,22 @@ def get_filter(fromYear=None, toYear=None, genre=None):
         yield Track.genre == genre
 
 def get_filter_by_type(atype, fromYear=None, toYear=None, genre=None):
-    if atype == 'starred':
-        return False
+    if atype == 'newest':
+        return lambda query: query.add_columns(func.max(Track.last_updated.label('last_updated'))).join(Album.tracks).group_by(Album.id)
+    elif atype == 'starred':
+        return lambda query: query.filter(False)
     elif atype == 'byYear':
-        return Album.year.between(fromYear, toYear)
+        return lambda query: query.filter(Album.year.between(fromYear, toYear))
     elif atype == 'genre':
-        return Track.genre_id == genre
+        return lambda query: query.filter(Track.genre_id == genre)
     elif atype == 'random':
         # TODO
-        return True
-    return True
+        return None
+    return None
 
 def get_sort_by_type(atype):
     if atype == 'newest':
-        # TODO
-        return None
+        return (desc('last_updated'),)
     elif atype == 'highest':
         return None
     elif atype == 'frequent':
@@ -94,7 +97,7 @@ def format_album(album, child=False):
         'artist': album.artist.name,
         'artistId': format_artist_id(album.artist_id),
         'songCount': album.track_count(),
-        'duration': album.duration(),
+        'duration': int(album.duration()),
         # TODO 'created': min(map(lambda t: t.created, self.tracks)).isoformat(),
         'year': album.year,
         'coverArt': format_album_id(album.id),
@@ -125,13 +128,12 @@ def format_track(track, child=False):
         "artistId": format_artist_id(track.album.artist_id),
         "artist": track.artist_name,
         "covertArt": albumId,
-        "duration": track.duration,
+        "duration": int(track.duration),
         "track": track.trackno,
         "year": track.year,
         "genre": track.genre_name,
         "size": track.size,
-        "contentType": track.mimetype,
-        # TODO "suffix": path.extname(track.path),
+        "contentType": track.mimetype
     };
     if track.bitrate:
         info['bitRate'] = int(float(track.bitrate) / 1000)
@@ -318,7 +320,7 @@ def _album_list():
     else:
         fltr = get_filter_by_type(atype, fromYear=fromYear, toYear=toYear, genre=genre)
         srt = get_sort_by_type(atype)
-        return True, listalbums(lambda query: query.filter(fltr), skip=offset, limit=size, order_by=srt)
+        return True, listalbums(fltr, skip=offset, limit=size, order_by=srt)
 
 @app.route('/rest/getRandomSongs.view', methods = [ 'GET', 'POST' ])
 def random_songs():

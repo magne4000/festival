@@ -22,6 +22,8 @@ def dict2xml(d, root_node=None):
             else:
                 t = Text()
                 t.data = str(value)
+                if isinstance(value, bool):
+                    t.data = t.data.lower()
                 xml = '{} {}="{}"'.format(xml, key, t.toxml())
     else:
         for value in d:
