@@ -2,7 +2,7 @@ import os
 import re
 import random
 from datetime import datetime
-from flask import request, send_from_directory
+from flask import request, send_file, send_from_directory
 from app import app
 from lib.model import session_scope
 from lib.thumbs import Thumb
@@ -126,15 +126,15 @@ def format_track(track, child=False):
         "artist": track.artist_name,
         "covertArt": albumId,
         "duration": track.duration,
-        "bitRate": track.bitrate,
         "track": track.trackno,
         "year": track.year,
         "genre": track.genre_name,
-        # TODO "size": fs.statSync(elt.path).size,
+        # TODO "size": elt.size,
         # TODO "suffix": path.extname(elt.path),
-        # TODO "contentType": elt.mime,
-        "path": '' # TODO ?
+        # TODO "contentType": elt.mimetype,
     };
+    if track.bitrate:
+        info['bitRate'] = int(float(track.bitrate) / 1000)
     return info
 
 @app.route('/rest/ping.view', methods = [ 'GET', 'POST' ])
@@ -163,17 +163,10 @@ def music_folders():
 @app.route('/rest/getArtists.view', methods = [ 'GET', 'POST' ])
 @app.route('/rest/getIndexes.view', methods = [ 'GET', 'POST' ])
 def indexes():
-    # musicFolderId = request.args.get('musicFolderId')
-    # We have a unique musicFolderId so do not take it into account
     """
-    TODO
-    
-    ifModifiedSince = request.args.get('ifModifiedSince')
-    if ifModifiedSince:
-        try:
-            ifModifiedSince = int(ifModifiedSince) / 1000
-        except:
-            return request.error_formatter(0, 'Invalid timestamp')
+    Parameters
+    * ifModifiedSince : Not taken into account
+    * musicFolderId : Not taken into account
     """
     last_modif = int(datetime.now().timestamp() * 1000)
     indexes = {}
@@ -194,6 +187,7 @@ def indexes():
     return request.formatter({
         'indexes': {
             'lastModified': last_modif,
+            'ignoredArticles': '',
             'index': [{
                 'name': k,
                 'artist': [{
@@ -218,11 +212,8 @@ def music_directory():
         children = dirlist[0].tracks
         format_directory_id = format_album_id
         format_child = format_track
-    """
-    TODO
-    
     else:
-    """
+        return request.error_formatter(10, 'Missing or invalid id')
     
     return request.formatter({ 'directory': {
         'id': format_directory_id(dirlist[0].id),
@@ -425,3 +416,18 @@ def cover_art():
             return request.error_formatter(70, 'Cover art not found'), 404
         else:
             return send_from_directory(Thumb.getdir(), os.path.basename(tr.album.albumart), conditional=True)
+
+@app.route('/rest/download.view', methods = [ 'GET', 'POST' ])
+@app.route('/rest/stream.view', methods=['GET', 'POST'])
+def download():
+    eid = request.args.get('id')
+    cid = clean_id(eid)
+    if not is_track_id(eid):
+        return request.error_formatter(10, 'Invalid id')
+    
+    tr = gettrack(cid)
+    
+    if tr is None or tr.path is None:
+        return request.error_formatter(70, 'Track not found'), 404
+    else:
+        return send_file(tr.path, conditional=True)

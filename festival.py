@@ -16,7 +16,7 @@ def hello():
 @app.route("/music/<sid>")
 def music(sid):
     tr = gettrack(sid)
-    if tr.path is None:
+    if tr is None or tr.path is None:
         abort(404)
     else:
         return send_file(tr.path, conditional=True)

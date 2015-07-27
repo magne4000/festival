@@ -2,6 +2,7 @@ import os
 import logging
 import re
 import sys
+import mimetypes
 from datetime import datetime
 from flask import Flask
 from sqlalchemy.orm import relationship, backref, sessionmaker, scoped_session, subqueryload_all, joinedload, column_property
@@ -15,10 +16,11 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
+from app import app
 
-app = Flask(__name__)
-app.config.from_pyfile('../settings.cfg')
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread':False}, echo=True)
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread':False})
+
+mimetypes.init()
 
 Base = declarative_base()
 
@@ -58,6 +60,8 @@ class Track(Base):
     bitrate = Column(String(10), nullable=True)
     trackno = Column(Integer, nullable=True)
     last_updated = Column(DateTime)
+    size = Column(Integer)
+    mimetype = Column(String(50))
     album_name = association_proxy('album','name')
     
     @hybrid_property
@@ -68,7 +72,7 @@ class Track(Base):
     
     @hybrid_property
     def genre_name(self):
-        if 'genre' in self.__dict__:
+        if 'genre' in self.__dict__ and self.genre is not None:
             return self.genre.name
         return None
     
@@ -80,9 +84,15 @@ class Track(Base):
     def url(cls):
         return column('music/', String).concat(cls.id)
     
+    def _mimetypeandsize(self, path):
+        self.size = os.path.getsize(path)
+        mtype, _, = mimetypes.guess_type(path)
+        self.mimetype = mtype
+    
     def __init__(self, name, path, trackno='', year=0, duration=0, bitrate='', last_updated=''):
         self.name = name
         self.path = path
+        self._mimetypeandsize(path)
         self.duration = duration
         self.year = year
         self.bitrate = bitrate
@@ -94,6 +104,7 @@ class Track(Base):
             self.name = name
         if path is not None:
             self.path = path
+            self._mimetypeandsize(path)
         if duration is not None:
             self.duration = duration
         if year is not None:
@@ -137,7 +148,7 @@ class Artist(Base):
     def album_count(self):
         if 'albums' in self.__dict__:
             return len(self.albums)
-        return None
+        return 0
     
     def __init__(self, name):
         self.name = name
@@ -166,13 +177,13 @@ class Album(Base):
     def track_count(self):
         if 'tracks' in self.__dict__:
             return len(self.tracks)
-        return None
+        return 0
     
     @hybrid_method
     def duration(self):
         if 'tracks' in self.__dict__:
             return sum((tr.duration for tr in self.tracks))
-        return None
+        return 0
     
     def __repr__(self):
         return "<Album %r.%r>" % (self.artist_id, self.name)
@@ -275,9 +286,6 @@ class Context():
         track = self.add_track(
             filepath,
             tags['title'],
-            tags['artist'],
-            tags['genre'],
-            tags['album'],
             tags['tracknumber'],
             tags['year'],
             info['length'],
@@ -292,12 +300,13 @@ class Context():
     def fetch_genre(self, genre):
         if genre is None:
             return None
-        genreclean = genre.strip().lower()
-        if genreclean in self.genres:
-            ge = self.genres[genreclean]
+        genre = _clean_tag(genre)
+        lgenre = genre.lower()
+        if lgenre in self.genres:
+            ge = self.genres[lgenre]
         else:
             ge = Genre(name = genre)
-            self.genres[genreclean] = genre
+            self.genres[lgenre] = ge
         return ge
     
     def get_albums_without_cover(self):
@@ -320,11 +329,8 @@ class Context():
             self.session.add(al)
             return al
     
-    def add_track(self, path, name, artist, genre, album, trackno=None, year=None, duration=0.0, bitrate=None, last_mod_time=None):
+    def add_track(self, path, name, trackno=None, year=None, duration=0.0, bitrate=None, last_mod_time=None):
         name = _clean_tag(name)
-        artist = _clean_tag(artist)
-        genre = _clean_tag(genre)
-        album = _clean_tag(album)
         duration = _clean_tag(duration, mytype='float')
         year = _clean_tag(year, mytype='integer', max_len=4)
         bitrate = _clean_tag(bitrate, allow_none=True)

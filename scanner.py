@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-sys.path.append('./libs')
+sys.path.insert(0, './libs')
 import os
 import uuid
 import traceback

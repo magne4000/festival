@@ -7,8 +7,7 @@ import urllib.error
 import json
 import sys
 from flask import Flask
-app = Flask(__name__)
-app.config.from_pyfile('../settings.cfg')
+from app import app
 
 class CoverURL:
     SEARCH_URL = "http://ws.audioscrobbler.com/2.0/?"
