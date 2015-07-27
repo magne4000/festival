@@ -65,7 +65,7 @@ def albumsbyartists():
     ffilter = None
     if filters is not None and 'artist' in filters:
         ffilter = lambda query: query.filter(Artist.id == filters['artist'])
-    return jsonify(data=[x._asdict() for x in listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit+skip)])
+    return jsonify(data=[x._asdict(albums=True) for x in listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit+skip)])
 
 @app.route("/ajax/list/search")
 def search_():
