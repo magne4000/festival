@@ -23,7 +23,6 @@ def coroutine(func):
         return generator
     return wrapper
 
-
 def set_interval(interval, times = -1):
     # This will be the actual decorator,
     # with fixed interval and times parameter
@@ -50,6 +49,10 @@ def set_interval(interval, times = -1):
 
 class CoverThread(Thread):
     
+    def __init__(self, debug=False):
+        super(CoverThread, self).__init__()
+        self.debug = debug
+    
     def run(self):
         self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
         with Context() as db:
@@ -57,12 +60,13 @@ class CoverThread(Thread):
             for album in albums:
                 path = self.cu.download(album.artist.name, album.name, self.save)
                 db.update_albumart(album, path)
-                if path is None:
-                    sys.stdout.write('-')
-                    sys.stdout.flush()
-                else:
-                    sys.stdout.write('x')
-                    sys.stdout.flush()
+                if self.debug:
+                    if path is None:
+                        sys.stdout.write('-')
+                        sys.stdout.flush()
+                    else:
+                        sys.stdout.write('x')
+                        sys.stdout.flush()
     
     def save(self, fd):
         if fd is not None:
@@ -73,11 +77,12 @@ class CoverThread(Thread):
 
 class Scanner(object):
     
-    def __init__(self):
+    def __init__(self, debug=False):
         self.progress_timeout = None
         self.scan_in_progess = False
         self.rescan_after = False
         self.tracks = {}
+        self.debug = debug
     
     def init_tracks(self):
         self.tracks = {}
@@ -110,8 +115,9 @@ class Scanner(object):
                         info['length'] = mutagen_tags.length
                         info['bitrate'] = mutagen_tags.bitrate
                         track = db.add_track_full(mfile, mtime, tags, info)
-                        sys.stdout.write('*')
-                        sys.stdout.flush()
+                        if self.debug:
+                            sys.stdout.write('*')
+                            sys.stdout.flush()
                     except UnreadableFileError as e:
                         print('Error in scanner.add_track', file=sys.stderr)
                         print(traceback.format_exc(), file=sys.stderr)
@@ -128,7 +134,7 @@ class Scanner(object):
                 should_add, mtime = self.scan(mfile)
                 if should_add:
                     h.send((mfile, mtime))
-                else:
+                elif self.debug:
                     sys.stdout.write('.')
                     sys.stdout.flush()
         except GeneratorExit:
@@ -149,8 +155,8 @@ class Scanner(object):
                     h.send(os.path.join(root, name))
 
 if __name__ == "__main__":
-    s = Scanner()
-    s.walk('/mnt/data/musique/')
-    t = CoverThread()
+    s = Scanner(debug=True)
+    s.walk(app.config['SCANNER_PATH'])
+    t = CoverThread(debug=True)
     t.start()
     t.join()

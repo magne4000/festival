@@ -6,6 +6,7 @@ from lib.model import Artist, Album, Track
 from lib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
 from lib.thumbs import Thumb
 from app import app
+from scanner import Scanner
 import json
 import os
 
@@ -88,6 +89,8 @@ def albumart(album):
         return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
 
 from api import *
+
+Scanner.start(app.config['SCANNER_PATH'])
 
 def main():
     app.run(host='0.0.0.0', debug=True)

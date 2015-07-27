@@ -39,9 +39,6 @@ def get_filter_by_type(atype, fromYear=None, toYear=None, genre=None):
         return lambda query: query.filter(Album.year.between(fromYear, toYear))
     elif atype == 'genre':
         return lambda query: query.filter(Track.genre_id == genre)
-    elif atype == 'random':
-        # TODO
-        return None
     return None
 
 def get_sort_by_type(atype):
@@ -50,10 +47,8 @@ def get_sort_by_type(atype):
     elif atype == 'highest':
         return None
     elif atype == 'frequent':
-        # TODO
         return None
     elif atype == 'recent':
-        # TODO
         return None
     elif atype == 'alphabeticalByName':
         return (Album.name,)
