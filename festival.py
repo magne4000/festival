@@ -90,9 +90,8 @@ def albumart(album):
 
 from api import *
 
-Scanner(app.config['SCANNER_PATH']).start()
-
 def main():
+    Scanner(app.config['SCANNER_PATH']).start()
     app.run(host='0.0.0.0', debug=True, use_reloader=False)
 
 if __name__ == "__main__":

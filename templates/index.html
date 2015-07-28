@@ -6,7 +6,6 @@
     <link rel="stylesheet" type="text/css" href="static/stylesheets/normalize.css">
     <link rel="stylesheet" type="text/css" href="static/stylesheets/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="static/stylesheets/style.css">
-    {% if config.DEBUG %}
     <script type='text/javascript' src='static/js/jquery.min.js'></script>
     <script type='text/javascript' src='static/js/jquery.hotkeys.js'></script>
     <script type='text/javascript' src='static/js/angular.min.js'></script>
@@ -17,10 +16,6 @@
     <script type='text/javascript' src='static/js/angular-filter.js'></script>
     <script type='text/javascript' src='static/js/angular-controller.js'></script>
     <script type='text/javascript' src='static/js/soundmanager2-jsmin.js'></script>
-    {% else %}
-    <script type="text/javascript" src="static/js/festival.min.js"></script>
-    <script type="text/javascript" src="static/js/soundmanager2-nodebug-jsmin.js"></script>
-    {% endif %}
     <script type="text/javascript">
       soundManager.setup({
         url: {{config.SM_URL|tojson}},

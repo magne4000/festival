@@ -9,20 +9,13 @@ It also implements a piece of subsonic api which allows subsonic client apps to 
 
 Dependencies (ubuntu)
 ---------------------
+You will need at least Python 3.4
+
 Install Flask with SQLAlchemy, and python3-imaging
 
-    sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-imaging python3-mysql.connector
+    sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-imaging
 
-Taglib installation (other systems)
------------------------------------
-[Taglib](http://taglib.github.io/) must be build using cmake on other distros:
-
-    wget http://taglib.github.io/releases/taglib-1.9.1.tar.gz
-    tar xavf taglib-1.9.1.tar.gz
-    cd taglib-1.9.1
-    cmake .
-    make
-    make install
+If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
 
 Installation
 ------------
@@ -30,38 +23,56 @@ Clone the project
 
     git clone https://github.com/magne4000/festival.git
 
-And install dependencies
-
-    cd festival
-    npm install
-
 Update
 ------------
+
     git pull
-    npm update
-
-and optionally
-
-    rm -fr data/*
 
 Configuration
 -------------
-In order to configure the app, you need to create a custom `settings-user.js` file:
+In order to configure the app, you need to create a custom `settings.cfg` file:
 
-    cp settings.js settings-user.js
+    cp settings.sample.cfg settings.cfg
 
-In the newly created file `settings-user.js`, the only value that really needs to be modified is the path where your musics are stored:
+In the newly created file `settings.cfg`, the only value that really needs to be modified is the path where your musics are stored:
 
-    scanner: {
-        path: '</path/to/your/musics/>',
-        ...
-    }
+    SCANNER_PATH = '</path/to/your/musics/>'
+
+You can also launch festival.py manually for the first time, it'll create the `settings.cfg` file and prompt for mandatory values:
+
+    python3 festival.py
 
 Launch
 ------
 You are now ready to launch the app. Just launch the following command to do so:
 
-    node app.js
+    python3 festival.py
+
+Apache
+------
+Install mod-swgi:
+
+    sudo apt-get install libapache2-mod-wsgi-py3
+
+Add this into one Apache VirtualHost
+```
+    WSGIDaemonProcess festival user={user} group={user} threads=5
+    WSGIScriptAlias /festival {path/to/festival}/wsgi/festival.wsgi
+    <Directory {path/to/festival}>
+        WSGIProcessGroup festival
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
+```
+and replace everything between `{}` by their real values.
+
+Also, `LANG` and `LC_ALL` env vars must be set to UTF-8 for the scanner to work from apache.
+
+Those values can be set into `/etc/apache2/envvars`
+
+    export LANG='en_US.UTF-8'
+    export LC_ALL='en_US.UTF-8'
 
 Subsonic
 --------

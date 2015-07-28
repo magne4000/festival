@@ -7,3 +7,4 @@ data
 settings-user.js
 __pycache__/
 settings.cfg
+*.pyc
