@@ -128,7 +128,7 @@ class Scanner(Thread):
         t.start()
         t.join()
         logger.debug('Cover thread terminated')
-        t = Timer(300.0, self._run)
+        t = Timer(app.config['SCANNER_REFRESH_INTERVAL'], self._run)
         t.start()
     
     def run(self):
