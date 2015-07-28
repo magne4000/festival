@@ -62,11 +62,11 @@ by the path where you cloned festival.
 
 Then, add this into one Apache VirtualHost
 ```apache
-WSGIDaemonProcess festival user={user} group={user} threads=5
-WSGIScriptAlias /festival {path/to/festival}/wsgi/festival.wsgi
+WSGIDaemonProcess festival user={user} group={user} threads=1
+WSGIScriptAlias /festival {path/to/festival}/wsgi/festival.wsgi process-group=festival
 <Directory {path/to/festival}>
     WSGIProcessGroup festival
-    WSGIApplicationGroup %{GLOBAL}
+    WSGIApplicationGroup festival
     Order deny,allow
     Allow from all
 </Directory>
