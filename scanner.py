@@ -3,15 +3,17 @@ import sys
 sys.path.insert(0, './libs')
 import os
 import uuid
-import traceback
+import logging
 from queue import Queue, Empty
-from threading import Thread, Timer, Event
+from threading import Thread, Event, Timer
 from datetime import datetime
 from lib.model import Context, Track, session_scope
 from lib import coverurl, thumbs
 from libs.mediafile import MediaFile, UnreadableFileError
 from flask import render_template
 from app import app
+
+logger = logging.getLogger('scanner')
 
 def filter_music_file(path):
     return os.path.splitext(path)[1].lower() in app.config['SCANNER_EXTS']
@@ -22,30 +24,6 @@ def coroutine(func):
         next(generator)
         return generator
     return wrapper
-
-def set_interval(interval, times = -1):
-    # This will be the actual decorator,
-    # with fixed interval and times parameter
-    def outer_wrap(function):
-        # This will be the function to be
-        # called
-        def wrap(*args, **kwargs):
-            stop = Event()
-            # This is another function to be executed
-            # in a different thread to simulate setInterval
-            def inner_wrap():
-                i = 0
-                while i != times and not stop.isSet():
-                    stop.wait(interval)
-                    function(*args, **kwargs)
-                    i += 1
-
-            t = Timer(0, inner_wrap)
-            t.daemon = True
-            t.start()
-            return stop
-        return wrap
-    return outer_wrap
 
 class CoverThread(Thread):
     
@@ -75,9 +53,11 @@ class CoverThread(Thread):
             return path
         return None
 
-class Scanner(object):
+class Scanner(Thread):
     
-    def __init__(self, debug=False):
+    def __init__(self, root, debug=False):
+        super(Scanner, self).__init__()
+        self.root = root
         self.progress_timeout = None
         self.scan_in_progess = False
         self.rescan_after = False
@@ -119,8 +99,7 @@ class Scanner(object):
                             sys.stdout.write('*')
                             sys.stdout.flush()
                     except UnreadableFileError as e:
-                        print('Error in scanner.add_track', file=sys.stderr)
-                        print(traceback.format_exc(), file=sys.stderr)
+                        logger.exception('Error in scanner.add_track')
             except GeneratorExit:
                 pass
     
@@ -140,23 +119,31 @@ class Scanner(object):
         except GeneratorExit:
             self.tracks = {}
     
-    @set_interval(300.0)
-    def start(self, root):
-        self.walk(root)
+    def _run(self):
+        logger.debug('New scan started')
+        self.walk()
+        logger.debug('Scan finished')
+        logger.debug('Starting cover thread')
         t = CoverThread()
         t.start()
         t.join()
+        logger.debug('Cover thread terminated')
+        t = Timer(300.0, self._run)
+        t.start()
     
-    def walk(self, root):
+    def run(self):
+        self._run()
+    
+    def walk(self):
         h = self.handle()
-        for root, _, files in os.walk(root, topdown=False):
+        for self.root, _, files in os.walk(self.root, topdown=False):
             for name in files:
                 if filter_music_file(name):
-                    h.send(os.path.join(root, name))
+                    h.send(os.path.join(self.root, name))
 
 if __name__ == "__main__":
-    s = Scanner(debug=True)
-    s.walk(app.config['SCANNER_PATH'])
+    s = Scanner(app.config['SCANNER_PATH'], debug=True)
+    s.walk()
     t = CoverThread(debug=True)
     t.start()
     t.join()

@@ -23,3 +23,9 @@ if not os.path.isfile(settings_filepath):
 from flask import Flask
 app = Flask(__name__)
 app.config.from_pyfile('settings.cfg')
+
+import logging
+from logging.handlers import RotatingFileHandler
+level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
+handler = RotatingFileHandler(app.config['LOGFILE'], maxBytes=10485760, backupCount=2)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level, handlers=[handler])

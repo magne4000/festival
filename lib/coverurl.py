@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
-import traceback
 import urllib.request
 import urllib.parse
 import urllib.error
 import json
 import sys
+import logging
 from flask import Flask
 from app import app
+
+logger = logging.getLogger('coverurl')
 
 class CoverURL:
     SEARCH_URL = "http://ws.audioscrobbler.com/2.0/?"
@@ -37,8 +39,7 @@ class CoverURL:
             with urllib.request.urlopen(url) as f:
                 return self._large(json.loads(f.read().decode('utf-8')))
         except:
-            print("Error while searching album cover")
-            print(traceback.format_exc(), file=sys.stderr)
+            logger.exception('Error while searching album cover')
             return None
     
     def download(self, artist, album, callback):
@@ -48,8 +49,7 @@ class CoverURL:
                 with urllib.request.urlopen(url) as f:
                     return callback(f)
             except:
-                print("Error while fetching album cover")
-                print(traceback.format_exc(), file=sys.stderr)
+                logger.exception('Error while fetching album cover')
                 return callback(None)
         else:
             return callback(None)
