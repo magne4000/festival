@@ -12,7 +12,7 @@ from app import app
 logger = logging.getLogger('coverurl')
 
 class CoverURL:
-    SEARCH_URL = "http://ws.audioscrobbler.com/2.0/?"
+    SEARCH_URL = "https://ws.audioscrobbler.com/2.0/?"
     
     def __init__(self, api_key):
         self.params = {
