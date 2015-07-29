@@ -6,7 +6,7 @@ import mimetypes
 from datetime import datetime
 from flask import Flask
 from sqlalchemy.orm import relationship, backref, sessionmaker, scoped_session, subqueryload_all, joinedload, column_property
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, select, func
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, select, func, event
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import column
 from sqlalchemy.sql.expression import func
@@ -32,6 +32,16 @@ def coroutine(func):
         next(generator)
         return generator
     return wrapper
+
+def purge_cover_on_delete(session, query, query_context, result):
+    affected_table = query_context.statement.froms[0]
+    if affected_table.name == 'album':
+        deleted_elts = engine.execute(query_context.statement).fetchall()
+        for elt in deleted_elts:
+            if os.path.isfile(elt[4]):
+                os.remove(elt[4])
+
+event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
 
 @contextmanager
 def session_scope():
@@ -279,8 +289,7 @@ class Context():
         self.session.commit()
     
     def delete_tracks(self, tracks):
-        for track in tracks:
-            self.session.delete(track)
+        self.session.query(Track).filter(Track.path.in_(tracks)).delete(False)
         self.session.commit()
     
     def add_track_full(self, filepath, mtime, tags, info):

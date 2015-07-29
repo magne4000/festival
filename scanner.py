@@ -72,11 +72,21 @@ class Scanner(Thread):
             self.tracks = {x.path: x.last_updated for x in session.query(Track.path, Track.last_updated).all()}
     
     def scan(self, mfile):
+        res = True
         stats = os.stat(mfile)
         last_mod_time = datetime.fromtimestamp(stats.st_mtime)
-        if mfile in self.tracks and self.tracks[mfile] is not None and last_mod_time <= self.tracks[mfile]:
-            return False, last_mod_time
-        return True, last_mod_time
+        if mfile in self.tracks:
+            if self.tracks[mfile] is not None and last_mod_time <= self.tracks[mfile]:
+                res = False
+            del self.tracks[mfile]
+        return res, last_mod_time
+    
+    def purgeold(self):
+        logger.debug('Purging %d old tracks' % len(self.tracks))
+        if len(self.tracks) > 0:
+            with Context() as db:
+                db.delete_tracks(list(self.tracks.keys()))
+                db.delete_orphans()
     
     @coroutine
     def add_track(self):
@@ -126,7 +136,7 @@ class Scanner(Thread):
         self.walk()
         logger.debug('Scan finished')
         logger.debug('Starting cover thread')
-        t = CoverThread()
+        t = CoverThread(debug=self.debug)
         t.start()
         t.join()
         logger.debug('Cover thread terminated')
@@ -143,6 +153,7 @@ class Scanner(Thread):
             for name in files:
                 if filter_music_file(name):
                     h.send(os.path.join(self.root, name))
+        self.purgeold()
 
 if __name__ == "__main__":
     while True:
