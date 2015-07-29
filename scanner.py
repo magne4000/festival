@@ -4,6 +4,7 @@ sys.path.insert(0, './libs')
 import os
 import uuid
 import logging
+import time
 from queue import Queue, Empty
 from threading import Thread, Event, Timer
 from datetime import datetime
@@ -55,7 +56,7 @@ class CoverThread(Thread):
 
 class Scanner(Thread):
     
-    def __init__(self, root, debug=False):
+    def __init__(self, root, infinite=True, debug=False):
         super(Scanner, self).__init__()
         self.root = root
         self.progress_timeout = None
@@ -63,6 +64,7 @@ class Scanner(Thread):
         self.rescan_after = False
         self.tracks = {}
         self.debug = debug
+        self.infinite = infinite
     
     def init_tracks(self):
         self.tracks = {}
@@ -128,8 +130,9 @@ class Scanner(Thread):
         t.start()
         t.join()
         logger.debug('Cover thread terminated')
-        t = Timer(app.config['SCANNER_REFRESH_INTERVAL'], self._run)
-        t.start()
+        if self.infinite:
+            t = Timer(app.config['SCANNER_REFRESH_INTERVAL'], self._run)
+            t.start()
     
     def run(self):
         self._run()
@@ -142,8 +145,8 @@ class Scanner(Thread):
                     h.send(os.path.join(self.root, name))
 
 if __name__ == "__main__":
-    s = Scanner(app.config['SCANNER_PATH'], debug=True)
-    s.walk()
-    t = CoverThread(debug=True)
-    t.start()
-    t.join()
+    while True:
+        s = Scanner(app.config['SCANNER_PATH'], infinite=False, debug='-d' in sys.argv)
+        s.start()
+        s.join()
+        time.sleep(app.config['SCANNER_REFRESH_INTERVAL'])

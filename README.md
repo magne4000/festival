@@ -1,5 +1,4 @@
-Festival
-========
+# Festival
 Festival is an HTML5 web application that can play music files.  
 It also implements a piece of subsonic api which allows subsonic client apps to connect (like android apps) !
 
@@ -7,8 +6,7 @@ It also implements a piece of subsonic api which allows subsonic client apps to 
 
 [Live demo !](http://getonmyhor.se:3000/)
 
-Dependencies (ubuntu)
----------------------
+### Dependencies (ubuntu)
 You will need at least Python 3.4
 
 Install Flask with SQLAlchemy, and python3-imaging
@@ -17,19 +15,18 @@ sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy p
 ```
 If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
 
-Installation
-------------
+### Installation
 Clone the project
 ```bash
 git clone https://github.com/magne4000/festival.git
 ```
-Update
-------------
+
+### Update
 ```bash
 git pull
 ```
-Configuration
--------------
+
+### Configuration
 In order to configure the app, you need to create a custom `settings.cfg` file:
 ```bash
 cp settings.sample.cfg settings.cfg
@@ -42,18 +39,22 @@ You can also launch festival.py manually for the first time, it'll create the `s
 ```bash
 python3 festival.py
 ```
-Launch
-------
-You are now ready to launch the app. Just launch the following command to do so:
+
+### Standalone
+You can launch Festival in standalone mode. Just launch the following command to do so:
 ```bash
 python3 festival.py
 ```
-Apache
-------
-Install mod-swgi:
+Now, the webserver is running (by default on port 5000), and the scanner also runs in background.
+
+### Apache
+You can also run the webserver behing Apache (see [Flask website](http://flask.pocoo.org/docs/0.10/deploying/) for other webservers)
+
+Install mod-wsgi:
 ```bash
 sudo apt-get install libapache2-mod-wsgi-py3
 ```
+
 Copy `wsgi/festival.wsgi` somewhere accessible by Apache, edit it and replace:
 ```python
 festival_home='/path/to/festival'
@@ -62,7 +63,7 @@ by the path where you cloned festival.
 
 Then, add this into one Apache VirtualHost
 ```apache
-WSGIDaemonProcess festival user={user} group={user} threads=1
+WSGIDaemonProcess festival user={user} group={user}
 WSGIScriptAlias /festival {path/to/festival}/wsgi/festival.wsgi process-group=festival
 <Directory {path/to/festival}>
     WSGIProcessGroup festival
@@ -73,20 +74,32 @@ WSGIScriptAlias /festival {path/to/festival}/wsgi/festival.wsgi process-group=fe
 ```
 and replace everything between `{}` by their real values.
 
-Also, `LANG` and `LC_ALL` env vars must be set to UTF-8 for the scanner to work from apache.
+#### Scanner
+When running through Apache, scanner process needs to be launched separatly.  
+For this you can either launch it manually:
+```bash
+python3 scanner.py
+```
 
-Those values can be set into `/etc/apache2/envvars`
+Or you can create an `init.d`/`systemd` script:
+
+##### init.d
+```bash
+sudo cp wsgi/festival.init.d /etc/init.d/festival
 ```
-export LANG='en_US.UTF-8'
-export LC_ALL='en_US.UTF-8'
+Then edit `/etc/init.d/festival` and replace values between `{}`.
+
+##### systemd
+```bash
+sudo cp wsgi/festival.systemd /etc/systemd/system/festival.service
 ```
-Subsonic
---------
+Then edit `/etc/systemd/system/festival.service` and replace values between `{}`.
+
+### subsonic
 Subsonic client apps can be plugged to Festival. You just need to add it like any other server to your app.
 As it doesn't support login, if your app requires login/password, just fill credentials with random letters.
 
-License
--------
+### License
 MIT License
 
 Copyright © 2014-2015 Joël Charles
