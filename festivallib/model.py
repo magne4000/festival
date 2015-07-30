@@ -229,6 +229,7 @@ class Genre(Base):
 
 
 def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254):
+    """ Clean the given `tag` instance depending of its `mytype`."""
     if default is None and allow_none is False:
         if mytype == 'string':
             default = 'unknown'
@@ -237,26 +238,26 @@ def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254
         elif mytype == 'float':
             default = 0.0
     if tag is None or tag == 'None':
-        if allow_none is False:
-            return default
-        else:
-            return None
-    try:
-        tag = str(tag).strip()
-    except UnicodeDecodeError:
-        tag = tag.strip()
+        return default if allow_none is False else None
+
+    if mytype == 'string':
+        try:
+            tag = str(tag).strip()
+        except UnicodeDecodeError:
+            tag = tag.strip()
     if tag == '':
         return default
-    if mytype == 'integer' and re.match('\d{1,32}', tag) is None:
+    elif mytype == 'integer' and re.match(r'\d{1,32}', tag) is None:
         return default
-    if mytype == 'float':
+    elif mytype == 'float':
         try:
             return float(tag)
         except ValueError:
             return default
     return tag[:max_len].strip()
 
-class Context():
+
+class Context:
     
     def __init__(self, load=False):
         self.load = load
