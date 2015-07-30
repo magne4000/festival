@@ -15,7 +15,6 @@ input[type=text] {
   border: none;
   border-bottom: 1px solid #2196f3;
   background-color: inherit;
-  -webkit-transition: border-color 0.3s;
   transition: border-color 0.3s;
   color: inherit;
   font-family: inherit;
@@ -464,44 +463,27 @@ main .queue.show .tracks {
   width: 16px;
   margin: 2px;
   display: inline-block;
-  -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
   animation: stretchdelay 1.2s infinite ease-in-out;
 }
 .spinner .rect2 {
-  -webkit-animation-delay: -1.1s;
   animation-delay: -1.1s;
 }
 .spinner .rect3 {
-  -webkit-animation-delay: -1s;
   animation-delay: -1s;
 }
 .spinner .rect4 {
-  -webkit-animation-delay: -0.9s;
   animation-delay: -0.9s;
 }
 .spinner .rect5 {
-  -webkit-animation-delay: -0.8s;
   animation-delay: -0.8s;
-}
-@-webkit-keyframes stretchdelay {
-  0%,
-  40%,
-  100% {
-    -webkit-transform: scaleY(0.5);
-  }
-  20% {
-    -webkit-transform: scaleY(1);
-  }
 }
 @keyframes stretchdelay {
   0%,
   40%,
   100% {
-    -webkit-transform: scaleY(0.5);
     transform: scaleY(0.5);
   }
   20% {
-    -webkit-transform: scaleY(1);
     transform: scaleY(1);
   }
 }
