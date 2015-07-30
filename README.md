@@ -1,5 +1,5 @@
-# Festival
-Festival is an HTML5 web application that can play music files.  
+# Festival 2.0
+Festival 2.0 is an HTML5 web application that can play music files.  
 It also implements a piece of subsonic api which allows subsonic client apps to connect (like android apps) !
 
 ![Webmusic screenshot](https://github.com/magne4000/magne4000.github.com/raw/master/images/festival.screen1.jpg)
