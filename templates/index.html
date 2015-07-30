@@ -35,7 +35,7 @@
           </div>
           <div class="slider-panel">
             <div class="slider">
-              <input type="range" ng-model-options="{ getterSetter: true }">
+              <input type="range" min="0" max="{[duration]}" ng-model="progress" ng-model-options="{ getterSetter: true }">
               <div ng-progress="progress()" ng-progress-duration="duration" class="progress"></div>
               <div ng-loading="buffer" ng-loading-duration="duration" ng-repeat="buffer in buffered" class="loading"></div>
             </div>
