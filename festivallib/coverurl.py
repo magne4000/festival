@@ -4,12 +4,11 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import json
-import sys
 import logging
-from flask import Flask
 from app import app
 
 logger = logging.getLogger('coverurl')
+
 
 class CoverURL:
     SEARCH_URL = "https://ws.audioscrobbler.com/2.0/?"
@@ -23,7 +22,8 @@ class CoverURL:
             'album': ''
         }
     
-    def _large(self, jsonobj):
+    @staticmethod
+    def _large(jsonobj):
         if 'album' in jsonobj and 'image' in jsonobj['album']:
             for elt in jsonobj['album']['image']:
                 if elt['size'] == 'large':
@@ -54,9 +54,7 @@ class CoverURL:
         else:
             return callback(None)
 
-def test():
-    cu = CoverURL(app.config['LASTFM_API_KEY'])
-    print(cu.search('Dagoba', 'Tales of the Black Dawn'))
 
 if __name__ == "__main__":
-    test()
+    cu = CoverURL(app.config['LASTFM_API_KEY'])
+    print(cu.search('Dagoba', 'Tales of the Black Dawn'))

@@ -5,19 +5,19 @@ import os
 import uuid
 import logging
 import time
-from queue import Queue, Empty
-from threading import Thread, Event, Timer
+from threading import Thread, Timer
 from datetime import datetime
 from festivallib.model import Context, Track, session_scope
 from festivallib import coverurl, thumbs
 from libs.mediafile import MediaFile, UnreadableFileError
-from flask import render_template
 from app import app
 
 logger = logging.getLogger('scanner')
 
+
 def filter_music_file(path):
     return os.path.splitext(path)[1].lower() in app.config['SCANNER_EXTS']
+
 
 def coroutine(func):
     def wrapper(*arg, **kwargs):
@@ -26,14 +26,15 @@ def coroutine(func):
         return generator
     return wrapper
 
+
 class CoverThread(Thread):
     
     def __init__(self, debug=False):
         super(CoverThread, self).__init__()
+        self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
         self.debug = debug
     
     def run(self):
-        self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
         with Context() as db:
             albums = db.get_albums_without_cover()
             for album in albums:
@@ -47,12 +48,14 @@ class CoverThread(Thread):
                         sys.stdout.write('x')
                         sys.stdout.flush()
     
-    def save(self, fd):
+    @staticmethod
+    def save(fd):
         if fd is not None:
             thumb = thumbs.Thumb()
             path = thumb.create(fd, uuid.uuid4())
             return path
         return None
+
 
 class Scanner(Thread):
     
@@ -111,7 +114,7 @@ class Scanner(Thread):
                             sys.stdout.write('*')
                             sys.stdout.flush()
                     except UnreadableFileError as e:
-                        logger.exception('Error in scanner.add_track')
+                        logger.exception('Error in scanner.add_track: %s', e)
             except GeneratorExit:
                 pass
     

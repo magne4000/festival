@@ -8,11 +8,12 @@ from festivallib.thumbs import Thumb
 from app import app
 from scanner import Scanner
 import json
-import os
+
 
 @app.route("/")
 def hello():
     return render_template('index.html')
+
 
 @app.route("/music/<sid>")
 def music(sid):
@@ -22,13 +23,16 @@ def music(sid):
     else:
         return send_file(tr.path, conditional=True)
 
+
 @app.route("/download/<artist>")
 def downloada(sartist):
     pass
 
+
 @app.route("/download/<artist>/<album>")
 def downloadaa(sartist, salbum):
     pass
+
 
 @app.route("/ajax/list/tracks")
 def tracks():
@@ -48,15 +52,18 @@ def tracks():
     else:
         return jsonify(data=[x._asdict(albums=True, tracks=True) for x in listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
+
 @app.route("/ajax/list/albums")
 def albums():
     pass
+
 
 @app.route("/ajax/list/artists")
 def artists():
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
     return jsonify(data=[x._asdict() for x in listartists(skip=skip, limit=limit+skip)])
+
 
 @app.route("/ajax/list/albumsbyartists")
 def albumsbyartists():
@@ -68,6 +75,7 @@ def albumsbyartists():
         ffilter = lambda query: query.filter(Artist.id == filters['artist'])
     return jsonify(data=[x._asdict(albums=True) for x in listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit+skip)])
 
+
 @app.route("/ajax/list/search")
 def search_():
     filters = request.args.get('filters', type=json.loads)
@@ -76,9 +84,11 @@ def search_():
     term = request.args.get('term', None)
     return jsonify(data=[x._asdict(albums=True, tracks=True) for x in search(term, **filters)])
 
+
 @app.route("/ajax/fileinfo")
 def fileinfo():
     pass
+
 
 @app.route("/albumart/<album>")
 def albumart(album):
@@ -89,6 +99,7 @@ def albumart(album):
         return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
 
 from api import *
+
 
 def main():
     Scanner(app.config['SCANNER_PATH']).start()
