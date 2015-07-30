@@ -4,7 +4,7 @@ from app import app
 
 from xml.dom.minidom import Text
 
-DEFAULT_VERSION='1.10.1'
+DEFAULT_VERSION = '1.10.1'
 
 def dict2xml(d, root_node=None):
     wrap = False if None == root_node or isinstance(d, list) else True
@@ -82,25 +82,25 @@ def subsonicify():
     if not request.path.endswith('.view'):
         return
 
-    """Return a function to create the response."""
+    # Return a function to create the response.
     f = request.args.get('f')
     callback = request.args.get('callback')
     if f == 'jsonp':
         # Some clients (MiniSub, Perisonic) set f to jsonp without callback for streamed data
-        if not callback and request.endpoint not in [ 'stream_media', 'cover_art' ]:
+        if not callback and request.endpoint not in ['stream_media', 'cover_art']:
             return jsonresponse({
                 'error': {
                     'code': 0,
                     'message': 'Missing callback'
                 }
-            }, error = True), 400
+            }, error=True), 400
         request.formatter = lambda x, **kwargs: jsonpresponse(x, callback, kwargs)
     elif f == "json":
         request.formatter = jsonresponse
     else:
         request.formatter = xmlresponse
 
-    request.error_formatter = lambda code, msg: request.formatter({ 'error': { 'code': code, 'message': msg } }, error = True)
+    request.error_formatter = lambda code, msg: request.formatter({'error': {'code': code, 'message': msg}}, error=True)
 
 @app.after_request
 def set_content_type(response):
@@ -109,7 +109,7 @@ def set_content_type(response):
 
     if response.mimetype.startswith('text'):
         f = request.args.get('f')
-        response.headers['content-type'] = 'application/json' if f in [ 'jsonp', 'json' ] else 'text/xml'
+        response.headers['content-type'] = 'application/json' if f in ['jsonp', 'json'] else 'text/xml'
 
     return response
 

@@ -1,16 +1,15 @@
 import io
 import os
-import sys
-import traceback
+import logging
 from PIL import Image
-
 from .data import Data
 
+logger = logging.getLogger('thumbs')
 
 class Thumb(Data):
-    
+
     NAME = 'thumbs'
-    
+
     def create(self, fd, newname):
         self.mkdirp(Thumb.NAME)
         save_to = os.path.join(self.getdir(), "%s.jpg" % newname)
@@ -20,8 +19,7 @@ class Thumb(Data):
             img.save(save_to, "JPEG")
             return save_to
         except IOError:
-            print("Cannot create thumbnail")
-            print(traceback.format_exc(), file=sys.stderr)
+            logger.exception('Cannot create thumbnail')
             return None
 
     @staticmethod

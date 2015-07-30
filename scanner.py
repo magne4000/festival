@@ -28,12 +28,12 @@ def coroutine(func):
 
 
 class CoverThread(Thread):
-    
+
     def __init__(self, debug=False):
         super(CoverThread, self).__init__()
         self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
         self.debug = debug
-    
+
     def run(self):
         with Context() as db:
             albums = db.get_albums_without_cover()
@@ -47,7 +47,7 @@ class CoverThread(Thread):
                     else:
                         sys.stdout.write('x')
                         sys.stdout.flush()
-    
+
     @staticmethod
     def save(fd):
         if fd is not None:
@@ -58,7 +58,7 @@ class CoverThread(Thread):
 
 
 class Scanner(Thread):
-    
+
     def __init__(self, root, infinite=True, debug=False):
         super(Scanner, self).__init__()
         self.root = root
@@ -68,12 +68,12 @@ class Scanner(Thread):
         self.tracks = {}
         self.debug = debug
         self.infinite = infinite
-    
+
     def init_tracks(self):
         self.tracks = {}
         with session_scope() as session:
             self.tracks = {x.path: x.last_updated for x in session.query(Track.path, Track.last_updated).all()}
-    
+
     def scan(self, mfile):
         res = True
         stats = os.stat(mfile)
@@ -83,14 +83,14 @@ class Scanner(Thread):
                 res = False
             del self.tracks[mfile]
         return res, last_mod_time
-    
+
     def purgeold(self):
-        logger.debug('Purging %d old tracks' % len(self.tracks))
+        logger.debug('Purging %d old tracks', len(self.tracks))
         if len(self.tracks) > 0:
             with Context() as db:
                 db.delete_tracks(list(self.tracks.keys()))
                 db.delete_orphans()
-    
+
     @coroutine
     def add_track(self):
         with Context(True) as db:
@@ -109,7 +109,7 @@ class Scanner(Thread):
                         tags['year'] = mutagen_tags.year
                         info['length'] = mutagen_tags.length
                         info['bitrate'] = mutagen_tags.bitrate
-                        track = db.add_track_full(mfile, mtime, tags, info)
+                        _ = db.add_track_full(mfile, mtime, tags, info)
                         if self.debug:
                             sys.stdout.write('*')
                             sys.stdout.flush()
@@ -117,7 +117,7 @@ class Scanner(Thread):
                         logger.exception('Error in scanner.add_track: %s', e)
             except GeneratorExit:
                 pass
-    
+
     @coroutine
     def handle(self):
         h = self.add_track()
@@ -133,7 +133,7 @@ class Scanner(Thread):
                     sys.stdout.flush()
         except GeneratorExit:
             self.tracks = {}
-    
+
     def _run(self):
         logger.debug('New scan started')
         self.walk()
@@ -146,10 +146,10 @@ class Scanner(Thread):
         if self.infinite:
             t = Timer(app.config['SCANNER_REFRESH_INTERVAL'], self._run)
             t.start()
-    
+
     def run(self):
         self._run()
-    
+
     def walk(self):
         h = self.handle()
         for self.root, _, files in os.walk(self.root, topdown=False):

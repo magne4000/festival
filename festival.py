@@ -47,6 +47,8 @@ def tracks():
             if 'album' in filters:
                 query = query.filter(Track.album_id == filters['album'])
             return query
+    else:
+        ffilter = None
     if flat:
         return jsonify(data=[x._asdict() for x in listtracks(ffilter=ffilter, skip=skip, limit=limit)])
     else:
