@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" ng-app="festival" ng-controller="PlayerController">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="icon" type="image/png" href="static/images/favicon.png">
@@ -25,9 +25,9 @@
         preferFlash: {{config.SM_PREFER_FLASH|tojson}}
       });
     </script>
-    <title>{{config.TITLE}}</title>
+    <title>{[currentTrack.name ? currentTrack.name + " - " + currentTrack.artist_name : "{{config.TITLE}}"]}</title>
   </head>
-  <body ng-app="festival" ng-controller="PlayerController">
+  <body>
     <header>
       <div class="player"><a title="Previous track" href="#" ng-click="prev(true)" class="control prev"><i class="fa fa-backward fa-2x"></i></a><a title="Play" href="#" ng-click="togglePlayPause()" class="control play"><i ng-class="{'fa-play': !playing, 'fa-pause': playing}" class="fa fa-2x"></i></a><a title="Next track" href="#" ng-click="next(true, true)" class="control next"><i class="fa fa-forward fa-2x"></i></a>
         <div class="panel">
