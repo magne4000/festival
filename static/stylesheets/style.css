@@ -24,9 +24,8 @@ input[type=text] {
   border-bottom-color: rgba(255, 255, 255, 0.12);
 }
 input[type=text]:focus {
-  border-bottom-width: 2px;
   padding-bottom: 0.25em;
-  border-bottom-color: rgba(255, 255, 255, 0.6);
+  border-bottom: 2px rgba(255, 255, 255, 0.6);
 }
 header {
   height: 82px;
@@ -154,9 +153,7 @@ header .toolbar .search .filters label {
 }
 header .toolbar .search .filters .checkbox {
   border-radius: 0.1em;
-  border-style: solid;
-  border-width: 0.15em;
-  border-color: #999;
+  border: 0.15em solid #999;
   cursor: pointer;
   display: inline-block;
   height: 1em;
@@ -265,13 +262,7 @@ main .container .album > h4 {
   cursor: pointer;
   margin: 5px 0;
 }
-main .container .artist > h3 .fa-minus,
-main .container .album > h4 .fa-minus,
-main .container .artist > h3 .fa-plus,
-main .container .album > h4 .fa-plus {
-  font-size: 0.8em;
-  margin: 3px;
-}
+
 main .container .artist > h3 > i {
   width: 1em;
   text-align: center;
