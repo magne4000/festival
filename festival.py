@@ -2,9 +2,9 @@
 
 from flask import render_template, request, json, send_file, send_from_directory, abort
 from flask.json import jsonify
-from lib.model import Artist, Album, Track
-from lib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
-from lib.thumbs import Thumb
+from festivallib.model import Artist, Album, Track
+from festivallib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
+from festivallib.thumbs import Thumb
 from app import app
 from scanner import Scanner
 import json

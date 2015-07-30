@@ -8,8 +8,8 @@ import time
 from queue import Queue, Empty
 from threading import Thread, Event, Timer
 from datetime import datetime
-from lib.model import Context, Track, session_scope
-from lib import coverurl, thumbs
+from festivallib.model import Context, Track, session_scope
+from festivallib import coverurl, thumbs
 from libs.mediafile import MediaFile, UnreadableFileError
 from flask import render_template
 from app import app

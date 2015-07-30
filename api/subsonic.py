@@ -4,9 +4,9 @@ import random
 from datetime import datetime
 from flask import request, send_file, send_from_directory
 from app import app
-from lib.model import session_scope
-from lib.thumbs import Thumb
-from lib.request import listartists, listalbums, listalbumsbyartists, listtracksbyalbums, listtracks, gettrackfull, gettrack, getalbum, counttracks, countalbums, Artist, Album, Track
+from festivallib.model import session_scope
+from festivallib.thumbs import Thumb
+from festivallib.request import listartists, listalbums, listalbumsbyartists, listtracksbyalbums, listtracks, gettrackfull, gettrack, getalbum, counttracks, countalbums, Artist, Album, Track
 from sqlalchemy.orm import aliased
 from sqlalchemy import func, desc
 
