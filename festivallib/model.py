@@ -1,24 +1,18 @@
 import os
-import logging
 import re
-import sys
 import mimetypes
 from datetime import datetime
-from flask import Flask
-from sqlalchemy.orm import relationship, backref, sessionmaker, scoped_session, subqueryload_all, joinedload, column_property
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, select, func, event
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, event
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import column
-from sqlalchemy.sql.expression import func
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method, Comparator
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
 from app import app
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread':False})
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
 
 mimetypes.init()
 
@@ -26,12 +20,14 @@ Base = declarative_base()
 
 Session = scoped_session(sessionmaker(bind=engine))
 
+
 def coroutine(func):
     def wrapper(*arg, **kwargs):
         generator = func(*arg, **kwargs)
         next(generator)
         return generator
     return wrapper
+
 
 def purge_cover_on_delete(session, query, query_context, result):
     affected_table = query_context.statement.froms[0]
@@ -42,6 +38,7 @@ def purge_cover_on_delete(session, query, query_context, result):
                 os.remove(elt[4])
 
 event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
+
 
 @contextmanager
 def session_scope():
@@ -72,7 +69,7 @@ class Track(Base):
     last_updated = Column(DateTime)
     size = Column(Integer)
     mimetype = Column(String(50))
-    album_name = association_proxy('album','name')
+    album_name = association_proxy('album', 'name')
     
     @hybrid_property
     def artist_name(self):
@@ -91,8 +88,8 @@ class Track(Base):
         return 'music/%d' % self.id
         
     @url.expression
-    def url(cls):
-        return column('music/', String).concat(cls.id)
+    def url(self):
+        return column('music/', String).concat(self.id)
     
     def _mimetypeandsize(self, path):
         self.size = os.path.getsize(path)
@@ -147,6 +144,7 @@ class Track(Base):
             'url': self.url()
         }
 
+
 class Artist(Base):
     __tablename__ = "artist"
     
@@ -172,6 +170,7 @@ class Artist(Base):
             'name': self.name,
             'albums': [x._asdict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
         }
+
 
 class Album(Base):
     __tablename__ = "album"
@@ -208,6 +207,7 @@ class Album(Base):
             'tracks': [x._asdict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
         }
 
+
 class Genre(Base):
     __tablename__ = "genre"
     
@@ -237,6 +237,7 @@ def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254
             default = 0
         elif mytype == 'float':
             default = 0.0
+
     if tag is None or tag == 'None':
         return default if allow_none is False else None
 
@@ -316,19 +317,19 @@ class Context:
         if lgenre in self.genres:
             ge = self.genres[lgenre]
         else:
-            ge = Genre(name = genre)
+            ge = Genre(name=genre)
             self.genres[lgenre] = ge
         return ge
     
     def get_albums_without_cover(self):
-        return self.session.query(Album).filter(Album.albumart == None).all()
+        return self.session.query(Album).filter(Album.albumart is None).all()
     
     def fetch_album(self, artist, album, year):
         artistclean = artist.strip().lower()
         if artistclean in self.artists:
             ar = self.artists[artistclean]
         else:
-            ar = Artist(name = artist)
+            ar = Artist(name=artist)
             self.artists[artistclean] = ar
             self.session.add(ar)
         self.session.enable_relationship_loading(ar)
@@ -336,7 +337,7 @@ class Context:
         if album in albums:
             return albums[album]
         else:
-            al = Album(name = album, artist = ar, year = year)
+            al = Album(name=album, artist=ar, year=year)
             self.session.add(al)
             return al
     
