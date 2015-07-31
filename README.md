@@ -4,7 +4,7 @@ It also implements a piece of subsonic api which allows subsonic client apps to 
 
 ![Webmusic screenshot](https://github.com/magne4000/magne4000.github.com/raw/master/images/festival.screen1.jpg)
 
-[Live demo !](http://getonmyhor.se:3000/)
+[Live demo !](http://getonmyhor.se/festivaldemo/)
 
 ### Dependencies (ubuntu)
 You will need at least Python 3.4
