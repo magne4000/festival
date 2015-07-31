@@ -6,6 +6,7 @@ from xml.dom.minidom import Text
 
 DEFAULT_VERSION = '1.10.1'
 
+
 def dict2xml(d, root_node=None):
     wrap = False if None == root_node or isinstance(d, list) else True
     root = 'objects' if None == root_node else root_node
@@ -43,6 +44,7 @@ def dict2xml(d, root_node=None):
 
     return xml
 
+
 def clean(d):
     for key, value in d.items():
         if isinstance(value, dict):
@@ -54,6 +56,7 @@ def clean(d):
                 d[key] = [clean(item) if isinstance(item, dict) else item for item in value]
     return d
 
+
 def jsonresponse(resp, error=False, version=DEFAULT_VERSION):
     resp = clean(resp)
     resp.update({
@@ -63,8 +66,10 @@ def jsonresponse(resp, error=False, version=DEFAULT_VERSION):
     })
     return jsonify({'subsonic-response': resp})
 
+
 def jsonpresponse(resp, callback, error=False, version=DEFAULT_VERSION):
     return "{}({})".format(callback, jsonresponse(resp, error, version))
+
 
 def xmlresponse(resp, error=False, version=DEFAULT_VERSION):
     resp.update({
@@ -76,6 +81,7 @@ def xmlresponse(resp, error=False, version=DEFAULT_VERSION):
     output = dict2xml(resp, "subsonic-response")
 
     return Response("{}{}".format('<?xml version="1.0" encoding="UTF-8"?>', output), content_type='text/xml; charset=utf-8')
+
 
 @app.before_request
 def subsonicify():
@@ -102,6 +108,7 @@ def subsonicify():
 
     request.error_formatter = lambda code, msg: request.formatter({'error': {'code': code, 'message': msg}}, error=True)
 
+
 @app.after_request
 def set_content_type(response):
     if not request.path.endswith('.view'):
@@ -112,6 +119,7 @@ def set_content_type(response):
         response.headers['content-type'] = 'application/json' if f in ['jsonp', 'json'] else 'text/xml'
 
     return response
+
 
 @app.errorhandler(404)
 def not_found(error):

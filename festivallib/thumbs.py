@@ -6,6 +6,7 @@ from .data import Data
 
 logger = logging.getLogger('thumbs')
 
+
 class Thumb(Data):
 
     NAME = 'thumbs'
