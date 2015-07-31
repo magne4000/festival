@@ -120,7 +120,7 @@ def countalbums(ffilter=None):
         if ffilter is not None:
             query = ffilter(query)
         return query.count()
-        
+
 
 def listtracksbyalbums(ffilter=None, skip=None, limit=None):
     with session_scope() as session:
@@ -183,16 +183,16 @@ if __name__ == "__main__":
     print(listartists())
     print(listartists(skip=10, limit=20))
     print(listartists(lambda query: query.filter(Artist.name.contains('shall'))))
-    
+
     print(listalbums())
     print(listalbums(skip=10, limit=20))
     print(listalbums(lambda query: query.filter(Album.name.contains('break'))))
-    
+
     artists = listalbumsbyartists()
     print(artists)
     for artist in artists:
         print(artist.albums)
-    
+
     artists = search('beyond', artists=True, albums=True, tracks=True)
     for artist in artists:
         print(artist)
@@ -202,5 +202,5 @@ if __name__ == "__main__":
                 if 'tracks' in album.__dict__:
                     print(album.tracks)
     """
-    
+
     print([x._asdict() for x in listtracks(skip=10, limit=20)])

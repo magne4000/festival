@@ -322,7 +322,7 @@ class Context:
         return ge
     
     def get_albums_without_cover(self):
-        return self.session.query(Album).filter(Album.albumart is None).all()
+        return self.session.query(Album).filter(Album.albumart == None).all()
     
     def fetch_album(self, artist, album, year):
         artistclean = artist.strip().lower()
