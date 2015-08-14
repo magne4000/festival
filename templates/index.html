@@ -113,7 +113,7 @@
         <div ng-click="show = !show" class="handle"><i class="fa fa-angle-double-left"></i>
         </div>
         <div class="tracks">
-          <div ng-repeat="track in tracks" ng-class="{active: currentTrack == track, failed: track.failed}" class="track"><span ng-if="::track.trackno" class="trackno">{[::track.trackno]}</span><span title="Artist: {[::track.artist]}\nAlbum: {[::track.album]}" class="name">{[::track.name]}</span><span class="controls"><span title="Play" ng-click="playOrPause(track)" class="control"><i ng-class="{'fa-pause': currentTrack == track && playing, 'fa-play': currentTrack != track || !playing}" class="fa"></i></span><span title="Remove" ng-click="remove(track)" class="control"><i class="fa fa-remove"></i></span></span><span class="duration">{[::track.duration ? (track.duration | duration) : '-']}</span>
+          <div ng-repeat="track in tracks" ng-class="{active: currentTrack == track, failed: track.failed}" class="track"><span ng-if="::track.trackno" class="trackno">{[::track.trackno]}</span><span title="Artist: {[::track.artist_name]}&#010;Album: {[::track.album_name]}" class="name">{[::track.name]}</span><span class="controls"><span title="Play" ng-click="playOrPause(track)" class="control"><i ng-class="{'fa-pause': currentTrack == track && playing, 'fa-play': currentTrack != track || !playing}" class="fa"></i></span><span title="Remove" ng-click="remove(track)" class="control"><i class="fa fa-remove"></i></span></span><span class="duration">{[::track.duration ? (track.duration | duration) : '-']}</span>
           </div>
         </div>
       </div>
