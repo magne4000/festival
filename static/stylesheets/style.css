@@ -355,6 +355,7 @@ main .queue .handle {
   display: flex;
   background-color: #555555;
   transition: background-color 0.3s;
+
   color: white;
 }
 main .queue .handle:hover {
@@ -477,4 +478,10 @@ main .queue.show .tracks {
   20% {
     transform: scaleY(1);
   }
+}
+
+.ui-effects-transfer {
+  border: 1px dotted #666;
+  background: #ddd;
+  opacity: 0.4;
 }

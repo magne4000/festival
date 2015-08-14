@@ -4,7 +4,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     lazyImgConfigProvider.setOptions({
         container: angular.element(scrollable)
     });
-    
+
     $locationProvider.html5Mode({
         enabled: true,
         requireBase: false
@@ -18,28 +18,28 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     var head = null;
     var tail = null;
     var promise = null;
-    
+
     function emitChange() {
         clearTimeout(promise);
         promise = setTimeout(function(){
             $rootScope.$emit('tracks');
         }, 100);
     }
-    
+
     function getHead() {
         return head;
     }
-    
+
     function getTail() {
         return tail;
     }
-    
+
     function empty() {
         head = null;
         tail = null;
         emitChange();
     }
-    
+
     function add(track) {
         track = angular.copy(track);
         track.prev = null; // init
@@ -55,7 +55,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         emitChange();
         return track;
     }
-    
+
     function move(track, after) {
         var oldHead = head;
         if (track.prev !== null) {
@@ -66,7 +66,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         if (track.next !== null) {
             track.next.prev = track.prev;
         }
-        
+
         if (after) {
             track.prev = after;
             track.next = after.next;
@@ -84,7 +84,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         }
         emitChange();
     }
-    
+
     function remove(track) {
         if (track.next !== null) {
             track.next.prev = track.prev;
@@ -98,7 +98,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         }
         emitChange();
     }
-    
+
     function get(ind) {
         ind = parseInt(ind, 10);
         if (ind < 0) ind = 0;
@@ -110,7 +110,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         }
         return track;
     }
-    
+
     function size() {
         if (head === null) return 0;
         else {
@@ -122,7 +122,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
             return count;
         }
     }
-    
+
     return {
         getHead: getHead,
         getTail: getTail,
@@ -135,7 +135,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     };
 }])
 .factory('$ajax', ['$http', function($http){
-    
+
     function filterFactory(filter, skip, limit) {
         filter = filter || {};
         var ret = {filters: filter};
@@ -143,25 +143,25 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         if (limit) ret.limit = limit;
         return ret;
     }
-    
+
     function artists(filter, skip, limit) {
         return $http.get('ajax/list/artists', {params: filterFactory(filter, skip, limit)});
     }
-    
+
     function albums(filter, skip, limit) {
         return $http.get('ajax/list/albums', {params: filterFactory(filter, skip, limit)});
     }
-    
+
     function albumsbyartists(filter, skip, limit) {
         return $http.get('ajax/list/albumsbyartists', {params: filterFactory(filter, skip, limit)});
     }
-    
+
     function tracks(filter, flat) {
         var params = filterFactory(filter);
         if (typeof flat !== "undefined") params.flat = flat;
         return $http.get('ajax/list/tracks', {params: params});
     }
-    
+
     function search(term, filters, flat, skip, limit) {
         flat = !!flat;
         var params = {
@@ -173,7 +173,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         };
         return $http.get('ajax/list/search', {params: params});
     }
-    
+
     return {
         artists: artists,
         albums: albums,
@@ -202,25 +202,25 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     var _loading = false;
     var _moreToLoad = true;
     var _param = {};
-    
+
     function limit(val) {
         if (val && modes[val]) {
             modes[_current].limit = val;
         }
         return modes[_current].limit;
     }
-    
+
     function incSkip() {
         _skip += limit();
     }
-    
+
     function skip(val) {
         if (typeof val !== "undefined") {
             _skip = val;
         }
         return _skip;
     }
-    
+
     function current(val, param) {
         if (val && modes[val]) {
             _current = val;
@@ -230,13 +230,13 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         }
         return _current;
     }
-    
+
     function setCallback(mode, cb) {
         if (mode && modes[mode]) {
             modes[mode].callback = cb;
         }
     }
-    
+
     function call() {
         if (!_loading && _moreToLoad) {
             _loading = true;
@@ -247,7 +247,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
             });
         }
     }
-    
+
     return {
         limit: limit,
         skip: skip,
@@ -257,11 +257,11 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     };
 }])
 .factory('$utils', [function(){
-    
+
     function fixelement(element, type) {
         var typeofelt = typeof element;
         type = type || "string";
-        
+
         if (typeofelt !== type) {
             if (type === "number") {
                 element = Number.MAX_VALUE;
@@ -269,14 +269,14 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
                 element = 'unknown';
             }
         }
-        
+
         if (type === "string") {
             element = element.toLowerCase();
         }
-        
+
         return element;
     }
-    
+
     function binaryIndexOf(array, key, searchElement, type, reverse) {
         var minIndex = 0;
         var maxIndex = array.length - 1;
@@ -284,7 +284,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         var currentElement;
         var compare;
         type = type || "string";
-        
+
         searchElement = fixelement(searchElement, type);
         while (minIndex <= maxIndex) {
             currentIndex = (minIndex + maxIndex) / 2 | 0;
@@ -308,7 +308,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         }
         return -1;
     }
-    
+
     function extend(target, source) {
         var i, j, resArtist, resAlbum;
         for (i=0; i<source.length; i++) {
@@ -327,10 +327,16 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
             }
         }
     }
-    
+
     return {
         extend: extend
     };
 }])
 .run([function(){
+    $( document ).on("click", ".artist>.controls>.control", function(evt) {
+        $(evt.target).parents('.artist').effect( "transfer", { to: $( ".handle" ) });
+    });
+    $( document ).on("click", ".album>.controls>.control", function(evt) {
+        $(evt.target).parents('.album').effect( "transfer", { to: $( ".handle" ) });
+    });
 }]);
