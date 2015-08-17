@@ -1,5 +1,5 @@
 # Festival 2.0
-Festival 2.0 is an HTML5 web application that can play music files.  
+Festival 2.0 is an HTML5 web application that can play music files.
 It also implements a piece of subsonic api which allows subsonic client apps to connect (like android apps) !
 
 ![Webmusic screenshot](https://github.com/magne4000/magne4000.github.com/raw/master/images/festival.screen1.jpg)
@@ -9,7 +9,7 @@ It also implements a piece of subsonic api which allows subsonic client apps to 
 ### Dependencies (ubuntu)
 You will need at least Python 3.4
 
-Install Flask with SQLAlchemy, and python3-imaging
+Install Flask with SQLAlchemy and python3-imaging
 ```bash
 sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-imaging
 ```
@@ -40,58 +40,61 @@ You can also launch festival.py manually for the first time, it'll create the `s
 python3 festival.py
 ```
 
-### Standalone
+### Startup
+#### Standalone
 You can launch Festival in standalone mode. Just launch the following command to do so:
 ```bash
 python3 festival.py
 ```
 Now, the webserver is running (by default on port 5000), and the scanner also runs in background.
 
-### Apache
-You can also run the webserver behing Apache (see [Flask website](http://flask.pocoo.org/docs/0.10/deploying/) for other webservers)
-
-Install mod-wsgi:
+#### Web Server
+In order to run behind a web server, Festival needs to be launched through uWSGI
 ```bash
-sudo apt-get install libapache2-mod-wsgi-py3
+sudo apt-get install uwsgi uwsgi-plugin-python3
 ```
 
-Copy `wsgi/festival.wsgi` somewhere accessible by Apache, edit it and replace:
-```python
-festival_home='/path/to/festival'
+To start uwsgi process manually
+```bash
+cd /path/to/festival
+uwsgi --ini festival.uwsgi
 ```
-by the path where you cloned festival.
+
+In order to start it automatically, refer to [startup scripts](#startup-scripts)
+
+##### Apache
+Install mod-proxy-uwsgi:
+```bash
+sudo apt-get install libapache2-mod-proxy-uwsgi
+```
 
 Then, add this into one Apache VirtualHost
 ```apache
-WSGIDaemonProcess festival user={user} group={user}
-WSGIScriptAlias /festival {path/to/festival}/wsgi/festival.wsgi process-group=festival
-<Directory {path/to/festival}>
-    WSGIProcessGroup festival
-    WSGIApplicationGroup festival
-    Order deny,allow
-    Allow from all
-</Directory>
-```
-and replace everything between `{}` by their real values.
-
-#### Scanner
-When running through Apache, scanner process needs to be launched separatly.  
-For this you can either launch it manually:
-```bash
-python3 scanner.py
+ProxyPass /festival uwsgi://127.0.0.1:15500/
 ```
 
-Or you can create an `init.d`/`systemd` script:
-
-##### init.d
-```bash
-sudo cp wsgi/festival.init.d /etc/init.d/festival
+##### nginx
+Add those line into one of your `server { ... }` block
+```nginx
+location = /festival { rewrite ^ /festival/; }
+location /festival {
+  include uwsgi_params;
+  uwsgi_param SCRIPT_NAME /festival;
+  uwsgi_modifier1 30;
+  uwsgi_pass localhost:15500;
+}
 ```
-Then edit `/etc/init.d/festival` and replace values between `{}`.
 
-##### systemd
+#### Startup scripts
+##### Upstart
 ```bash
-sudo cp wsgi/festival.systemd /etc/systemd/system/festival.service
+sudo cp scripts/festival.upstart.conf /etc/init/festival.conf
+```
+Then edit `/etc/init/festival.conf` and replace values between `{}`.
+
+##### Systemd
+```bash
+sudo cp scripts/festival.systemd.conf /etc/systemd/system/festival.service
 ```
 Then edit `/etc/systemd/system/festival.service` and replace values between `{}`.
 

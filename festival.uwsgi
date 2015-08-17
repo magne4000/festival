@@ -1,0 +1,9 @@
+[uwsgi]
+master = true
+uwsgi-socket = 127.0.0.1:15500
+threads = 2
+processes = 4
+callable = app
+wsgi-file = festival.py
+attach-daemon = ./scanner.py
+plugins = python3
