@@ -78,10 +78,11 @@ Add those line into one of your `server { ... }` block
 ```nginx
 location = /festival { rewrite ^ /festival/; }
 location /festival {
+  rewrite /festival/(.*) /$1 break;
   include uwsgi_params;
   uwsgi_param SCRIPT_NAME /festival;
   uwsgi_modifier1 30;
-  uwsgi_pass localhost:15500;
+  uwsgi_pass 127.0.0.1:15500;
 }
 ```
 
