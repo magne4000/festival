@@ -12,7 +12,7 @@ logger = logging.getLogger('coverurl')
 
 class CoverURL:
     SEARCH_URL = "https://ws.audioscrobbler.com/2.0/?"
-    
+
     def __init__(self, api_key):
         self.params = {
             'format': 'json',
@@ -21,15 +21,15 @@ class CoverURL:
             'artist': '',
             'album': ''
         }
-    
+
     @staticmethod
     def _large(jsonobj):
         if 'album' in jsonobj and 'image' in jsonobj['album']:
             for elt in jsonobj['album']['image']:
                 if elt['size'] == 'large':
-                    return elt['#text'] if elt['#text'] != '' else None
+                    return elt['#text'] if '#text' in elt and elt['#text'] != '' else None
         return None
-    
+
     def search(self, artist, album):
         self.params['artist'] = artist
         self.params['album'] = album
@@ -41,7 +41,7 @@ class CoverURL:
         except:
             logger.exception('Error while searching album cover')
             return None
-    
+
     def download(self, artist, album, callback):
         url = self.search(artist, album)
         if url is not None:
