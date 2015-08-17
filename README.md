@@ -76,7 +76,7 @@ ProxyPass /festival uwsgi://127.0.0.1:15500/
 ##### nginx
 Add those line into one of your `server { ... }` block
 ```nginx
-location = /festival { rewrite ^ /festival/; }
+rewrite ^[/]festival$ /festival/ permanent;
 location /festival {
   rewrite /festival/(.*) /$1 break;
   include uwsgi_params;
