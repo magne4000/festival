@@ -276,6 +276,7 @@ main .container .album > h4 .year {
   font-size: 0.8em;
   color: #666;
   text-shadow: none;
+  margin-left: 4px;
 }
 main .container .artist > h3:hover,
 main .container .album > h4:hover {
