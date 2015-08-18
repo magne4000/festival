@@ -86,7 +86,7 @@
         </div>
         <div class="volume">
           <div class="slider">
-            <input type="range" ng-model-options="{ getterSetter: true }">
+            <input type="range" min="0" max="100" ng-model="volume" ng-model-options="{ getterSetter: true }">
             <div ng-progress="volumeval" ng-progress-duration="100" class="progress"></div>
           </div><a href="#" ng-click="toggleVolume()"><i ng-class="{'fa-volume-up': volumeval >= 35, 'fa-volume-down': volumeval < 35 && volumeval > 0, 'fa-volume-off': volumeval == 0}" class="fa"></i></a>
         </div>
