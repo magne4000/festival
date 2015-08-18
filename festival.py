@@ -9,7 +9,6 @@ from app import app
 from scanner import Scanner
 import json
 
-
 @app.route("/")
 def hello():
     return render_template('index.html')
@@ -21,7 +20,9 @@ def music(sid):
     if tr is None or tr.path is None:
         abort(404)
     else:
-        return send_file(tr.path, conditional=True)
+        resp = send_file(tr.path, conditional=True, as_attachment=True)
+        resp.headers['Accept-Ranges'] = 'bytes'
+        return resp
 
 
 @app.route("/download/<artist>")

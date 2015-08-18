@@ -7,7 +7,7 @@ angular.module('festival')
     var progress = 0;
     var lastvolume = 100;
     var usingAdd = false;
-    
+
     $scope.currentTrack = null;
     $scope.currentSound = null;
     $scope.shuffle = false;
@@ -16,13 +16,13 @@ angular.module('festival')
     $scope.duration = 0;
     $scope.playing = false;
     $scope.volumeval = 100;
-    
+
     function next(bypassLoop) {
         if ($scope.currentTrack) {
             if (!bypassLoop && $scope.loop === 2) {
                 return $scope.currentTrack;
             }
-            
+
             if ($scope.shuffle){
                 if (indicesToBePlayed.length === 0){
                     if ($scope.loop === 1) {
@@ -42,16 +42,16 @@ angular.module('festival')
                     return $tracks.get(ind);
                 }
             }
-            
+
             if (!$scope.currentTrack.next && $scope.loop === 1) {
                 return $tracks.getHead();
             }
-            
+
             return $scope.currentTrack.next;
         }
         return null;
     }
-    
+
     function prev() {
         if ($scope.currentTrack) {
             if ($scope.shuffle){
@@ -62,33 +62,33 @@ angular.module('festival')
                 currentIndice = indicesToBePlayed[indicesToBePlayed.length-1];
                 return $tracks.get(currentIndice);
             }
-            
+
             if ($scope.currentTrack.prev === null && $scope.loop === 1) {
                 return $tracks.getTail();
             }
-            
+
             return $scope.currentTrack.prev;
         }
         return null;
     }
-    
+
     function stop() {
         if ($scope.currentSound) {
             $scope.currentSound.unload();
             $scope.currentSound.stop();
         }
     }
-    
+
     function play() {
         if ($scope.currentSound) {
             $scope.currentSound.play();
         }
     }
-    
+
     $scope.showind = function() {
         return arguments[arguments[0]+1];
     };
-    
+
     $scope.play = function(track, tracks) {
         stop();
         if (!track) { // 0 param, Currently loaded track
@@ -99,7 +99,7 @@ angular.module('festival')
             $scope.add(tracks, true, track.id);
         }
     };
-    
+
     $scope.next = function(autoPlay, bypassLoop) {
         var nextTrack = next(bypassLoop);
         stop();
@@ -107,7 +107,7 @@ angular.module('festival')
             $scope.load(nextTrack, autoPlay);
         }
     };
-    
+
     $scope.prev = function(autoPlay) {
         var prevTrack = prev();
         stop();
@@ -115,7 +115,7 @@ angular.module('festival')
             $scope.load(prevTrack, autoPlay);
         }
     };
-    
+
     $scope.add = function(track, autoPlay, idToPlay) {
         /**
          * @track can be a single track object, or a list of track objects
@@ -163,13 +163,13 @@ angular.module('festival')
             usingAdd = false;
         }
     };
-    
+
     $scope.remove = function(track) {
         if (track) {
             $tracks.remove(track);
         }
     };
-    
+
     $scope.load = function(track, autoPlay) {
         if (track){
             clearTimeout(timer);
@@ -255,7 +255,7 @@ angular.module('festival')
             }, 10);
         }
     };
-    
+
     $scope.togglePlayPause = function() {
         $timeout(function() {
             if ($scope.currentSound) {
@@ -263,7 +263,7 @@ angular.module('festival')
             }
         }, 0);
     };
-    
+
     $scope.playOrPause = function(track, tracks) {
         $timeout(function() {
             console.log(track);
@@ -277,24 +277,24 @@ angular.module('festival')
             }
         }, 0);
     };
-    
+
     $scope.toggleShuffle = function() {
         $scope.shuffle = !$scope.shuffle;
         //clear already played tracks list
         indicesAlreadyPlayed = [];
     };
-    
+
     $scope.circleLoop = function() {
         $scope.loop = ($scope.loop + 1) % 3;
     };
-    
+
     $scope.empty = function() {
         indicesAlreadyPlayed = [];
         indicesToBePlayed = [];
         currentIndice = 0;
         $tracks.empty();
     };
-    
+
     $scope.progress = function(val) {
         if (val && $scope.currentSound) {
             $timeout(function() {
@@ -303,7 +303,7 @@ angular.module('festival')
         }
         return progress;
     };
-    
+
     $scope.volume = function(val) {
         if (typeof val === "string") {
             val = parseInt(val, 10);
@@ -318,7 +318,7 @@ angular.module('festival')
         }
         return $scope.volumeval;
     };
-    
+
     $scope.toggleVolume = function() {
         if ($scope.volumeval === 0) {
             $scope.volume(lastvolume);
@@ -327,7 +327,7 @@ angular.module('festival')
             $scope.volume(0);
         }
     };
-    
+
     $(document).on('keydown', null, 'space', function(e) {
         e.preventDefault();
         $scope.togglePlayPause();
@@ -344,7 +344,7 @@ angular.module('festival')
 .controller('ListController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout) {
     $rootScope.artists = [];
     $rootScope.loading = false;
-    
+
     function loadArtists(filter, skip, limit, next) {
         $rootScope.loading = true;
         $ajax.artists(filter, skip, limit).success(function(data, status) {
@@ -356,7 +356,7 @@ angular.module('festival')
             next(false);
         });
     }
-    
+
     function loadAlbumsByArtists(filter, skip, limit, next) {
         $rootScope.loading = true;
         $ajax.albumsbyartists(filter, skip, limit).success(function(data, status) {
@@ -368,15 +368,15 @@ angular.module('festival')
             next(false);
         });
     }
-    
+
     $displayMode.setCallback('artists', loadArtists);
     $displayMode.setCallback('albumsbyartists', loadAlbumsByArtists);
     $displayMode.current('artists', {});
-    
+
     $scope.pageArtists = function() {
         $displayMode.call();
     };
-    
+
     $scope.loadAlbums = function(artist) {
         if (artist.albums && artist.albums.length > 0) {
             artist.expanded = !artist.expanded;
@@ -392,7 +392,7 @@ angular.module('festival')
             }
         });
     };
-    
+
     $scope.loadAlbumsAndTracks = function(artist, callback) {
         if (!artist.everythingLoaded) {
             var filter = {artist: artist.id};
@@ -409,7 +409,7 @@ angular.module('festival')
             }, 0);
         }
     };
-    
+
     $scope.loadAlbumsAndTracksAndAdd = function(artist, autoplay) {
         $scope.loadAlbumsAndTracks(artist, function(artist1) {
             if (artist1.albums) {
@@ -421,7 +421,7 @@ angular.module('festival')
             }
         });
     };
-    
+
     $scope.loadTracks = function(artist, album, callback) {
         if (album.tracks && album.tracks.length > 0) {
             if (typeof callback === "function") {
@@ -437,13 +437,13 @@ angular.module('festival')
             });
         }
     };
-    
+
     $scope.loadTracksAndAdd = function(artist, album, autoplay) {
         $scope.loadTracks(artist, album, function(artist1, album1) {
             $scope.add(album1.tracks, autoplay);
         });
     };
-    
+
     $scope.toggleTracks = function(artist, album) {
         if (typeof album.trackshidden === "undefined") {
             album.trackshidden = (album.tracks && album.tracks.length > 0);
@@ -456,7 +456,7 @@ angular.module('festival')
 .controller('QueueController', ['$scope', '$rootScope', '$tracks', function($scope, $rootScope, $tracks) {
     $scope.tracks = [];
     $scope.show = false;
-    
+
     function computeTracks() {
         $scope.$apply(function(){
             var head = $tracks.getHead();
@@ -471,7 +471,7 @@ angular.module('festival')
             }
         });
     }
-    
+
     $rootScope.$on('tracks', computeTracks);
 }])
 .controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', '$location', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout, $location) {
@@ -483,7 +483,7 @@ angular.module('festival')
     };
     var promise = null;
     var lastValue = "";
-    
+
     function search(param, skip, limit, next) {
         $rootScope.loading = true;
         $ajax.search(param, $scope.checkboxFilter, false, skip, limit).success(function(data, status) {
@@ -498,9 +498,9 @@ angular.module('festival')
             next(false);
         });
     }
-    
+
     $displayMode.setCallback('search', search);
-    
+
     $scope.$watch('checkboxFilter', function(newValue, oldValue) {
         if (!angular.equals(newValue, oldValue)) {
             $location.search('sar', newValue.artists);
@@ -510,7 +510,7 @@ angular.module('festival')
             promise = $timeout($scope.searchnow, 700);
         }
     }, true);
-    
+
     $scope.search = function() {
         if (lastValue !== $scope.value) {
             lastValue = $scope.value;
@@ -518,7 +518,7 @@ angular.module('festival')
             promise = $timeout($scope.searchnow, 400);
         }
     };
-    
+
     $scope.searchnow = function() {
         $rootScope.artists = [];
         if ($scope.value.length > 0) {
@@ -529,7 +529,7 @@ angular.module('festival')
         $location.search('s', $scope.value);
         $displayMode.call();
     };
-    
+
     var unbind = $scope.$on('$locationChangeSuccess', function() {
         unbind();
         var triggersearchnow = true;
