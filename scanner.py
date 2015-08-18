@@ -7,24 +7,12 @@ import logging
 import time
 from threading import Thread, Timer
 from datetime import datetime
-from festivallib.model import Context, Track, session_scope
+from festivallib.model import Context, Track, session_scope, coroutine
 from festivallib import coverurl, thumbs
 from libs.mediafile import MediaFile, UnreadableFileError
 from app import app
 
 logger = logging.getLogger('scanner')
-
-
-def filter_music_file(path):
-    return os.path.splitext(path)[1].lower() in app.config['SCANNER_EXTS']
-
-
-def coroutine(func):
-    def wrapper(*arg, **kwargs):
-        generator = func(*arg, **kwargs)
-        next(generator)
-        return generator
-    return wrapper
 
 
 class CoverThread(Thread):
@@ -70,7 +58,6 @@ class Scanner(Thread):
         self.infinite = infinite
 
     def init_tracks(self):
-        self.tracks = {}
         with session_scope() as session:
             self.tracks = {x.path: x.last_updated for x in session.query(Track.path, Track.last_updated).all()}
 
@@ -134,6 +121,10 @@ class Scanner(Thread):
         except GeneratorExit:
             self.tracks = {}
 
+    @staticmethod
+    def filter_music_file(path):
+        return os.path.splitext(path)[1].lower() in app.config['SCANNER_EXTS']
+
     def _run(self):
         logger.debug('New scan started')
         self.walk()
@@ -154,7 +145,7 @@ class Scanner(Thread):
         h = self.handle()
         for self.root, _, files in os.walk(self.root, topdown=False):
             for name in files:
-                if filter_music_file(name):
+                if self.filter_music_file(name):
                     h.send(os.path.join(self.root, name))
         self.purgeold()
 
