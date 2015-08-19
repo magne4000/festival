@@ -50,9 +50,7 @@ class CoverURL:
                     return callback(f)
             except:
                 logger.exception('Error while fetching album cover')
-                return callback(None)
-        else:
-            return callback(None)
+        return callback(None)
 
 
 if __name__ == "__main__":
