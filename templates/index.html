@@ -135,7 +135,7 @@
                         </ul>
                         <span>{[track.trackno]}</span>
                       </span>
-                      <span class="name">{[track.name]}</span>
+                      <span title="Track: {[::track.name]}" class="name">{[track.name]}</span>
                       <span class="controls">
                         <span title="Play" ng-click="playOrPause(track, album.tracks)" class="control">
                           <i ng-class="{'fa-pause': currentTrack.id == track.id && playing, 'fa-play': currentTrack.id != track.id || !playing}" class="fa"></i>
@@ -168,7 +168,7 @@
               </ul>
               <span>{[track.trackno]}</span>
             </span>
-            <span title="Artist: {[::track.artist_name]}&#010;Album: {[::track.album_name]}" class="name">{[::track.name]}</span>
+            <span title="Track: {[::track.name]}&#010;Album: {[::track.album_name]}&#010;Artist: {[::track.artist_name]}" class="name">{[::track.name]}</span>
             <span class="controls">
               <span title="Play" ng-click="playOrPause(track)" class="control">
                 <i ng-class="{'fa-pause': currentTrack == track && playing, 'fa-play': currentTrack != track || !playing}" class="fa"></i>
