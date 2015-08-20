@@ -463,6 +463,7 @@ main .queue.show .tracks {
   flex: 1;
   text-overflow: ellipsis;
   overflow: hidden;
+  white-space: nowrap;
 }
 .track .duration {
   min-width: 36px;
