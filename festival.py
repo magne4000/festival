@@ -35,6 +35,11 @@ def downloadaa(sartist, salbum):
     pass
 
 
+@app.route("/download/<artist>/<album>/<track>")
+def downloadaat(sartist, salbum, track):
+    pass
+
+
 @app.route("/ajax/list/tracks")
 def tracks():
     skip = request.args.get('skip', None, type=int)

@@ -124,8 +124,17 @@
                 </div>
                 <div class="album-container"><img ng-click="toggleTracks(artist, album)" lazy-img="albumart/{[::album.id]}" alt="{[::album.name]}" src="static/images/nocover.png">
                   <div class="tracks">
-                    <div ng-repeat="track in album.tracks track by $index" ng-class="{active: currentTrack.id == track.id}" class="track">
-                      <span ng-if="track.trackno" class="trackno">{[track.trackno]}</span>
+                    <div ng-repeat="track in album.tracks track by $index" ng-class="{active: currentTrack.id == track.id, playing: currentTrack.id == track.id && playing}" class="track">
+                      <span ng-if="::track.trackno" class="trackno">
+                        <ul class="audioeffect">
+                          <li></li>
+                          <li></li>
+                          <li></li>
+                          <li></li>
+                          <li></li>
+                        </ul>
+                        <span>{[track.trackno]}</span>
+                      </span>
                       <span class="name">{[track.name]}</span>
                       <span class="controls">
                         <span title="Play" ng-click="playOrPause(track, album.tracks)" class="control">
@@ -148,8 +157,17 @@
         <div ng-click="show = !show" class="handle"><i class="fa fa-angle-double-left"></i>
         </div>
         <div class="tracks">
-          <div ng-repeat="track in tracks" ng-class="{active: currentTrack == track, failed: track.failed}" class="track">
-            <span ng-if="::track.trackno" class="trackno">{[::track.trackno]}</span>
+          <div ng-repeat="track in tracks" ng-class="{active: currentTrack == track, failed: track.failed, playing: currentTrack.id == track.id && playing}" class="track">
+            <span ng-if="::track.trackno" class="trackno">
+              <ul class="audioeffect">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+              </ul>
+              <span>{[track.trackno]}</span>
+            </span>
             <span title="Artist: {[::track.artist_name]}&#010;Album: {[::track.album_name]}" class="name">{[::track.name]}</span>
             <span class="controls">
               <span title="Play" ng-click="playOrPause(track)" class="control">
