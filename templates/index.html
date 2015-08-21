@@ -29,8 +29,16 @@
     <title>{[currentTrack.name ? currentTrack.name + " - " + currentTrack.artist_name : "{{config.TITLE}}"]}</title>
   </head>
   <body>
+    <noscript>
+      <div>
+        <span>
+          Your browser does not support or blocks Javascript execution.<br>
+          In order the be able to use this application, you must use a recent browser (like <a href="https://www.mozilla.org/en/firefox/new/" target="_blank">Firefox</a>), or enable Javascript in your current browser.
+        </span>
+      </div>
+    </noscript>
     <header>
-      <div class="player">
+      <div class="player ng-cloak">
         <a title="Previous track" href="#" ng-click="prev(true)" class="control prev">
           <i class="fa fa-backward fa-2x"></i>
         </a>
@@ -67,7 +75,7 @@
           <i class="fa fa-random fa-2x"></i>
         </a>
       </div>
-      <div ng-controller="ToolbarController" class="toolbar">
+      <div ng-controller="ToolbarController" class="toolbar ng-cloak">
         <div class="search">
           <form ng-submit="searchnow()">
             <label for="search" ng-click="searchnow()"><i class="fa fa-search"></i>
@@ -92,7 +100,7 @@
         </div>
       </div>
     </header>
-    <main>
+    <main class="ng-cloak">
       <div id="container" ng-controller="ListController" class="container">
         <div ng-if="loading" class="spinner">
           <div class="rect1"></div>

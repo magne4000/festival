@@ -12,7 +12,9 @@
   font-weight: bold;
   font-style: normal;
 }
-
+.ng-cloak {
+  display: none !important;
+}
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
@@ -24,6 +26,21 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
+}
+noscript > div {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  padding-top: 10%;
+}
+noscript > div > span {
+  display: inline-block;
+  padding: 10px;
+  background: #FFDD9F;
+  border: 1px solid orange;
+}
+noscript a {
+  color: #168DFF;
 }
 input[type=text] {
   padding: 0.3125em;
