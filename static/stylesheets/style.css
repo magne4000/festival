@@ -27,6 +27,31 @@ body {
   width: 100%;
   overflow: hidden;
 }
+button {
+  padding: 4px 6px;
+  font-size: 14px;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background-color 0.1s ease-in-out;
+  color: whitesmoke;
+}
+button:not([disabled]):hover {
+  background-color: rgba(0, 0, 0, 0.26);
+}
+button[disabled] {
+  color : rgba(0, 0, 0, 0.26);
+  background-color: transparent;
+}
+button:active, button.active {
+  background: #239bd6 !important;
+}
+button.tab {
+  height: 33px;
+}
 noscript > div {
   height: 100%;
   width: 100%;
@@ -161,15 +186,23 @@ header .slider input {
   z-index: 2;
 }
 header .toolbar {
-  height: calc(34px);
+  height: 34px;
   box-sizing: border-box;
-  padding: 3px 5px;
+  padding: 3px 5px 0 5px;
   background-color: #555555;
   border-color: #121212;
 }
 header .toolbar .search,
 header .toolbar .volume {
   display: inline-block;
+}
+header .toolbar .search {
+  margin-right: 10px;
+  width: 472px;
+  transition: margin 0.4s ease-in-out;
+}
+header .toolbar .search.hide {
+  margin-left: -482px;
 }
 header .toolbar .search .filters {
   margin-left: 10px;
@@ -243,13 +276,28 @@ header .toolbar .search .filters .off {
 header .toolbar .search .filters .off:hover {
   opacity: 0.8;
 }
+header .toolbar .leftseparated {
+  padding-top: 4px;
+  padding-left: 6px;
+  border-left: 1px solid #999;
+}
+header .toolbar .search, header .toolbar .special-actions {
+  float: left;
+}
+header .toolbar .special-actions {
+  margin-right: 1px;
+  position: relative;
+  width: auto;
+}
+header .toolbar .special-actions button {
+  margin: -2px 0 2px 0;
+}
 header .toolbar .volume {
   float: right;
   padding-top: 4px;
   padding-left: 6px;
   display: flex;
-  height: calc(24px);
-  border-left: 1px solid #999;
+  height: 24px;
 }
 header .toolbar .volume .slider {
   width: 100px;
@@ -406,7 +454,7 @@ main .queue.show .handle .fa {
 main .queue .tracks {
   display: inline-block;
   width: 300px;
-  margin-right: calc(-300px);
+  margin-right: -300px;
   transition: margin-right 0.3s;
   height: 100%;
   line-height: 17px;
@@ -592,7 +640,7 @@ main .queue.show .tracks {
 }
 .track.active .audioeffect li {
   display: block;
-  width: calc(100%/5);
+  width: 20%;
   height: 100%;
   background: #239bd6;
   margin: 0;

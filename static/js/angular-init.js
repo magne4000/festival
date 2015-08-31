@@ -152,6 +152,12 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         return $http.get('ajax/list/albums', {params: filterFactory(filter, skip, limit)});
     }
 
+    function lastalbums(filter, skip, limit) {
+        var params = filterFactory(filter, skip, limit);
+        params.la = true;
+        return $http.get('ajax/list/albums', {params: params});
+    }
+
     function albumsbyartists(filter, skip, limit) {
         return $http.get('ajax/list/albumsbyartists', {params: filterFactory(filter, skip, limit)});
     }
@@ -177,6 +183,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     return {
         artists: artists,
         albums: albums,
+        lastalbums: lastalbums,
         albumsbyartists: albumsbyartists,
         tracks: tracks,
         search: search
@@ -190,6 +197,10 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         },
         albumsbyartists: {
             limit: 20,
+            callback: function(){}
+        },
+        lastalbums: {
+            limit: 100,
             callback: function(){}
         },
         search: {
@@ -309,15 +320,42 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         return -1;
     }
 
-    function extend(target, source) {
+    function basicIndexOf(array, key, searchElement, type) {
+        var currentIndex;
+        var currentElement;
+        var compare;
+        type = type || "string";
+        searchElement = fixelement(searchElement, type);
+        for (currentIndex=0; currentIndex<array.length; currentIndex++) {
+            currentElement = array[currentIndex][key];
+            currentElement = fixelement(currentElement, type);
+            if (type === "string") {
+                compare = searchElement.localeCompare(currentElement);
+            } else if (type === "number") {
+                compare = searchElement - currentElement;
+            }
+            if (compare === 0) return currentIndex;
+        }
+        return -1;
+    }
+
+    function extend(target, source, basicsearch) {
         var i, j, resArtist, resAlbum;
         for (i=0; i<source.length; i++) {
-            resArtist = binaryIndexOf(target, 'name', source[i].name);
+            if (!basicsearch) {
+                resArtist = binaryIndexOf(target, 'name', source[i].name);
+            } else {
+                resArtist = basicIndexOf(target, 'name', source[i].name);
+            }
             if (resArtist === -1) {
                 target.push(source[i]);
             } else if (source[i].albums) {
                 for (j=0; j<source[i].albums.length; j++) {
-                    resAlbum = binaryIndexOf(target[resArtist].albums, 'year', source[i].albums[j].year, "number", true);
+                    if (!basicsearch) {
+                        resAlbum = binaryIndexOf(target[resArtist].albums, 'year', source[i].albums[j].year, "number", true);
+                    } else {
+                        resAlbum = basicIndexOf(target[resArtist].albums, 'year', source[i].albums[j].year, "number");
+                    }
                     if (resAlbum === -1) {
                         target[resArtist].albums.push(source[i].albums[j]);
                     } else if (source[i].albums[j].tracks) {

@@ -76,7 +76,7 @@
         </a>
       </div>
       <div ng-controller="ToolbarController" class="toolbar ng-cloak">
-        <div class="search">
+        <div class="search" ng-class="{hide: displaymode != 'search'}">
           <form ng-submit="searchnow()">
             <label for="search" ng-click="searchnow()"><i class="fa fa-search"></i>
             </label>
@@ -92,7 +92,13 @@
                 <label for="sftracks">Tracks</label></span></span>
           </form>
         </div>
-        <div class="volume">
+        <div class="special-actions" ng-hide="displaymode == 'search'">
+          <button class="tab" title="Search" ng-click="displaymode = 'search'"><i class="fa fa-search"></i> search</button>
+        </div>
+        <div class="special-actions">
+          <button class="tab" ng-class="{active: displaymode == 'lastalbums'}" title="Show last added albums" ng-click="lastalbums()"><i class="fa fa-sort-amount-desc"></i> last albums</button>
+        </div>
+        <div class="volume leftseparated">
           <div class="slider">
             <input type="range" min="0" max="100" ng-model="volume" ng-model-options="{ getterSetter: true }">
             <div ng-progress="volumeval" ng-progress-duration="100" class="progress"></div>

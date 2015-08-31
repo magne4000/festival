@@ -63,7 +63,13 @@ def tracks():
 
 @app.route("/ajax/list/albums")
 def albums():
-    pass
+    skip = request.args.get('skip', 0, type=int)
+    limit = request.args.get('limit', 50, type=int)
+    la = request.args.get('la', type=json.loads)
+    if la:
+        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(Album.last_updated.desc(), Track.trackno))])
+    else:
+        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in listtracksbyalbumsbyartists(skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/artists")

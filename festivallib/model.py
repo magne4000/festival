@@ -181,6 +181,7 @@ class Album(Base):
     year = Column(Integer, nullable=True)
     albumart = Column(String(254), nullable=True)
     tracks = relationship("Track", backref="album", innerjoin=True)
+    last_updated = Column(DateTime)
 
     @hybrid_method
     def track_count(self):
@@ -308,6 +309,8 @@ class Context:
         )
         track.genre = self.fetch_genre(tags['genre'])
         track.album = self.fetch_album(tags['artist'], tags['album'], tags['year'])
+        if track.album.last_updated is None or track.album.last_updated < track.last_updated:
+            track.album.last_updated = track.last_updated
         self.session.flush()
         return track
 

@@ -137,12 +137,12 @@ def listtracksbyalbums(ffilter=None, skip=None, limit=None):
         return qall
 
 
-def listtracksbyalbumsbyartists(ffilter=None, skip=None, limit=None):
+def listtracksbyalbumsbyartists(ffilter=None, skip=None, limit=None, order_by=(Artist.name, Album.year.desc(), Track.trackno)):
     with session_scope() as session:
         query = session.query(Artist).join(Artist.albums).join(Album.tracks).options(contains_eager(Artist.albums, Album.tracks, Track.album))
         if ffilter is not None:
             query = ffilter(query)
-        query = limitoffset(query.order_by(Artist.name, Album.year.desc(), Track.trackno), skip, limit)
+        query = limitoffset(query.order_by(*order_by), skip, limit)
         qall = query.all()
         # Force artist_name population
         for x in qall:

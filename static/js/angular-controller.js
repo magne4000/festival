@@ -369,8 +369,21 @@ angular.module('festival')
         });
     }
 
+    function loadLastAlbums(filter, skip, limit, next) {
+        $rootScope.loading = true;
+        $ajax.lastalbums(filter, skip, limit).success(function(data, status) {
+            $rootScope.loading = false;
+            next((data.data.length > 0));
+            $utils.extend($rootScope.artists, data.data, true);
+        }).error(function(){
+            $rootScope.loading = false;
+            next(false);
+        });
+    }
+
     $displayMode.setCallback('artists', loadArtists);
     $displayMode.setCallback('albumsbyartists', loadAlbumsByArtists);
+    $displayMode.setCallback('lastalbums', loadLastAlbums);
     $displayMode.current('artists', {});
 
     $scope.pageArtists = function() {
@@ -481,6 +494,7 @@ angular.module('festival')
         albums: true,
         tracks: true
     };
+    $scope.displaymode = 'search';
     var promise = null;
     var lastValue = "";
 
@@ -526,7 +540,26 @@ angular.module('festival')
         } else {
             $displayMode.current('artists', {});
         }
-        $location.search('s', $scope.value);
+        $scope.displaymode = 'search';
+        if ($scope.value === '') {
+            $location.search('s', null);
+        } else {
+            $location.search('s', $scope.value);
+        }
+        $location.search('la', null);
+        $displayMode.call();
+    };
+
+    $scope.lastalbums = function() {
+        $rootScope.artists = [];
+        $displayMode.current('lastalbums', {});
+        $scope.displaymode = 'lastalbums';
+        $scope.value = "";
+        $location.search('la', 'true');
+        $location.search('s', null);
+        $location.search('sar', null);
+        $location.search('sal', null);
+        $location.search('str', null);
         $displayMode.call();
     };
 
@@ -551,6 +584,9 @@ angular.module('festival')
         }
         if (typeof params.s !== "undefined") {
             $scope.value = params.s;
+        } else if (typeof params.la !== "undefined") {
+            $scope.lastalbums();
+            triggersearchnow = false;
         }
         if (triggersearchnow) {
             $scope.searchnow();
