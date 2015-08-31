@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-import urllib.request
 import urllib.parse
-import urllib.error
+import urllib3
 import json
 import logging
 from app import app
@@ -21,6 +20,7 @@ class CoverURL:
             'artist': '',
             'album': ''
         }
+        self.conn = urllib3.PoolManager(5)
 
     @staticmethod
     def _large(jsonobj):
@@ -36,8 +36,8 @@ class CoverURL:
         params = urllib.parse.urlencode(self.params)
         url = CoverURL.SEARCH_URL + params
         try:
-            with urllib.request.urlopen(url) as f:
-                return self._large(json.loads(f.read().decode('utf-8')))
+            r = self.conn.request('GET', url)
+            return self._large(json.loads(r.data.decode('utf-8')))
         except:
             logger.exception('Error while searching album cover')
             return None
@@ -46,11 +46,13 @@ class CoverURL:
         url = self.search(artist, album)
         if url is not None:
             try:
-                with urllib.request.urlopen(url) as f:
-                    return callback(f)
+                r = self.conn.request('GET', url)
+                callback(r)
             except:
                 logger.exception('Error while fetching album cover')
-        return callback(None)
+                return callback(None)
+        else:
+            return callback(None)
 
 
 if __name__ == "__main__":
