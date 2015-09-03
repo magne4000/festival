@@ -47,7 +47,7 @@ class CoverURL:
         if url is not None:
             try:
                 r = self.conn.request('GET', url)
-                callback(r)
+                return callback(r)
             except:
                 logger.exception('Error while fetching album cover')
                 return callback(None)
