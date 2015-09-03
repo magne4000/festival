@@ -1,13 +1,32 @@
 #!/usr/bin/env python3
 
-from flask import render_template, request, json, send_file, send_from_directory, abort
+from flask import render_template, request, json, send_file, send_from_directory, abort, Response
 from flask.json import jsonify
 from festivallib.model import Artist, Album, Track
-from festivallib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
+from festivallib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, getartist, search
 from festivallib.thumbs import Thumb
 from app import app
 from scanner import Scanner
+from io import BytesIO
+from libs import zipstream
 import json
+import zipfile
+
+
+def ziptracks(tracks, filename):
+    def generator():
+        z = zipstream.ZipFile(mode='w', compression=zipfile.ZIP_DEFLATED)
+        for track in tracks:
+            filename = os.path.basename(track.path)
+            artist_name = track.artist_name
+            z.write(track.path, os.path.join(track.artist_name, track.album_name, filename))
+        for chunk in z:
+            yield chunk
+
+    response = Response(generator(), mimetype='application/zip')
+    response.headers['Content-Disposition'] = 'attachment; filename={}.zip'.format(filename)
+    return response
+
 
 @app.route("/")
 def hello():
@@ -25,19 +44,20 @@ def music(sid):
         return resp
 
 
-@app.route("/download/<artist>")
-def downloada(sartist):
-    pass
+@app.route("/download/artist/<artistid>")
+def downloada(artistid):
+    tracks = listtracks(lambda query: query.filter(Artist.id == artistid))
+    if len(tracks) > 0:
+        return ziptracks(tracks, tracks[0].artist_name)
+    abort(404)
 
 
-@app.route("/download/<artist>/<album>")
-def downloadaa(sartist, salbum):
-    pass
-
-
-@app.route("/download/<artist>/<album>/<track>")
-def downloadaat(sartist, salbum, track):
-    pass
+@app.route("/download/album/<albumid>")
+def downloadaa(albumid):
+    tracks = listtracks(lambda query: query.filter(Album.id == albumid))
+    if len(tracks) > 0:
+        return ziptracks(tracks, "{} - {}".format(tracks[0].artist_name, tracks[0].album_name))
+    abort(404)
 
 
 @app.route("/ajax/list/tracks")
