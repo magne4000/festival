@@ -3,11 +3,10 @@
 from flask import render_template, request, json, send_file, send_from_directory, abort, Response
 from flask.json import jsonify
 from festivallib.model import Artist, Album, Track
-from festivallib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, getartist, search
+from festivallib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
 from festivallib.thumbs import Thumb
 from app import app
 from scanner import Scanner
-from io import BytesIO
 from libs import zipstream
 import json
 import zipfile
@@ -18,7 +17,6 @@ def ziptracks(tracks, filename):
         z = zipstream.ZipFile(mode='w', compression=zipfile.ZIP_STORED)
         for track in tracks:
             filename = os.path.basename(track.path)
-            artist_name = track.artist_name
             z.write(track.path, os.path.join(track.artist_name, track.album_name, filename))
         for chunk in z:
             yield chunk
@@ -61,7 +59,7 @@ def downloadaa(albumid):
 
 
 @app.route("/ajax/list/tracks")
-def tracks():
+def ltracks():
     skip = request.args.get('skip', None, type=int)
     limit = request.args.get('limit', None, type=int)
     flat = request.args.get('flat', True, type=json.loads)
@@ -82,7 +80,7 @@ def tracks():
 
 
 @app.route("/ajax/list/albums")
-def albums():
+def lalbums():
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
     la = request.args.get('la', type=json.loads)
@@ -93,7 +91,7 @@ def albums():
 
 
 @app.route("/ajax/list/artists")
-def artists():
+def lartists():
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
     return jsonify(data=[x._asdict() for x in listartists(skip=skip, limit=limit+skip)])
@@ -124,9 +122,9 @@ def fileinfo():
     pass
 
 
-@app.route("/albumart/<album>")
-def albumart(album):
-    al = getalbum(album)
+@app.route("/albumart/<salbum>")
+def albumart(salbum):
+    al = getalbum(salbum)
     if al is None or al.albumart is None or al.albumart == '-':
         abort(404)
     else:
