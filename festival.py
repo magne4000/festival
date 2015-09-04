@@ -15,7 +15,7 @@ import zipfile
 
 def ziptracks(tracks, filename):
     def generator():
-        z = zipstream.ZipFile(mode='w', compression=zipfile.ZIP_DEFLATED)
+        z = zipstream.ZipFile(mode='w', compression=zipfile.ZIP_STORED)
         for track in tracks:
             filename = os.path.basename(track.path)
             artist_name = track.artist_name
