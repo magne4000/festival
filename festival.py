@@ -10,6 +10,7 @@ from scanner import Scanner
 from libs import zipstream
 import json
 import zipfile
+import sys
 
 
 def ziptracks(tracks, filename):
@@ -134,8 +135,11 @@ from api import *
 
 
 def main():
-    Scanner(app.config['SCANNER_PATH']).start()
-    app.run(host='0.0.0.0', debug=True, use_reloader=False)
+    if 'test' not in sys.argv:
+        Scanner(app.config['SCANNER_PATH']).start()
+        app.run(host='0.0.0.0', debug=True, use_reloader=False)
+    else:
+        pass
 
 if __name__ == "__main__":
     main()
