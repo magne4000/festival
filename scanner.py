@@ -7,7 +7,7 @@ import logging
 import time
 from threading import Thread, Timer
 from datetime import datetime
-from festivallib.model import Context, Track, session_scope, coroutine
+from festivallib.model import Context, Track, Cover, session_scope, coroutine
 from festivallib import coverurl, thumbs
 from libs.mediafile import MediaFile, UnreadableFileError
 from app import app
@@ -22,26 +22,38 @@ class CoverThread(Thread):
         self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
         self.debug = debug
 
+    def print_debug(self, char):
+        if self.debug:
+            sys.stdout.write(char)
+            sys.stdout.flush()
+
     def run(self):
         with Context() as db:
             albums = db.get_albums_without_cover()
+            null_cover = db.get_null_cover()
             for album in albums:
-                path = self.cu.download(album.artist.name, album.name, self.save)
-                db.update_albumart(album, path)
-                if self.debug:
-                    if path is None:
-                        sys.stdout.write('-')
-                        sys.stdout.flush()
+                mbid, url = self.cu.search(album.artist.name, album.name)
+                res = db.get_cover_by_mbid(mbid)
+                if res:
+                    album.cover = res
+                    self.print_debug('_')
+                else:
+                    cover = self.cu.download(url, self.save)
+                    if cover is not None:
+                        cover.mbid = mbid
+                        album.cover = cover
+                        self.print_debug('x')
                     else:
-                        sys.stdout.write('x')
-                        sys.stdout.flush()
+                        album.cover = null_cover
+                        self.print_debug('-')
 
     @staticmethod
     def save(fd):
         if fd is not None:
             thumb = thumbs.Thumb()
             path = thumb.create(fd, uuid.uuid4())
-            return path
+            cover = Cover(path=path)
+            return cover
         return None
 
 
@@ -78,30 +90,56 @@ class Scanner(Thread):
                 db.delete_tracks(list(self.tracks.keys()))
                 db.delete_orphans()
 
+    def get_tags_and_info(self, mfile):
+        tags = {}
+        info = {}
+        try:
+            mutagen_tags = MediaFile(mfile)
+            tags['title'] = mutagen_tags.title
+            tags['artist'] = mutagen_tags.artist if mutagen_tags.artist is not None else 'Unknown'
+            tags['genre'] = mutagen_tags.genre
+            tags['album'] = mutagen_tags.album if mutagen_tags.album is not None else 'Unknown'
+            tags['trackno'] = mutagen_tags.track
+            tags['year'] = mutagen_tags.year
+            info['length'] = mutagen_tags.length
+            info['bitrate'] = mutagen_tags.bitrate
+        except UnreadableFileError as e:
+            logger.exception('Error in scanner.add_track: %s', e)
+        return tags, info
+
+    def get_tags_from_folders(self, mfile):
+        tags = {}
+        for pattern in app.config['SCANNER_FOLDER_PATTERNS']:
+            match = pattern.search(mfile)
+            if match is not None:
+                try:
+                    if not match.group('album') or not match.group('artist'):  # 'album' and 'artist' groups are mandatory
+                        continue
+                    for key in ['artist', 'album', 'title', 'year', 'trackno']:
+                        try:
+                            if match.group(key) is not None:
+                                tags[key] = match.group(key)
+                        except IndexError:
+                            pass
+                except IndexError:
+                    pass
+        return tags
+
     @coroutine
     def add_track(self):
         with Context(True) as db:
             try:
                 while True:
                     mfile, mtime, = (yield)
-                    try:
-                        mutagen_tags = MediaFile(mfile)
-                        tags = {}
-                        info = {}
-                        tags['title'] = mutagen_tags.title
-                        tags['artist'] = mutagen_tags.artist if mutagen_tags.artist is not None else 'Unknown'
-                        tags['genre'] = mutagen_tags.genre
-                        tags['album'] = mutagen_tags.album if mutagen_tags.album is not None else 'Unknown'
-                        tags['tracknumber'] = mutagen_tags.track
-                        tags['year'] = mutagen_tags.year
-                        info['length'] = mutagen_tags.length
-                        info['bitrate'] = mutagen_tags.bitrate
-                        _ = db.add_track_full(mfile, mtime, tags, info)
-                        if self.debug:
-                            sys.stdout.write('*')
-                            sys.stdout.flush()
-                    except UnreadableFileError as e:
-                        logger.exception('Error in scanner.add_track: %s', e)
+                    tags = {}
+                    info = {}
+                    if 'tags' in app.config['SCANNER_MODES']:
+                        tags['tags'], info = self.get_tags_and_info(mfile)
+                    if 'folder' in app.config['SCANNER_MODES']:
+                        tags_from_folders = self.get_tags_from_folders(mfile)
+                        if tags_from_folders is not None:
+                            tags['folder'] = tags_from_folders
+                    _ = db.add_track_full(mfile, mtime, tags, info)
             except GeneratorExit:
                 pass
 
@@ -115,9 +153,10 @@ class Scanner(Thread):
                 should_add, mtime = self.scan(mfile)
                 if should_add:
                     h.send((mfile, mtime))
+                    sys.stdout.write('+')
                 elif self.debug:
                     sys.stdout.write('.')
-                    sys.stdout.flush()
+                sys.stdout.flush()
         except GeneratorExit:
             self.tracks = {}
 

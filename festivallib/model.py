@@ -2,13 +2,15 @@ import os
 import re
 import mimetypes
 from datetime import datetime
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, event
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session, joinedload
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, event, Boolean, UniqueConstraint
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.pool import NullPool
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.query import Query
 from contextlib import contextmanager
 from app import app
 
@@ -18,7 +20,7 @@ mimetypes.init()
 
 Base = declarative_base()
 
-Session = scoped_session(sessionmaker(bind=engine))
+Session = sessionmaker(bind=engine)
 
 
 def coroutine(func):
@@ -37,13 +39,38 @@ def purge_cover_on_delete(session, query, query_context, result):
             if os.path.isfile(elt[4]):
                 os.remove(elt[4])
 
+
 event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
 
 
+class TypedQuery(Query):
+
+    def __iter__(self):
+        return Query.__iter__(self.typed())
+
+    def from_self(self, *ent):
+        # override from_self() to automatically apply
+        # the criterion too.   this works with count() and
+        # others.
+        return Query.from_self(self.typed(), *ent)
+
+    def typed(self):
+        mzero = self._mapper_zero()
+        if mzero is not None and hasattr(mzero.class_, 'type'):
+            crit = mzero.class_.type == self.chosen_type
+            return self.enable_assertions(False).filter(crit)
+        else:
+            return self
+
+
+def get_typed_query_class(stype):
+    return type('TypedTypedQuery', (TypedQuery,), dict(chosen_type=stype))
+
+
 @contextmanager
-def session_scope():
+def session_scope(mode='tags'):
     """Provide a transactional scope around a series of operations."""
-    session = Session()
+    session = scoped_session(Session)(query_cls=get_typed_query_class(mode))
     try:
         yield session
         session.commit()
@@ -54,34 +81,21 @@ def session_scope():
         session.close()
 
 
+class TypedInfo:
+    type = Column(String(20), nullable=False)
+
+
 class Track(Base):
     __tablename__ = "track"
 
     id = Column(Integer, primary_key=True)
-    path = Column(Text(500), nullable=False)
-    genre_id = Column(Integer, ForeignKey("genre.id"))
-    album_id = Column(Integer, ForeignKey("album.id"))
-    name = Column(String(254), nullable=False, index=True)
+    path = Column(Text(500), nullable=False, unique=True)
     duration = Column(Float, nullable=True)
-    year = Column(Integer, nullable=True)
     bitrate = Column(String(10), nullable=True)
-    trackno = Column(Integer, nullable=True)
     last_updated = Column(DateTime)
     size = Column(Integer)
     mimetype = Column(String(50))
-    album_name = association_proxy('album', 'name')
-
-    @hybrid_property
-    def artist_name(self):
-        if self.album and 'artist' in self.album.__dict__:
-            return self.album.artist.name
-        return None
-
-    @hybrid_property
-    def genre_name(self):
-        if 'genre' in self.__dict__ and self.genre is not None:
-            return self.genre.name
-        return None
+    infos = relationship("TrackInfo", backref="track", cascade="all", innerjoin=True)
 
     @hybrid_method
     def url(self):
@@ -96,30 +110,21 @@ class Track(Base):
         mtype, _, = mimetypes.guess_type(path)
         self.mimetype = mtype
 
-    def __init__(self, name, path, trackno='', year=0, duration=0, bitrate='', last_updated=''):
-        self.name = name
+    def __init__(self, path, duration=0, bitrate='', last_updated=''):
         self.path = path
         self._mimetypeandsize(path)
         self.duration = duration
-        self.year = year
         self.bitrate = bitrate
-        self.trackno = trackno
         self.last_updated = last_updated
 
-    def set(self, name=None, path=None, trackno=None, year=None, duration=None, bitrate=None, last_updated=None):
-        if name is not None:
-            self.name = name
+    def set(self, path=None, duration=None, bitrate=None, last_updated=None):
         if path is not None:
             self.path = path
             self._mimetypeandsize(path)
         if duration is not None:
             self.duration = duration
-        if year is not None:
-            self.year = year
         if bitrate is not None:
             self.bitrate = bitrate
-        if trackno is not None:
-            self.trackno = trackno
         if last_updated is not None:
             self.last_updated = last_updated
         else:
@@ -128,29 +133,48 @@ class Track(Base):
     def __repr__(self):
         return "<Track %r>" % self.path
 
+
+class TrackInfo(Base, TypedInfo):
+    __tablename__ = "trackinfo"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(254), nullable=False, index=True)
+    track_id = Column(Integer, ForeignKey("track.id"), nullable=False)
+    album_id = Column(Integer, ForeignKey("album.id"), nullable=False)
+    artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
+    genre_id = Column(Integer, ForeignKey("genre.id"), nullable=True)
+    trackno = Column(Integer, nullable=True)
+    year = Column(Integer, nullable=True)
+    UniqueConstraint('track_id', 'type')
+
     def _asdict(self, genre=False, album=False):
         return {
-            'id': self.id,
+            'id': self.track_id,
             'genre_id': self.genre_id,
             'album_id': self.album_id,
             'genre': self.genre._asdict() if (genre and 'genre' in self.__dict__) else None,
             'album': self.album._asdict(artist=False) if (album and 'album' in self.__dict__) else None,
-            'album_name': self.album_name,
-            'artist_name': self.artist_name,
+            'album_name': self.album.name,
+            'artist_name': self.artist.name,
             'name': self.name,
-            'duration': self.duration,
-            'bitrate': self.bitrate,
+            'duration': self.track.duration,
+            'bitrate': self.track.bitrate,
             'trackno': self.trackno,
-            'url': self.url()
+            'url': self.track.url()
         }
 
+    def __repr__(self):
+        return "<TrackInfo %r %r>" % (self.type, self.track.path)
 
-class Artist(Base):
+
+class Artist(Base, TypedInfo):
     __tablename__ = "artist"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(254), nullable=False, unique=True, index=True)
+    name = Column(String(254), nullable=False, index=True)
     albums = relationship("Album", backref="artist", innerjoin=True)
+    tracks = relationship("TrackInfo", backref="artist", innerjoin=True)
+    UniqueConstraint('name', 'type')
 
     @hybrid_method
     def album_count(self):
@@ -158,11 +182,8 @@ class Artist(Base):
             return len(self.albums)
         return 0
 
-    def __init__(self, name):
-        self.name = name
-
     def __repr__(self):
-        return "<Artist %r>" % self.name
+        return "<Artist %r %r>" % (self.type, self.name)
 
     def _asdict(self, albums=False, tracks=False):
         return {
@@ -172,16 +193,18 @@ class Artist(Base):
         }
 
 
-class Album(Base):
+class Album(Base, TypedInfo):
     __tablename__ = "album"
 
     id = Column(Integer, primary_key=True)
     artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
     name = Column(String(254), nullable=False, index=True)
     year = Column(Integer, nullable=True)
-    albumart = Column(String(254), nullable=True)
-    tracks = relationship("Track", backref="album", innerjoin=True)
+    cover_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
+    cover = relationship("Cover")
+    tracks = relationship("TrackInfo", backref="album", innerjoin=True)
     last_updated = Column(DateTime)
+    UniqueConstraint('name', 'type')
 
     @hybrid_method
     def track_count(self):
@@ -196,7 +219,7 @@ class Album(Base):
         return 0
 
     def __repr__(self):
-        return "<Album %r.%r>" % (self.artist_id, self.name)
+        return "<Album %r %r.%r>" % (self.type, self.artist_id, self.name)
 
     def _asdict(self, artist=False, tracks=False):
         return {
@@ -209,18 +232,24 @@ class Album(Base):
         }
 
 
-class Genre(Base):
+class Cover(Base):
+    __tablename__ = "cover"
+
+    id = Column(Integer, primary_key=True)
+    mbid = Column(String(254), nullable=True, unique=True)
+    path = Column(String(254), nullable=True)
+
+
+class Genre(Base, TypedInfo):
     __tablename__ = "genre"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(254), nullable=False, unique=True)
-    tracks = relationship("Track", backref="genre")
-
-    def __init__(self, name):
-        self.name = name
+    tracks = relationship("TrackInfo", backref="genre")
+    UniqueConstraint('name', 'type')
 
     def __repr__(self):
-        return "<Genre %r>" % self.name
+        return "<Genre %r %r>" % (self.type, self.name)
 
     def _asdict(self):
         return {
@@ -268,10 +297,13 @@ class Context:
 
     def __enter__(self):
         self.session = Session()
+        self.infos = {}
         if self.load:
-            self.tracks = {x.path: x.id for x in self.session.query(Track.path, Track.id).all()}
-            self.artists = {x.name.strip().lower(): x for x in self.session.query(Artist).all()}
-            self.genres = {x.name.strip().lower(): x for x in self.session.query(Genre).all()}
+            self.tracks = {x.path: x for x in self.session.query(Track).join(Track.infos).options(joinedload(Track.infos)).all()}
+            for mode in app.config['SCANNER_MODES']:
+                self.infos[mode] = {}
+                self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in self.session.query(Artist).filter(Artist.type == mode).all()}
+                self.infos[mode]['genres'] = {x.name.strip().lower(): x for x in self.session.query(Genre).filter(Artist.type == mode).all()}
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -281,15 +313,25 @@ class Context:
             self.session.rollback()
         self.session.close()
 
-    def update_albumart(self, album, path):
-        if path is None:
-            path = "-"
-        album.albumart = path
-        self.session.commit()
+
+    def get_null_cover(self):
+        obj = None
+        try:
+            obj = self.session.query(Cover).filter(Cover.mbid=='0').one()
+        except NoResultFound:
+            obj = Cover(mbid='0')
+            self.session.add(obj)
+        return obj
+
+    def get_cover_by_mbid(self, mbid):
+        try:
+            return self.session.query(Cover).filter(Cover.mbid == mbid).one()
+        except NoResultFound:
+            return None
 
     def delete_orphans(self):
-        self.session.query(Genre).filter(~Genre.id.in_(self.session.query(distinct(Track.genre_id)))).delete(False)
-        self.session.query(Album).filter(~Album.id.in_(self.session.query(distinct(Track.album_id)))).delete(False)
+        self.session.query(Genre).filter(~Genre.id.in_(self.session.query(distinct(TrackInfo.genre_id)))).delete(False)
+        self.session.query(Album).filter(~Album.id.in_(self.session.query(distinct(TrackInfo.album_id)))).delete(False)
         self.session.query(Artist).filter(~Artist.id.in_(self.session.query(distinct(Album.artist_id)))).delete(False)
         self.session.commit()
 
@@ -300,67 +342,85 @@ class Context:
     def add_track_full(self, filepath, mtime, tags, info):
         track = self.add_track(
             filepath,
-            tags['title'],
-            tags['tracknumber'],
-            tags['year'],
-            info['length'],
-            info['bitrate'],
+            info['length'] if 'length' in info else None,
+            info['bitrate'] if 'bitrate' in info else None,
             mtime
         )
-        track.genre = self.fetch_genre(tags['genre'])
-        track.album = self.fetch_album(tags['artist'], tags['album'], tags['year'])
-        if track.album.last_updated is None or track.album.last_updated < track.last_updated:
-            track.album.last_updated = track.last_updated
+        for mode in tags:
+            self.add_track_info(track, mode, **tags[mode])
         self.session.flush()
         return track
 
-    def fetch_genre(self, genre):
+    def fetch_genre(self, mode, genre):
         if genre is None:
             return None
         genre = _clean_tag(genre)
         lgenre = genre.lower()
-        if lgenre in self.genres:
-            ge = self.genres[lgenre]
+        if lgenre in self.infos[mode]['genres']:
+            ge = self.infos[mode]['genres'][lgenre]
         else:
-            ge = Genre(name=genre)
-            self.genres[lgenre] = ge
+            ge = Genre(name=genre, type=mode)
+            self.infos[mode]['genres'][lgenre] = ge
         return ge
 
     def get_albums_without_cover(self):
-        return self.session.query(Album).filter(Album.albumart == None).all()
+        return self.session.query(Album).filter(Album.cover_id == None).all()
 
-    def fetch_album(self, artist, album, year):
+    def fetch_album(self, mode, artist, album, year=None):
         artistclean = artist.strip().lower()
-        if artistclean in self.artists:
-            ar = self.artists[artistclean]
+        if artistclean in self.infos[mode]['artists']:
+            ar = self.infos[mode]['artists'][artistclean]
         else:
-            ar = Artist(name=artist)
-            self.artists[artistclean] = ar
+            ar = Artist(name=artist, type=mode)
+            self.infos[mode]['artists'][artistclean] = ar
             self.session.add(ar)
         self.session.enable_relationship_loading(ar)
         albums = {a.name: a for a in ar.albums}
         if album in albums:
             return albums[album]
         else:
-            al = Album(name=album, artist=ar, year=year)
+            al = Album(name=album, artist=ar, year=year, type=mode)
             self.session.add(al)
             return al
 
-    def add_track(self, path, name, trackno=None, year=None, duration=0.0, bitrate=None, last_mod_time=None):
-        name = _clean_tag(name)
-        duration = _clean_tag(duration, mytype='float')
+    def add_track_info(self, track, mode, artist=None, album=None, title=None, trackno=None, year=None, genre=None):
+        found = False
+        name = _clean_tag(title)
+        artist = _clean_tag(artist)
+        album = _clean_tag(album)
         year = _clean_tag(year, mytype='integer', max_len=4)
-        bitrate = _clean_tag(bitrate, allow_none=True)
         if trackno is not None:
             trackno = trackno.split("/")[0]
         trackno = _clean_tag(trackno, mytype='integer')
+        trackinfo = None
+
+        for trackinfo in track.infos:
+            if trackinfo.type == mode:
+                found = True
+                break
+        if not found:
+            trackinfo = TrackInfo(type=mode)
+            track.infos.append(trackinfo)
+        trackinfo.name = name
+        trackinfo.year = year
+        trackinfo.trackno = trackno
+        trackinfo.genre = self.fetch_genre(mode, genre)
+        trackinfo.album = self.fetch_album(mode, artist, album, year)
+        trackinfo.artist = trackinfo.album.artist
+        if trackinfo.album.last_updated is None or trackinfo.album.last_updated < track.last_updated:
+            trackinfo.album.last_updated = track.last_updated
+        return trackinfo
+
+    def add_track(self, path, duration=0.0, bitrate=None, last_mod_time=None):
+        duration = _clean_tag(duration, mytype='float')
+        bitrate = _clean_tag(bitrate, allow_none=True)
 
         if path in self.tracks:
             track = self.session.query(Track).filter(Track.path == path).one()
-            track.set(name, path, trackno, year, duration, bitrate, last_mod_time)
+            track.set(path, duration, bitrate, last_mod_time)
             self.session.merge(track)
         else:
-            track = Track(name, path, trackno, year, duration, bitrate, last_mod_time)
+            track = Track(path, duration, bitrate, last_mod_time)
             self.session.add(track)
 
         return track

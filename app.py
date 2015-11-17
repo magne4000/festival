@@ -46,6 +46,12 @@ check()
 from flask import Flask
 app = Flask(__name__)
 app.config.from_pyfile('settings.cfg')
+app.config['SCANNER_MODES'] = ['tags']
+
+if app.config['SCANNER_FOLDER_PATTERNS'] is not None and len(app.config['SCANNER_FOLDER_PATTERNS']) > 0:
+    app.config['SCANNER_MODES'].append('folder')
+    for i, pattern in enumerate(app.config['SCANNER_FOLDER_PATTERNS']):
+        app.config['SCANNER_FOLDER_PATTERNS'][i] = re.compile(pattern)
 
 import logging
 level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
