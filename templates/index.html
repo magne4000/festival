@@ -98,6 +98,16 @@
         <div class="special-actions">
           <button class="tab" ng-class="{active: displaymode == 'lastalbums'}" title="Show last added albums" ng-click="lastalbums()"><i class="fa fa-sort-amount-desc"></i> last albums</button>
         </div>
+        <div class="leftseparated">
+          <label>
+            <input type="radio" ng-model="type" value="tags">
+            Tags
+          </label>
+          <label>
+            <input type="radio" ng-model="type" value="folder">
+            Folder
+          </label>
+        </div>
         <div class="volume leftseparated">
           <div class="slider">
             <input type="range" min="0" max="100" ng-model="volume" ng-model-options="{ getterSetter: true }">

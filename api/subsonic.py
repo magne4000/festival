@@ -4,23 +4,10 @@ import random
 from datetime import datetime
 from flask import request, send_file, send_from_directory
 from app import app
-from festivallib.model import session_scope
+from festivallib.model import session_scope, Artist, Album, Track
 from festivallib.thumbs import Thumb
-from festivallib.request import listartists, listalbums, listalbumsbyartists, listtracksbyalbums, listtracks, gettrackfull, gettrack, getalbum, counttracks, countalbums, Artist, Album, Track
+from festivallib.request import typed_fct
 from sqlalchemy import func, desc
-
-
-def get_by_id(req, sqlclass, param='id'):
-    eid = req.args.get(param)
-    if not eid:
-        return False, req.error_formatter(10, 'Missing %s id' % sqlclass.__name__)
-    
-    with session_scope() as session:
-        obj = session.query(sqlclass).get(eid)
-        if not obj:
-            return False, (req.error_formatter(70, '%s not found' % sqlclass.__name__), 404)
-    
-    return True, obj
 
 
 def get_filter(fromYear=None, toYear=None, genre=None):
@@ -110,7 +97,7 @@ def format_album(album, child=False):
         'coverArt': format_album_id(album.id),
         'averageRating': 0
     }
-    
+
     if child:
         info['isDir'] = True
         if album.year:
@@ -125,21 +112,21 @@ def format_album(album, child=False):
 def format_track(track, child=False):
     albumid = format_album_id(track.album_id)
     info = {
-        "id": format_track_id(track.id),
+        "id": format_track_id(track.track_id),
         "parent": albumid,
         "title": track.name,
         "isDir": False,
         "isVideo": False,
         "type": 'music',
         "albumId": albumid,
-        "album": track.album_name,
-        "artistId": format_artist_id(track.album.artist_id),
-        "artist": track.artist_name,
+        "album": track.album.name,
+        "artistId": format_artist_id(track.artist_id),
+        "artist": track.artist.name,
         "covertArt": albumid,
         "duration": int(track.duration),
         "track": track.trackno,
         "year": track.year,
-        "genre": track.genre_name,
+        "genre": track.genre.name,
         "size": track.size,
         "contentType": track.mimetype
     }
@@ -177,7 +164,8 @@ def music_folders():
 
 @app.route('/rest/getArtists.view', methods=['GET', 'POST'])
 @app.route('/rest/getIndexes.view', methods=['GET', 'POST'])
-def indexes():
+@typed_fct
+def indexes(typed):
     """
     Parameters
     * ifModifiedSince : Not taken into account
@@ -185,15 +173,15 @@ def indexes():
     """
     last_modif = int(datetime.now().timestamp() * 1000)
     indexes = {}
-    artists = listartists()
-    
+    artists = typed.listartists()
+
     for artist in artists:
         letter = artist.name[0].upper()
         if letter == "X" or letter == "Y" or letter == "Z":
             letter = "X-Z"
         elif re.match("^[A-W]$", letter) is None:
             letter = "#"
-        
+
         if letter not in indexes:
             indexes[letter] = []
 
@@ -215,22 +203,23 @@ def indexes():
 
 
 @app.route('/rest/getMusicDirectory.view', methods=['GET', 'POST'])
-def music_directory():
+@typed_fct
+def music_directory(typed):
     eid = request.args.get('id')
     cid = clean_id(eid)
     if is_artist_id(eid):
-        dirlist = listalbumsbyartists(lambda query: query.filter(Artist.id == cid))
+        dirlist = typed.listalbumsbyartists(lambda query: query.filter(Artist.id == cid))
         children = dirlist[0].albums
         format_directory_id = format_artist_id
         format_child = format_album
     elif is_album_id(eid):
-        dirlist = listtracksbyalbums(lambda query: query.filter(Album.id == cid))
+        dirlist = typed.listtracksbyalbums(lambda query: query.filter(Album.id == cid))
         children = dirlist[0].tracks
         format_directory_id = format_album_id
         format_child = format_track
     else:
         return request.error_formatter(10, 'Missing or invalid id')
-    
+
     return request.formatter({'directory': {
         'id': format_directory_id(dirlist[0].id),
         'name': dirlist[0].name,
@@ -239,17 +228,18 @@ def music_directory():
 
 
 @app.route('/rest/getArtist.view', methods=['GET', 'POST'])
-def artist():
+@typed_fct
+def artist(typed):
     eid = request.args.get('id')
     cid = clean_id(eid)
     if not is_artist_id(eid):
         return request.error_formatter(10, 'Missing or invalid Artist id')
-    
-    ar = listalbumsbyartists(lambda query: query.filter(Artist.id == cid))
-    
+
+    ar = typed.listalbumsbyartists(lambda query: query.filter(Artist.id == cid))
+
     if len(ar) == 0:
         return request.error_formatter(70, 'Artist not found'), 404
-    
+
     return request.formatter({'artist': {
         'id': format_artist_id(cid),
         'name': ar[0].name,
@@ -259,17 +249,18 @@ def artist():
 
 
 @app.route('/rest/getAlbum.view', methods=['GET', 'POST'])
-def album():
+@typed_fct
+def album(typed):
     eid = request.args.get('id')
     cid = clean_id(eid)
     if not is_album_id(eid):
         return request.error_formatter(10, 'Missing or invalid Album id')
-    
-    al = listtracksbyalbums(lambda query: query.filter(Album.id == cid))
-    
+
+    al = typed.listtracksbyalbums(lambda query: query.filter(Album.id == cid))
+
     if len(al) == 0:
         return request.error_formatter(70, 'Album not found'), 404
-    
+
     return request.formatter({'album': {
         'id': format_album_id(cid),
         'name': al[0].name,
@@ -279,17 +270,18 @@ def album():
 
 
 @app.route('/rest/getSong.view', methods=['GET', 'POST'])
-def song():
+@typed_fct
+def song(typed):
     eid = request.args.get('id')
     cid = clean_id(eid)
     if not is_track_id(eid):
         return request.error_formatter(10, 'Missing or invalid Song id')
-    
-    tr = gettrackfull(cid)
-    
+
+    tr = typed.gettrackfull(cid)
+
     if not tr:
         return request.error_formatter(70, 'Song not found'), 404
-    
+
     return request.formatter({'song': format_track(tr)})
 
 
@@ -307,7 +299,7 @@ def check_parameter(request, key, allow_none=True, choices=None, fct=None):
     return True, val
 
 
-def _album_list():
+def _album_list(typed):
     ok, atype = check_parameter(request, 'type', allow_none=False, choices=['random', 'newest', 'highest', 'frequent', 'recent', 'starred', 'alphabeticalByName', 'alphabeticalByArtist'])
     if not ok:
         return False, atype
@@ -320,29 +312,30 @@ def _album_list():
     fromYear = request.args.get('fromYear')
     toYear = request.args.get('toYear')
     genre = request.args.get('genre')
-    
+
     if atype == "byYear" and (not fromYear or not toYear):
         return False, request.error_formatter(10, 'Missing parameter fromYear or toYear')
     elif atype == "genre" and not genre:
         return False, request.error_formatter(10, 'Missing parameter genre')
-    
+
     if atype == "random":
-        count = countalbums()
+        count = typed.countalbums()
 
         def gen():
             for _ in range(size):
                 x = random.choice(range(count))
-                yield getalbum(ffilter=lambda query: query.offset(x).limit(1))
-        
+                yield typed.getalbum(ffilter=lambda query: query.offset(x).limit(1))
+
         return True, gen()
     else:
         fltr = get_filter_by_type(atype, fromYear=fromYear, toYear=toYear, genre=genre)
         srt = get_sort_by_type(atype)
-        return True, listalbums(fltr, skip=offset, limit=size, order_by=srt)
+        return True, typed.listalbums(fltr, skip=offset, limit=size, order_by=srt)
 
 
 @app.route('/rest/getRandomSongs.view', methods=['GET', 'POST'])
-def random_songs():
+@typed_fct
+def random_songs(typed):
     ok, size = check_parameter(request, 'size', fct=lambda val: int(val) if val else 10)
     if not ok:
         return False, size
@@ -350,37 +343,39 @@ def random_songs():
     fromYear = request.args.get('fromYear')
     toYear = request.args.get('toYear')
     genre = request.args.get('genre')
-    
+
     fltr = list(get_filter(fromYear=fromYear, toYear=toYear, genre=genre))
-    count = counttracks(lambda query: query.filter(*fltr))
-    
+    count = typed.counttracks(lambda query: query.filter(*fltr))
+
     def gen():
         for _ in range(size):
             x = random.choice(range(count))
-            yield gettrack(ffilter=lambda query: query.filter(*fltr).offset(x).limit(1))
-    
+            yield typed.gettrack(ffilter=lambda query: query.filter(*fltr).offset(x).limit(1))
+
     return request.formatter({'randomSongs': {
         'song': [format_track(track, child=True) for track in gen()]
     }})
 
 
 @app.route('/rest/getAlbumList.view', methods=['GET', 'POST'])
-def album_list():
-    ok, albums = _album_list()
+@typed_fct
+def album_list(typed):
+    ok, albums = _album_list(typed)
     if not ok:
         return albums
-    
+
     return request.formatter({'albumList': {
         'album': [format_album(album, child=True) for album in albums]
     }})
 
 
 @app.route('/rest/getAlbumList2.view', methods=['GET', 'POST'])
-def album_list2():
-    ok, albums = _album_list()
+@typed_fct
+def album_list2(typed):
+    ok, albums = _album_list(typed)
     if not ok:
         return albums
-    
+
     return request.formatter({'albumList2': {
         'album': [format_album(album) for album in albums]
     }})
@@ -388,7 +383,8 @@ def album_list2():
 
 @app.route('/rest/search2.view', methods=['GET', 'POST'])
 @app.route('/rest/search3.view', methods=['GET', 'POST'])
-def search2and3():
+@typed_fct
+def search2and3(typed):
     q = request.args.get('query')
     if not q:
         return request.error_formatter(10, 'Missing query parameter')
@@ -410,11 +406,11 @@ def search2and3():
     ok, songOffset = check_parameter(request, 'songOffset', fct=lambda val: int(val) if val else 0)
     if not ok:
         return False, songOffset
-    
-    artists = listartists(lambda query: query.filter(Artist.name.contains(q)), skip=artistOffset, limit=artistCount)
-    albums = listalbums(lambda query: query.filter(Album.name.contains(q)), skip=albumOffset, limit=albumCount)
-    tracks = listtracks(lambda query: query.filter(Track.name.contains(q)), skip=songOffset, limit=songCount)
-    
+
+    artists = typed.listartists(lambda query: query.filter(Artist.name.contains(q)), skip=artistOffset, limit=artistCount)
+    albums = typed.listalbums(lambda query: query.filter(Album.name.contains(q)), skip=albumOffset, limit=albumCount)
+    tracks = typed.listtracks(lambda query: query.filter(Track.name.contains(q)), skip=songOffset, limit=songCount)
+
     return request.formatter({'searchResult2': {
         'artist': [format_artist(artist) for artist in artists],
         'album': [format_album(album) for album in albums],
@@ -423,20 +419,21 @@ def search2and3():
 
 
 @app.route('/rest/getCoverArt.view', methods=['GET', 'POST'])
-def cover_art():
+@typed_fct
+def cover_art(typed):
     eid = request.args.get('id')
     cid = clean_id(eid)
     if not is_track_id(eid) and not is_album_id(eid):
         return request.error_formatter(10, 'Invalid id')
-    
+
     if is_album_id(eid):
-        al = getalbum(cid)
+        al = typed.getalbum(cid)
         if al is None or al.albumart is None or al.albumart == '-':
             return request.error_formatter(70, 'Cover art not found'), 404
         else:
             return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
     else:
-        tr = gettrackfull(cid)
+        tr = typed.gettrackfull(cid)
         if tr is None or tr.album is None or tr.album.albumart is None:
             return request.error_formatter(70, 'Cover art not found'), 404
         else:
@@ -445,14 +442,15 @@ def cover_art():
 
 @app.route('/rest/download.view', methods=['GET', 'POST'])
 @app.route('/rest/stream.view', methods=['GET', 'POST'])
-def download():
+@typed_fct
+def download(typed):
     eid = request.args.get('id')
     cid = clean_id(eid)
     if not is_track_id(eid):
         return request.error_formatter(10, 'Invalid id')
-    
-    tr = gettrack(cid)
-    
+
+    tr = typed.gettrack(cid)
+
     if tr is None or tr.path is None:
         return request.error_formatter(70, 'Track not found'), 404
     else:

@@ -95,7 +95,7 @@ class Track(Base):
     last_updated = Column(DateTime)
     size = Column(Integer)
     mimetype = Column(String(50))
-    infos = relationship("TrackInfo", backref="track", cascade="all", innerjoin=True)
+    #TODO delete cascase
 
     @hybrid_method
     def url(self):
@@ -140,6 +140,7 @@ class TrackInfo(Base, TypedInfo):
     id = Column(Integer, primary_key=True)
     name = Column(String(254), nullable=False, index=True)
     track_id = Column(Integer, ForeignKey("track.id"), nullable=False)
+    track = relationship("Track", backref='infos', lazy='joined')
     album_id = Column(Integer, ForeignKey("album.id"), nullable=False)
     artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
     genre_id = Column(Integer, ForeignKey("genre.id"), nullable=True)
@@ -201,7 +202,7 @@ class Album(Base, TypedInfo):
     name = Column(String(254), nullable=False, index=True)
     year = Column(Integer, nullable=True)
     cover_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
-    cover = relationship("Cover")
+    cover = relationship("Cover", backref="albums")
     tracks = relationship("TrackInfo", backref="album", innerjoin=True)
     last_updated = Column(DateTime)
     UniqueConstraint('name', 'type')
@@ -299,7 +300,7 @@ class Context:
         self.session = Session()
         self.infos = {}
         if self.load:
-            self.tracks = {x.path: x for x in self.session.query(Track).join(Track.infos).options(joinedload(Track.infos)).all()}
+            self.tracks = {x.path: x for x in self.session.query(Track).all()}
             for mode in app.config['SCANNER_MODES']:
                 self.infos[mode] = {}
                 self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in self.session.query(Artist).filter(Artist.type == mode).all()}

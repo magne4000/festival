@@ -1,6 +1,6 @@
 [uwsgi]
 master = true
-socket = 127.0.0.1:15500
+socket = 127.0.0.1:15502
 threads = 2
 processes = 4
 callable = app
