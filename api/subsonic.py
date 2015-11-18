@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 from flask import request, send_file, send_from_directory
 from app import app
-from festivallib.model import session_scope, Artist, Album, Track
+from festivallib.model import session_scope, Artist, Album, TrackInfo, Track
 from festivallib.thumbs import Thumb
 from festivallib.request import typed_fct
 from sqlalchemy import func, desc
@@ -12,22 +12,22 @@ from sqlalchemy import func, desc
 
 def get_filter(fromYear=None, toYear=None, genre=None):
     if fromYear is not None:
-        yield Track.year >= fromYear
+        yield TrackInfo.year >= fromYear
     if toYear is not None:
-        yield Track.year <= toYear
+        yield TrackInfo.year <= toYear
     if genre is not None:
-        yield Track.genre == genre
+        yield TrackInfo.genre == genre
 
 
 def get_filter_by_type(atype, fromYear=None, toYear=None, genre=None):
     if atype == 'newest':
-        return lambda query: query.add_columns(func.max(Track.last_updated.label('last_updated'))).join(Album.tracks).group_by(Album.id)
+        return lambda query: query.add_columns(func.max(Album.last_updated.label('last_updated'))).group_by(Album.id)
     elif atype == 'starred':
         return lambda query: query.filter(False)
     elif atype == 'byYear':
         return lambda query: query.filter(Album.year.between(fromYear, toYear))
     elif atype == 'genre':
-        return lambda query: query.filter(Track.genre_id == genre)
+        return lambda query: query.filter(TrackInfo.genre_id == genre)
     return None
 
 
@@ -123,15 +123,16 @@ def format_track(track, child=False):
         "artistId": format_artist_id(track.artist_id),
         "artist": track.artist.name,
         "covertArt": albumid,
-        "duration": int(track.duration),
+        "duration": int(track.track.duration),
         "track": track.trackno,
         "year": track.year,
-        "genre": track.genre.name,
-        "size": track.size,
-        "contentType": track.mimetype
+        "size": track.track.size,
+        "contentType": track.track.mimetype
     }
-    if track.bitrate:
-        info['bitRate'] = int(track.bitrate / 1000.0)
+    if 'genre' in track.__dict__ and track.genre:
+        info['genre'] = track.genre.name
+    if track.track.bitrate:
+        info['bitRate'] = float(track.track.bitrate) / 1000.0
     return info
 
 
@@ -350,7 +351,7 @@ def random_songs(typed):
     def gen():
         for _ in range(size):
             x = random.choice(range(count))
-            yield typed.gettrack(ffilter=lambda query: query.filter(*fltr).offset(x).limit(1))
+            yield typed.gettrackinfo(ffilter=lambda query: query.filter(*fltr).offset(x).limit(1))
 
     return request.formatter({'randomSongs': {
         'song': [format_track(track, child=True) for track in gen()]
@@ -409,7 +410,7 @@ def search2and3(typed):
 
     artists = typed.listartists(lambda query: query.filter(Artist.name.contains(q)), skip=artistOffset, limit=artistCount)
     albums = typed.listalbums(lambda query: query.filter(Album.name.contains(q)), skip=albumOffset, limit=albumCount)
-    tracks = typed.listtracks(lambda query: query.filter(Track.name.contains(q)), skip=songOffset, limit=songCount)
+    tracks = typed.listtracks(lambda query: query.filter(TrackInfo.name.contains(q)), skip=songOffset, limit=songCount)
 
     return request.formatter({'searchResult2': {
         'artist': [format_artist(artist) for artist in artists],
@@ -427,11 +428,12 @@ def cover_art(typed):
         return request.error_formatter(10, 'Invalid id')
 
     if is_album_id(eid):
-        al = typed.getalbum(cid)
-        if al is None or al.albumart is None or al.albumart == '-':
+        cover = typed.getcoverbyalbumid(cid)
+        if cover is None or cover.mbid == '0':
             return request.error_formatter(70, 'Cover art not found'), 404
         else:
-            return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
+            print(cover.id, cover.path)
+            return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
     else:
         tr = typed.gettrackfull(cid)
         if tr is None or tr.album is None or tr.album.albumart is None:
@@ -449,9 +451,9 @@ def download(typed):
     if not is_track_id(eid):
         return request.error_formatter(10, 'Invalid id')
 
-    tr = typed.gettrack(cid)
+    tr = typed.gettrackinfo(cid)
 
-    if tr is None or tr.path is None:
+    if tr is None or tr.track.path is None:
         return request.error_formatter(70, 'Track not found'), 404
     else:
-        return send_file(tr.path, conditional=True)
+        return send_file(tr.track.path, conditional=True)

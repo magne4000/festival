@@ -33,7 +33,9 @@ class CoverThread(Thread):
             null_cover = db.get_null_cover()
             for album in albums:
                 mbid, url = self.cu.search(album.artist.name, album.name)
-                res = db.get_cover_by_mbid(mbid)
+                res = None
+                if mbid is not None and len(mbid) > 0:
+                    res = db.get_cover_by_mbid(mbid)
                 if res:
                     album.cover = res
                     self.print_debug('_')

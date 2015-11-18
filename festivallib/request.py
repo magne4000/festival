@@ -67,7 +67,7 @@ class Typed:
                 session.expunge_all()
                 return obj
             elif ffilter is not None:
-                query = session.query(TrackInfo).join(TrackInfo.album).join(Album.artist).options(joinedload(TrackInfo.genre), contains_eager(TrackInfo.album, Album.artist))
+                query = session.query(TrackInfo).join(TrackInfo.album).join(Album.artist).options(joinedload(TrackInfo.genre), contains_eager(TrackInfo.artist), contains_eager(TrackInfo.album, Album.artist))
                 query = ffilter(query)
                 obj = query.one()
                 session.expunge_all()
@@ -94,7 +94,12 @@ class Typed:
     def gettrackfull(self, track_id):
         with self.session_scope() as session:
             try:
-                obj = session.query(TrackInfo).join(TrackInfo.album).join(Album.artist).options(joinedload(TrackInfo.genre), contains_eager(TrackInfo.album, Album.artist)).filter(TrackInfo.id == track_id).one()
+                obj = session.query(TrackInfo).join(TrackInfo.album).join(Album.artist).options(
+                    joinedload(TrackInfo.genre),
+                    contains_eager(TrackInfo.artist),
+                    contains_eager(TrackInfo.album, Album.artist),
+                    joinedload(Album.cover)
+                ).filter(TrackInfo.id == track_id).one()
                 session.expunge_all()
                 return obj
             except NoResultFound:
@@ -142,7 +147,7 @@ class Typed:
 
     def listtracks(self, ffilter=None, skip=None, limit=None):
         with self.session_scope() as session:
-            query = session.query(TrackInfo).join(TrackInfo.album).join(Album.artist).options(contains_eager(TrackInfo.album, Album.artist))
+            query = session.query(TrackInfo).join(TrackInfo.album).join(Album.artist).options(contains_eager(TrackInfo.artist), contains_eager(TrackInfo.album, Album.artist))
             if ffilter is not None:
                 query = ffilter(query)
             query = limitoffset(query.order_by(TrackInfo.trackno), skip, limit)

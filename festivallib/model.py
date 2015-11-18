@@ -237,8 +237,8 @@ class Cover(Base):
     __tablename__ = "cover"
 
     id = Column(Integer, primary_key=True)
-    mbid = Column(String(254), nullable=True, unique=True)
-    path = Column(String(254), nullable=True)
+    mbid = Column(String(254), nullable=True)
+    path = Column(String(254), nullable=True, unique=True)
 
 
 class Genre(Base, TypedInfo):
