@@ -145,9 +145,11 @@ from api import *
 
 def main():
     if 'test' not in sys.argv:
-        Scanner(app.config['SCANNER_PATH']).start()
+        if '--with-scanner' in sys.argv:
+            Scanner(app.config['SCANNER_PATH']).start()
         app.run(host='0.0.0.0', debug=True, use_reloader=False)
     else:
+        # 'test' argv is here only to test configuration file for update (handled by app.py)
         pass
 
 if __name__ == "__main__":
