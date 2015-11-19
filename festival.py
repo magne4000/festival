@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import render_template, request, json, send_file, send_from_directory, abort, Response
+from flask import render_template, request, json, send_file, send_from_directory, abort, Response, redirect, url_for
 from flask.json import jsonify
 from festivallib.model import Artist, Album, TrackInfo
 from festivallib.request import typed_fct
@@ -136,7 +136,7 @@ def fileinfo():
 def albumart(typed, salbum):
     cover = typed.getcoverbyalbumid(salbum)
     if cover is None or cover.mbid == '0':
-        abort(404)
+        return redirect(url_for('static', filename='images/nocover.png'))
     else:
         return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
 
