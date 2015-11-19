@@ -101,7 +101,7 @@ def lalbums(typed):
 def lartists(typed):
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
-    return jsonify(data=[x._asdict() for x in typed.listartists(skip=skip, limit=limit+skip)])
+    return jsonify(data=[x._asdict() for x in typed.listartists(skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/albumsbyartists")
@@ -113,7 +113,7 @@ def albumsbyartists(typed):
     ffilter = None
     if filters is not None and 'artist' in filters:
         ffilter = lambda query: query.filter(Artist.id == filters['artist'])
-    return jsonify(data=[x._asdict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit+skip)])
+    return jsonify(data=[x._asdict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/search")
