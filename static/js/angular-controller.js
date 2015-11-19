@@ -395,7 +395,11 @@ angular.module('festival')
             artist.expanded = !artist.expanded;
             return;
         }
-        var filter = {artist: artist.id};
+        params = params || {};
+        params.type = $displayMode.type();
+        var filter = {
+            artist: artist.id
+        };
         $ajax.albumsbyartists(filter, params).success(function(data, status) {
             if (data.data.length > 0) {
                 artist.expanded = true;
@@ -409,7 +413,10 @@ angular.module('festival')
     $scope.loadAlbumsAndTracks = function(artist, callback) {
         if (!artist.everythingLoaded) {
             var filter = {artist: artist.id};
-            var params = {flat: true};
+            var params = {
+                flat: true,
+                type: $displayMode.type()
+            };
             $ajax.tracks(filter, params).success(function(data, status) {
                 artist.albums = data.data[0].albums;
                 artist.expanded = (artist.albums.length > 0);
@@ -445,7 +452,10 @@ angular.module('festival')
             }
         } else {
             var filter = {artist: artist.id, album: album.id};
-            var params = {flat: true};
+            var params = {
+                flat: true,
+                type: $displayMode.type()
+            };
             $ajax.tracks(filter, params).success(function(data, status) {
                 album.tracks = data.data;
                 if (typeof callback === "function") callback(artist, album);

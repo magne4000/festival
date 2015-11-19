@@ -74,7 +74,7 @@ def ltracks(typed):
             if 'artist' in filters:
                 query = query.filter(Album.artist_id == filters['artist'])
             if 'album' in filters:
-                query = query.filter(Track.album_id == filters['album'])
+                query = query.filter(TrackInfo.album_id == filters['album'])
             return query
     else:
         ffilter = None
