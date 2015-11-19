@@ -1,4 +1,5 @@
 import os
+import shutil
 
 
 class Data:
@@ -14,3 +15,13 @@ class Data:
     @staticmethod
     def getdir(name):
         return os.path.join(Data.DIR, name)
+
+    @staticmethod
+    def clear():
+        for fname in os.listdir(Data.DIR):
+            if not fname.startswith('.'):
+                fpath = os.path.join(Data.DIR, fname)
+                if os.path.isdir(fpath):
+                    shutil.rmtree(fpath)
+                else:
+                    os.remove(fpath)

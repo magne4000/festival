@@ -3,23 +3,16 @@ import re
 import mimetypes
 from datetime import datetime
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session, backref, contains_eager
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, event, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, distinct, event, UniqueConstraint
 from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy.pool import NullPool
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from contextlib import contextmanager
-from app import app
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
-
-mimetypes.init()
 
 Base = declarative_base()
-
-Session = sessionmaker(bind=engine)
 
 
 def coroutine(func):
@@ -38,10 +31,6 @@ def purge_cover_on_delete(session, query, query_context, result):
         for elt in deleted_elts:
             if os.path.isfile(elt[4]):
                 os.remove(elt[4])
-
-
-event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
-
 
 class TypedQuery(Query):
 
@@ -426,4 +415,11 @@ class Context:
 
         return track
 
+
+from app import app, get_engine
+
+engine = get_engine(app)
+mimetypes.init()
+Session = sessionmaker(bind=engine)
+event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
 Base.metadata.create_all(bind=engine)

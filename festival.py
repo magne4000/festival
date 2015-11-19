@@ -8,6 +8,7 @@ from festivallib.thumbs import Thumb
 from app import app
 from scanner import Scanner
 from libs import zipstream
+import argparse
 import json
 import zipfile
 import sys
@@ -143,14 +144,19 @@ def albumart(typed, salbum):
 from api import *
 
 
+def handle_args():
+    parser = argparse.ArgumentParser(description='Festival')
+    parser.add_argument('--with-scanner', action='store_true', help='Start the scanner process with the webserver')
+    parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
+    parser.add_argument('--host', default='0.0.0.0', help='On which host to run webserver')
+    return parser.parse_args()
+
+
 def main():
-    if 'test' not in sys.argv:
-        if '--with-scanner' in sys.argv:
-            Scanner(app.config['SCANNER_PATH']).start()
-        app.run(host='0.0.0.0', debug=True, use_reloader=False)
-    else:
-        # 'test' argv is here only to test configuration file for update (handled by app.py)
-        pass
+    args = handle_args()
+    if args.with_scanner:
+        Scanner(app.config['SCANNER_PATH']).start()
+    app.run(host=args.host, debug=args.debug, use_reloader=args.debug)
 
 if __name__ == "__main__":
     main()

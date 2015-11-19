@@ -61,7 +61,7 @@ class CoverThread(Thread):
 
 class Scanner(Thread):
 
-    def __init__(self, root, infinite=True, debug=False):
+    def __init__(self, root, fetch_covers=True, infinite=True, debug=False):
         super(Scanner, self).__init__()
         self.root = root
         self.progress_timeout = None
@@ -69,6 +69,7 @@ class Scanner(Thread):
         self.rescan_after = False
         self.tracks = {}
         self.debug = debug
+        self.fetch_covers = fetch_covers
         self.infinite = infinite
 
     def init_tracks(self):
@@ -171,11 +172,12 @@ class Scanner(Thread):
         logger.debug('New scan started')
         self.walk()
         logger.debug('Scan finished')
-        logger.debug('Starting cover thread')
-        t = CoverThread(debug=self.debug)
-        t.start()
-        t.join()
-        logger.debug('Cover thread terminated')
+        if self.fetch_covers:
+            logger.debug('Starting cover thread')
+            t = CoverThread(debug=self.debug)
+            t.start()
+            t.join()
+            logger.debug('Cover thread terminated')
         if self.infinite:
             t = Timer(app.config['SCANNER_REFRESH_INTERVAL'], self._run)
             t.start()
