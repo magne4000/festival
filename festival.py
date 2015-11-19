@@ -156,7 +156,7 @@ def main():
     args = handle_args()
     if args.with_scanner:
         Scanner(app.config['SCANNER_PATH']).start()
-    app.run(host=args.host, debug=args.debug, use_reloader=args.debug)
+    app.run(host=args.host, debug=args.debug, use_reloader=args.debug and not args.with_scanner)
 
 if __name__ == "__main__":
     main()

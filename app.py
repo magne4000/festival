@@ -18,14 +18,16 @@ def get_engine(myapp):
     return create_engine(myapp.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
 
 
-def is_sane_database(app):
+def is_sane_database(myapp):
     from festivallib.model import Base
-    engine = get_engine(app)
+    engine = get_engine(myapp)
     inspector = Inspector.from_engine(engine)
 
     errors = False
 
     tables = inspector.get_table_names()
+    if len(tables) == 0:
+        return True
 
     logger = logging.getLogger('is_sane_database')
 
@@ -43,7 +45,6 @@ def is_sane_database(app):
 
             columns = [c["name"] for c in inspector.get_columns(table)]
             mapper = inspect(klass)
-
             for column_prop in mapper.attrs:
                 if isinstance(column_prop, RelationshipProperty):
                     # TODO: Add sanity checks for relations
@@ -52,10 +53,10 @@ def is_sane_database(app):
                     for column in column_prop.columns:
                         # Assume normal flat column
                         if not column.key in columns:
-                            logger.error("Model %s declares column %s which does not exist in database %s", klass, column.key, engine)
+                            logger.error("Model %s declares column %s which does not exist in database", klass, column.key)
                             errors = True
         else:
-            logger.error("Model %s declares table %s which does not exist in database %s", klass, table, engine)
+            logger.error("Model %s declares table %s which does not exist in database", klass, table)
             errors = True
 
     return not errors
@@ -74,18 +75,18 @@ def get_config(filename):
 
 def get_app():
     from flask import Flask
-    app = Flask(__name__)
-    app.config.from_pyfile('settings.cfg')
-    app.config['SCANNER_MODES'] = ['tags']
-    if app.config['SCANNER_FOLDER_PATTERNS'] is not None and len(app.config['SCANNER_FOLDER_PATTERNS']) > 0:
-        app.config['SCANNER_MODES'].append('folder')
-        for i, pattern in enumerate(app.config['SCANNER_FOLDER_PATTERNS']):
-            app.config['SCANNER_FOLDER_PATTERNS'][i] = re.compile(pattern)
-    return app
+    myapp = Flask(__name__)
+    myapp.config.from_pyfile('settings.cfg')
+    myapp.config['SCANNER_MODES'] = ['tags']
+    if myapp.config['SCANNER_FOLDER_PATTERNS'] is not None and len(myapp.config['SCANNER_FOLDER_PATTERNS']) > 0:
+        myapp.config['SCANNER_MODES'].append('folder')
+        for i, pattern in enumerate(myapp.config['SCANNER_FOLDER_PATTERNS']):
+            myapp.config['SCANNER_FOLDER_PATTERNS'][i] = re.compile(pattern)
+    return myapp
 
 
 def check_and_get_app():
-    app = None
+    myapp = None
     if not os.path.isfile(settings_filepath):
         print("\033[93m'settings.cfg' file does not exists, it will be created.\033[0m")
         print("\033[93mYou just need to fill the following form\033[0m\n")
@@ -110,8 +111,8 @@ def check_and_get_app():
             print("\t", "\n\t".join(config_diff), sep='')
             sys.exit(2)
 
-        app = get_app()
-        if not is_sane_database(app):
+        myapp = get_app()
+        if not is_sane_database(myapp):
             print("\033[93mModel changed since last update. Database and covers will be deleted.\033[0m")
             resp = input('Continue ? [y/N] ')
             if resp.lower() == 'y':
@@ -119,13 +120,13 @@ def check_and_get_app():
             else:
                 print("\033[93mArborting.\033[0m")
                 sys.exit(3)
-    if app is None:
-        app = get_app()
-    return app
+    if myapp is None:
+        myapp = get_app()
+    return myapp
 
 
 app = check_and_get_app()
 
 
-level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level)
+logging_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging_level)

@@ -349,9 +349,10 @@ def random_songs(typed):
     count = typed.counttracks(lambda query: query.filter(*fltr))
 
     def gen():
-        for _ in range(size):
-            x = random.choice(range(count))
-            yield typed.gettrackinfo(ffilter=lambda query: query.filter(*fltr).offset(x).limit(1))
+        if count > 0:
+            for _ in range(size):
+                x = random.choice(range(count))
+                yield typed.gettrackinfo(ffilter=lambda query: query.filter(*fltr).offset(x).limit(1))
 
     return request.formatter({'randomSongs': {
         'song': [format_track(track, child=True) for track in gen()]
