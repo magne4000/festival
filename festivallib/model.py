@@ -72,7 +72,6 @@ def session_scope(mode='tags'):
 
 class TypedInfo:
     type = Column(String(20), nullable=False)
-    typeguy = Column(String(20), nullable=False)
 
 
 class Track(Base):
