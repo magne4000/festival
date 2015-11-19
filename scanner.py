@@ -87,10 +87,10 @@ class Scanner(Thread):
 
     def purgeold(self):
         logger.debug('Purging %d old tracks', len(self.tracks))
-        if len(self.tracks) > 0:
-            with Context() as db:
+        with Context() as db:
+            if len(self.tracks) > 0:
                 db.delete_tracks(list(self.tracks.keys()))
-                db.delete_orphans()
+            db.delete_orphans()
 
     def get_tags_and_info(self, mfile):
         tags = {}
@@ -160,7 +160,8 @@ class Scanner(Thread):
                     sys.stdout.write('.')
                 sys.stdout.flush()
         except GeneratorExit:
-            self.tracks = {}
+            pass
+        h.close()
 
     @staticmethod
     def filter_music_file(path):
@@ -188,7 +189,9 @@ class Scanner(Thread):
             for name in files:
                 if self.filter_music_file(name):
                     h.send(os.path.join(self.root, name))
+        h.close()
         self.purgeold()
+        self.tracks = {}
 
 if __name__ == "__main__":
     while True:

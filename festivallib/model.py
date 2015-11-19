@@ -2,12 +2,11 @@ import os
 import re
 import mimetypes
 from datetime import datetime
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session, joinedload
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, event, Boolean, UniqueConstraint
-from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session, backref, contains_eager
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, create_engine, distinct, event, UniqueConstraint
 from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.pool import NullPool
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
@@ -33,8 +32,9 @@ def coroutine(func):
 
 def purge_cover_on_delete(session, query, query_context, result):
     affected_table = query_context.statement.froms[0]
-    if affected_table.name == 'album':
+    if affected_table.name == 'cover':
         deleted_elts = engine.execute(query_context.statement).fetchall()
+        print(deleted_elts)
         for elt in deleted_elts:
             if os.path.isfile(elt[4]):
                 os.remove(elt[4])
@@ -140,7 +140,7 @@ class TrackInfo(Base, TypedInfo):
     id = Column(Integer, primary_key=True)
     name = Column(String(254), nullable=False, index=True)
     track_id = Column(Integer, ForeignKey("track.id"), nullable=False)
-    track = relationship("Track", backref='infos', lazy='joined')
+    track = relationship("Track", backref=backref('infos', cascade="all, delete-orphan"), lazy='joined')
     album_id = Column(Integer, ForeignKey("album.id"), nullable=False)
     artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
     genre_id = Column(Integer, ForeignKey("genre.id"), nullable=True)
@@ -300,10 +300,10 @@ class Context:
         self.session = Session()
         self.infos = {}
         if self.load:
-            self.tracks = {x.path: x for x in self.session.query(Track).all()}
+            self.tracks = [x.path for x in self.session.query(Track.path).all()]
             for mode in app.config['SCANNER_MODES']:
                 self.infos[mode] = {}
-                self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in self.session.query(Artist).filter(Artist.type == mode).all()}
+                self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in self.session.query(Artist).join(Artist.albums).options(contains_eager(Artist.albums)).filter(Artist.type == mode).all()}
                 self.infos[mode]['genres'] = {x.name.strip().lower(): x for x in self.session.query(Genre).filter(Artist.type == mode).all()}
         return self
 
@@ -314,11 +314,10 @@ class Context:
             self.session.rollback()
         self.session.close()
 
-
     def get_null_cover(self):
         obj = None
         try:
-            obj = self.session.query(Cover).filter(Cover.mbid=='0').one()
+            obj = self.session.query(Cover).filter(Cover.mbid == '0').one()
         except NoResultFound:
             obj = Cover(mbid='0')
             self.session.add(obj)
@@ -333,11 +332,12 @@ class Context:
     def delete_orphans(self):
         self.session.query(Genre).filter(~Genre.id.in_(self.session.query(distinct(TrackInfo.genre_id)))).delete(False)
         self.session.query(Album).filter(~Album.id.in_(self.session.query(distinct(TrackInfo.album_id)))).delete(False)
+        self.session.query(Cover).filter(~Cover.id.in_(self.session.query(distinct(Album.cover_id)))).delete(False)
         self.session.query(Artist).filter(~Artist.id.in_(self.session.query(distinct(Album.artist_id)))).delete(False)
         self.session.commit()
 
-    def delete_tracks(self, tracks):
-        self.session.query(Track).filter(Track.path.in_(tracks)).delete(False)
+    def delete_tracks(self, tracks_path):
+        self.session.query(Track).filter(Track.path.in_(tracks_path)).delete(False)
         self.session.commit()
 
     def add_track_full(self, filepath, mtime, tags, info):
@@ -375,10 +375,10 @@ class Context:
             ar = Artist(name=artist, type=mode)
             self.infos[mode]['artists'][artistclean] = ar
             self.session.add(ar)
-        self.session.enable_relationship_loading(ar)
-        albums = {a.name: a for a in ar.albums}
-        if album in albums:
-            return albums[album]
+        albums = {a.name.strip().lower(): a for a in ar.albums}
+        albumclean = album.strip().lower()
+        if albumclean in albums:
+            return albums[albumclean]
         else:
             al = Album(name=album, artist=ar, year=year, type=mode)
             self.session.add(al)

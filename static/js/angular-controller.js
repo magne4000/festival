@@ -374,7 +374,7 @@ angular.module('festival')
         $ajax.lastalbums(filter, params).success(function(data, status) {
             $rootScope.loading = false;
             next((data.data.length > 0));
-            $utils.extend($rootScope.artists, data.data, true);
+            $utils.extend($rootScope.artists, data.data);
         }).error(function(){
             $rootScope.loading = false;
             next(false);
@@ -532,6 +532,12 @@ angular.module('festival')
     $scope.$watch('type', function(newValue, oldValue) {
         if (!angular.equals(newValue, oldValue)) {
             $displayMode.type(newValue);
+            $timeout.cancel(promise);
+            promise = $timeout(function() {
+                $rootScope.artists = [];
+                $displayMode.clean();
+                $displayMode.call();
+            }, 400);
         }
     });
 

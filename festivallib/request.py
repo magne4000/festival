@@ -188,7 +188,7 @@ class Typed:
             return qall
 
 
-    def listtracksbyalbumsbyartists(self, ffilter=None, skip=None, limit=None, order_by=(Artist.name, Album.year.desc(), TrackInfo.trackno)):
+    def listtracksbyalbumsbyartists(self, ffilter=None, skip=None, limit=None, order_by=(Artist.name, Album.year.desc(), TrackInfo.trackno, TrackInfo.name)):
         with self.session_scope() as session:
             query = session.query(Artist).join(Artist.albums).join(Album.tracks).join(TrackInfo.track).options(contains_eager(Artist.albums, Album.tracks))
             if ffilter is not None:

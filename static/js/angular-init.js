@@ -241,8 +241,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         if (val && modes[val]) {
             _current = val;
             if (typeof param !== "undefined") _param = param;
-            _moreToLoad = true;
-            skip(0);
+            clean();
         }
         return _current;
     }
@@ -253,7 +252,12 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         }
     }
 
-    function call() {
+    function clean() {
+        _moreToLoad = true;
+        skip(0);
+    }
+
+    function call(clean) {
         if (!_loading && _moreToLoad) {
             _loading = true;
             var params = {
@@ -275,7 +279,8 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         current: current,
         setCallback: setCallback,
         call: call,
-        type: type
+        type: type,
+        clean: clean
     };
 }])
 .factory('$utils', [function(){

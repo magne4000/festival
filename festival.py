@@ -91,7 +91,7 @@ def lalbums(typed):
     limit = request.args.get('limit', 50, type=int)
     la = request.args.get('la', type=json.loads)
     if la:
-        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(Album.last_updated.desc(), TrackInfo.trackno))])
+        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(Album.last_updated.desc(), TrackInfo.trackno, TrackInfo.name))])
     else:
         return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit)])
 

@@ -45,7 +45,7 @@ python3 festival.py
 #### Standalone
 You can launch Festival in standalone mode. Just launch the following command to do so:
 ```bash
-python3 festival.py
+python3 festival.py --with-scanner
 ```
 Now, the webserver is running (by default on port 5000), and the scanner also runs in background.
 
