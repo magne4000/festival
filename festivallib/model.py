@@ -13,6 +13,9 @@ from contextlib import contextmanager
 from .thumbs import Thumb
 
 
+SCHEMA_VERSION = 2
+
+
 Base = declarative_base()
 
 
@@ -84,7 +87,6 @@ class Track(Base):
     last_updated = Column(DateTime)
     size = Column(Integer)
     mimetype = Column(String(50))
-    #TODO delete cascase
 
     @hybrid_method
     def url(self):
@@ -371,8 +373,12 @@ class Context:
             self.infos[mode]['genres'][lgenre] = ge
         return ge
 
-    def get_albums_without_cover(self):
-        return self.session.query(Album).filter(Album.cover_id == None).all()
+    def get_albums_without_cover(self, fetch_mbid_0=False):
+        if fetch_mbid_0:
+            cover = self.get_cover_by_mbid(0)
+            if cover is not None:
+                yield from self.session.query(Album).filter(Album.cover == cover).all()
+        yield from self.session.query(Album).filter(Album.cover_id == None).all()
 
     def fetch_album(self, mode, artist, album, year=None):
         artistclean = artist.strip().lower()

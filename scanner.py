@@ -8,7 +8,7 @@ import time
 from threading import Thread, Timer
 from datetime import datetime
 from festivallib.model import Context, Track, Cover, session_scope, coroutine
-from festivallib import coverurl, thumbs
+from festivallib import coverurl, thumbs, info
 from libs.mediafile import MediaFile, UnreadableFileError
 from app import app
 
@@ -27,28 +27,41 @@ class CoverThread(Thread):
             sys.stdout.write(char)
             sys.stdout.flush()
 
+    def rescan_albums_without_cover(self):
+        last_cover_scan = info.Infos.get('last_cover_scan')
+        if last_cover_scan is not None:
+            return last_cover_scan + app.config['COVERS_FETCH_ONLINE_INTERVAL'] >= datetime.now()
+        return False
+
+    def update_last_cover_scan(self):
+        info.Infos.update(last_cover_scan=datetime.now())
+
     def run(self):
         with Context(expire_on_commit=False) as db:
-            albums = db.get_albums_without_cover()
+            albums = db.get_albums_without_cover(self.rescan_albums_without_cover())
             null_cover = db.get_null_cover()
             for album in albums:
-                mbid, url = self.cu.search(album.artist.name, album.name)
-                res = None
-                if mbid is not None and len(mbid) > 0:
-                    res = db.get_cover_by_mbid(mbid)
-                if res:
-                    album.cover = res
-                    self.print_debug('_')
-                else:
-                    cover = self.cu.download(url, self.save)
-                    if cover is not None:
-                        cover.mbid = mbid
-                        album.cover = cover
-                        self.print_debug('x')
+                if app.config['COVERS_FETCH_LOCAL']:
+                    pass  # TODO
+                if app.config['COVERS_FETCH_ONLINE']:
+                    mbid, url = self.cu.search(album.artist.name, album.name)
+                    res = None
+                    if mbid is not None and len(mbid) > 0:
+                        res = db.get_cover_by_mbid(mbid)
+                    if res:
+                        album.cover = res
+                        self.print_debug('_')
                     else:
-                        album.cover = null_cover
-                        self.print_debug('-')
+                        cover = self.cu.download(url, self.save)
+                        if cover is not None:
+                            cover.mbid = mbid
+                            album.cover = cover
+                            self.print_debug('x')
+                        else:
+                            album.cover = null_cover
+                            self.print_debug('-')
                 db.session.commit()
+        self.update_last_cover_scan()
 
     @staticmethod
     def save(fd):
@@ -181,11 +194,14 @@ class Scanner(Thread):
             t.join()
             logger.debug('Cover thread terminated')
         if self.infinite:
-            t = Timer(app.config['SCANNER_REFRESH_INTERVAL'], self._run)
+            t = Timer(app.config['SCANNER_REFRESH_INTERVAL'].total_seconds(), self._run)
             t.start()
 
     def run(self):
         self._run()
+
+    def update_last_scan(self):
+        info.Infos.update(last_scan=datetime.now())
 
     def walk(self):
         h = self.handle()
@@ -196,10 +212,11 @@ class Scanner(Thread):
         h.close()
         self.purgeold()
         self.tracks = {}
+        self.update_last_scan()
 
 if __name__ == "__main__":
     while True:
         s = Scanner(app.config['SCANNER_PATH'], infinite=False, debug='-d' in sys.argv)
         s.start()
         s.join()
-        time.sleep(app.config['SCANNER_REFRESH_INTERVAL'])
+        time.sleep(app.config['SCANNER_REFRESH_INTERVAL'].total_seconds())
