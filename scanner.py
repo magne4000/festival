@@ -28,7 +28,7 @@ class CoverThread(Thread):
             sys.stdout.flush()
 
     def run(self):
-        with Context() as db:
+        with Context(expire_on_commit=False) as db:
             albums = db.get_albums_without_cover()
             null_cover = db.get_null_cover()
             for album in albums:
@@ -48,6 +48,7 @@ class CoverThread(Thread):
                     else:
                         album.cover = null_cover
                         self.print_debug('-')
+                db.session.commit()
 
     @staticmethod
     def save(fd):

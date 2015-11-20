@@ -282,11 +282,12 @@ def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254
 
 class Context:
 
-    def __init__(self, load=False):
+    def __init__(self, load=False, expire_on_commit=True):
         self.load = load
+        self.expire_on_commit = expire_on_commit
 
     def __enter__(self):
-        self.session = Session()
+        self.session = Session(expire_on_commit=self.expire_on_commit)
         self.infos = {}
         if self.load:
             self.tracks = [x.path for x in self.session.query(Track.path).all()]

@@ -20,7 +20,7 @@ class CoverURL:
             'artist': '',
             'album': ''
         }
-        self.conn = urllib3.PoolManager(5)
+        self.conn = urllib3.PoolManager(5, timeout=10.)
 
     @staticmethod
     def _mbid(jsonobj):
