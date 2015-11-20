@@ -93,6 +93,7 @@ class Scanner(Thread):
             if len(self.tracks) > 0:
                 db.delete_tracks(list(self.tracks.keys()))
             db.delete_orphans()
+            db.purge_downloaded_covers()
 
     def get_tags_and_info(self, mfile):
         tags = {}

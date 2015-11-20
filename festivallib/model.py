@@ -2,7 +2,7 @@ import os
 import re
 import mimetypes
 from datetime import datetime
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session, backref, contains_eager
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session, backref, contains_eager, joinedload
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, distinct, event, UniqueConstraint
 from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
@@ -10,6 +10,7 @@ from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from contextlib import contextmanager
+from .thumbs import Thumb
 
 
 Base = declarative_base()
@@ -27,10 +28,9 @@ def purge_cover_on_delete(session, query, query_context, result):
     affected_table = query_context.statement.froms[0]
     if affected_table.name == 'cover':
         deleted_elts = engine.execute(query_context.statement).fetchall()
-        print(deleted_elts)
         for elt in deleted_elts:
-            if os.path.isfile(elt[4]):
-                os.remove(elt[4])
+            if os.path.isfile(elt[2]):
+                os.remove(elt[2])
 
 class TypedQuery(Query):
 
@@ -129,7 +129,7 @@ class TrackInfo(Base, TypedInfo):
     id = Column(Integer, primary_key=True)
     name = Column(String(254), nullable=False, index=True)
     track_id = Column(Integer, ForeignKey("track.id"), nullable=False)
-    track = relationship("Track", backref=backref('infos', cascade="all, delete-orphan"), lazy='joined')
+    track = relationship("Track", backref='infos', lazy='joined')
     album_id = Column(Integer, ForeignKey("album.id"), nullable=False)
     artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
     genre_id = Column(Integer, ForeignKey("genre.id"), nullable=True)
@@ -321,13 +321,30 @@ class Context:
 
     def delete_orphans(self):
         self.session.query(Genre).filter(~Genre.id.in_(self.session.query(distinct(TrackInfo.genre_id)))).delete(False)
+        self.session.commit()
         self.session.query(Album).filter(~Album.id.in_(self.session.query(distinct(TrackInfo.album_id)))).delete(False)
+        self.session.commit()
         self.session.query(Cover).filter(~Cover.id.in_(self.session.query(distinct(Album.cover_id)))).delete(False)
+        self.session.commit()
         self.session.query(Artist).filter(~Artist.id.in_(self.session.query(distinct(Album.artist_id)))).delete(False)
         self.session.commit()
 
+    def purge_downloaded_covers(self):
+        path_covers = {cover.path for cover in self.session.query(Cover.path).all()}
+        thumbs_root = Thumb.getdir()
+        for fname in os.listdir(thumbs_root):
+            fpath = os.path.join(thumbs_root, fname)
+            if fpath not in path_covers:
+                if os.path.isfile(fpath):
+                    os.remove(fpath)
+
     def delete_tracks(self, tracks_path):
-        self.session.query(Track).filter(Track.path.in_(tracks_path)).delete(False)
+        tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(joinedload(Track.infos)).all()
+        # self.session.query(TrackInfo).filter(TrackInfo.tracktrack).delete(False)
+        for track in tracks:
+            for trackinfo in track.infos:
+                self.session.delete(trackinfo)
+            self.session.delete(track)
         self.session.commit()
 
     def add_track_full(self, filepath, mtime, tags, info):
