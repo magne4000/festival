@@ -2,13 +2,14 @@ import os
 import re
 import mimetypes
 from datetime import datetime
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session, backref, contains_eager, joinedload
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, distinct, event, UniqueConstraint
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session, contains_eager, joinedload
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, distinct, event, UniqueConstraint, create_engine
 from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
+from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
 from .thumbs import Thumb
 
@@ -342,7 +343,6 @@ class Context:
 
     def delete_tracks(self, tracks_path):
         tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(joinedload(Track.infos)).all()
-        # self.session.query(TrackInfo).filter(TrackInfo.tracktrack).delete(False)
         for track in tracks:
             for trackinfo in track.infos:
                 self.session.delete(trackinfo)
@@ -440,9 +440,9 @@ class Context:
         return track
 
 
-from app import app, get_engine
+from app import app
 
-engine = get_engine(app)
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
 mimetypes.init()
 Session = sessionmaker(bind=engine)
 event.listen(Session, "after_bulk_delete", purge_cover_on_delete)

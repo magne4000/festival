@@ -6,8 +6,6 @@ from flask import Flask
 from festivallib.data import Data
 from festivallib.info import Infos
 from festivallib.model import SCHEMA_VERSION
-from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
 from datetime import timedelta
 
 settings_filepath = os.path.join(os.path.dirname(__file__), 'settings.cfg')
@@ -25,10 +23,6 @@ def interval_to_timedelta(interval):
         'w': 'weeks'
     }
     return timedelta(**{ratios[interval[-1:]]: int(interval[0:-1])})
-
-
-def get_engine(myapp):
-    return create_engine(myapp.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
 
 
 def get_config_dict_from_file(filename):
@@ -88,7 +82,7 @@ def check():
             resp = input('Continue ? [y/N] ')
             if resp.lower() == 'y':
                 Data.clear()
-                Infos.update(schema_version = SCHEMA_VERSION)
+                Infos.update(schema_version=SCHEMA_VERSION)
             else:
                 print("\033[93mArborting.\033[0m")
                 sys.exit(3)
