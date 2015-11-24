@@ -335,11 +335,12 @@ class Context:
     def purge_downloaded_covers(self):
         path_covers = {cover.path for cover in self.session.query(Cover.path).all()}
         thumbs_root = Thumb.getdir()
-        for fname in os.listdir(thumbs_root):
-            fpath = os.path.join(thumbs_root, fname)
-            if fpath not in path_covers:
-                if os.path.isfile(fpath):
-                    os.remove(fpath)
+        if os.path.isdir(thumbs_root):
+            for fname in os.listdir(thumbs_root):
+                fpath = os.path.join(thumbs_root, fname)
+                if fpath not in path_covers:
+                    if os.path.isfile(fpath):
+                        os.remove(fpath)
 
     def delete_tracks(self, tracks_path):
         tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(joinedload(Track.infos)).all()
