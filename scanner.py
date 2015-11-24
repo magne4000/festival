@@ -6,6 +6,7 @@ import uuid
 import logging
 import time
 import re
+from collections import defaultdict
 from threading import Thread, Timer
 from datetime import datetime
 from festivallib.model import Context, Track, Cover, session_scope, coroutine
@@ -150,14 +151,13 @@ class Scanner(Thread):
             match = pattern.search(mfile)
             if match is not None:
                 try:
-                    if not match.group('album') or not match.group('artist'):  # 'album' and 'artist' groups are mandatory
-                        continue
-                    for key in ['artist', 'album', 'title', 'year', 'trackno']:
-                        try:
-                            if match.group(key) is not None:
-                                tags[key] = match.group(key)
-                        except IndexError:
-                            pass
+                    if all((match.group(key) for key in ['artist', 'album', 'title'])):  # 'artist', 'album' and 'title' groups are mandatory
+                        for key in ['artist', 'album', 'title', 'year', 'trackno']:
+                            try:
+                                if match.group(key) is not None:
+                                    tags[key] = match.group(key)
+                            except IndexError:
+                                pass
                 except IndexError:
                     pass
         return tags
@@ -190,7 +190,6 @@ class Scanner(Thread):
                 should_add, mtime = self.scan(mfile)
                 if should_add:
                     h.send((mfile, mtime))
-                    sys.stdout.write('+')
                 elif self.debug:
                     sys.stdout.write('.')
                 sys.stdout.flush()
@@ -222,16 +221,65 @@ class Scanner(Thread):
     def update_last_scan(self):
         info.Infos.update(last_scan=datetime.now())
 
-    def walk(self):
+    def walk(self, purge=True):
         h = self.handle()
         for self.root, _, files in os.walk(self.root, topdown=False):
             for name in files:
                 if self.filter_music_file(name):
                     h.send(os.path.join(self.root, name))
         h.close()
-        self.purgeold()
+        if purge:
+            self.purgeold()
         self.tracks = {}
         self.update_last_scan()
+
+
+class ScannerTestRegex(Scanner):
+
+    def init_tracks(self):
+        self.tracks = {}
+        self.treeview = defaultdict(dict)
+        self.unable_to_scan = []
+
+    def print_info(self):
+
+        def printmsg(x):
+            print()
+            print('#'*len(x))
+            print(x)
+            print('#'*len(x))
+            print()
+
+        printmsg('Successfully')
+        for artist, albums in self.treeview.items():
+            print(artist)
+            for album, tracks in albums.items():
+                print(' ', album)
+                max_len = max(map(len, [track[0] for track in tracks]))
+                for title, mfile, in tracks:
+                    print('   ', title.ljust(max_len, ' '), mfile)
+        if len(self.unable_to_scan) > 0:
+            printmsg('Errors')
+            map(print, self.unable_to_scan)
+        else:
+            printmsg("All files matched")
+
+    @coroutine
+    def add_track(self):
+        try:
+            while True:
+                mfile, _, = (yield)
+                tags = self.get_tags_from_folders(mfile)
+                if len(tags) >= 3:
+                    self.treeview[tags['artist']].setdefault(tags['album'], []).append((tags['title'], mfile))
+                else:
+                    self.unable_to_scan.append((mfile, tags))
+        except GeneratorExit:
+            pass
+        self.print_info()
+
+    def _run(self):
+        self.walk(purge=False)
 
 if __name__ == "__main__":
     while True:

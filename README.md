@@ -38,10 +38,15 @@ SCANNER_PATH = '</path/to/your/musics/>'
 ```
 You can also launch festival.py manually for the first time, it'll create the `settings.cfg` file and prompt for mandatory values:
 ```bash
-python3 festival.py
+python3 festival.pyy --check
 ```
 
 ### Startup
+#### First startup
+If `SCANNER_FOLDER_PATTERNS` is activated in configuration (it is the default behavior), it is recommended to test the patterns with the following command:
+```bash
+python3 festival.py --test-regex
+```
 #### Standalone
 You can launch Festival in standalone mode. Just launch the following command to do so:
 ```bash
