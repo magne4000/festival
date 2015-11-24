@@ -32,7 +32,6 @@ class CoverThread(Thread):
 
     def rescan_albums_without_cover(self):
         last_cover_scan = info.Infos.get('last_cover_scan')
-        print(last_cover_scan + app.config['COVERS_FETCH_ONLINE_INTERVAL'], datetime.now())
         if last_cover_scan is not None:
             return last_cover_scan + app.config['COVERS_FETCH_ONLINE_INTERVAL'] <= datetime.now()
         return False
