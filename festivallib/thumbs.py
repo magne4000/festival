@@ -15,7 +15,8 @@ class Thumb(Data):
         self.mkdirp(Thumb.NAME)
         save_to = os.path.join(self.getdir(), "%s.jpg" % newname)
         try:
-            img = Image.open(io.BytesIO(fd.data))
+            data = io.BytesIO(fd.data) if hasattr(fd, 'data') else fd
+            img = Image.open(data)
             img.thumbnail((140, 140))
             img.save(save_to, "JPEG")
             return save_to

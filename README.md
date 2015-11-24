@@ -24,27 +24,37 @@ git clone https://github.com/magne4000/festival.git
 ### Update
 ```bash
 git pull
+python3 festival.py --check
 ```
 
 ### Configuration
-In order to configure the app, you need to create a custom `settings.cfg` file:
+You can configure the app automatically on first launch:
+```bash
+python3 festival.py --check
+```
+It'll create the `settings.cfg` file and prompt for mandatory values.
+
+Otherwise, you can manually create a custom `settings.cfg` file:
 ```bash
 cp settings.sample.cfg settings.cfg
 ```
-In the newly created file `settings.cfg`, the only value that really needs to be modified is the path where your musics are stored:
+In the newly created file `settings.cfg`, it is necessary to update the value of `SCANNER_PATH`:
 ```python
 SCANNER_PATH = '</path/to/your/musics/>'
 ```
-You can also launch festival.py manually for the first time, it'll create the `settings.cfg` file and prompt for mandatory values:
-```bash
-python3 festival.py
-```
+
+It is also recommended to check all other parameters.
 
 ### Startup
+#### First startup
+If `SCANNER_FOLDER_PATTERNS` is activated in configuration (it is the default behavior), it is recommended to test the patterns with the following command:
+```bash
+python3 festival.py --test-regex
+```
 #### Standalone
 You can launch Festival in standalone mode. Just launch the following command to do so:
 ```bash
-python3 festival.py
+python3 festival.py --with-scanner
 ```
 Now, the webserver is running (by default on port 5000), and the scanner also runs in background.
 

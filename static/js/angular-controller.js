@@ -345,9 +345,9 @@ angular.module('festival')
     $rootScope.artists = [];
     $rootScope.loading = false;
 
-    function loadArtists(filter, skip, limit, next) {
+    function loadArtists(filter, params, next) {
         $rootScope.loading = true;
-        $ajax.artists(filter, skip, limit).success(function(data, status) {
+        $ajax.artists(filter, params).success(function(data, status) {
             $rootScope.loading = false;
             next((data.data.length > 0));
             $utils.extend($rootScope.artists, data.data);
@@ -357,9 +357,9 @@ angular.module('festival')
         });
     }
 
-    function loadAlbumsByArtists(filter, skip, limit, next) {
+    function loadAlbumsByArtists(filter, params, next) {
         $rootScope.loading = true;
-        $ajax.albumsbyartists(filter, skip, limit).success(function(data, status) {
+        $ajax.albumsbyartists(filter, params).success(function(data, status) {
             $rootScope.loading = false;
             next((data.data.length > 0));
             $utils.extend($rootScope.artists, data.data);
@@ -369,12 +369,12 @@ angular.module('festival')
         });
     }
 
-    function loadLastAlbums(filter, skip, limit, next) {
+    function loadLastAlbums(filter, params, next) {
         $rootScope.loading = true;
-        $ajax.lastalbums(filter, skip, limit).success(function(data, status) {
+        $ajax.lastalbums(filter, params).success(function(data, status) {
             $rootScope.loading = false;
             next((data.data.length > 0));
-            $utils.extend($rootScope.artists, data.data, true);
+            $utils.extend($rootScope.artists, data.data);
         }).error(function(){
             $rootScope.loading = false;
             next(false);
@@ -390,13 +390,17 @@ angular.module('festival')
         $displayMode.call();
     };
 
-    $scope.loadAlbums = function(artist) {
+    $scope.loadAlbums = function(artist, params) {
         if (artist.albums && artist.albums.length > 0) {
             artist.expanded = !artist.expanded;
             return;
         }
-        var filter = {artist: artist.id};
-        $ajax.albumsbyartists(filter).success(function(data, status) {
+        params = params || {};
+        params.type = $displayMode.type();
+        var filter = {
+            artist: artist.id
+        };
+        $ajax.albumsbyartists(filter, params).success(function(data, status) {
             if (data.data.length > 0) {
                 artist.expanded = true;
                 artist.albums = data.data[0].albums;
@@ -409,7 +413,11 @@ angular.module('festival')
     $scope.loadAlbumsAndTracks = function(artist, callback) {
         if (!artist.everythingLoaded) {
             var filter = {artist: artist.id};
-            $ajax.tracks(filter, false).success(function(data, status) {
+            var params = {
+                flat: true,
+                type: $displayMode.type()
+            };
+            $ajax.tracks(filter, params).success(function(data, status) {
                 artist.albums = data.data[0].albums;
                 artist.expanded = (artist.albums.length > 0);
                 artist.everythingLoaded = true;
@@ -444,7 +452,11 @@ angular.module('festival')
             }
         } else {
             var filter = {artist: artist.id, album: album.id};
-            $ajax.tracks(filter, true).success(function(data, status) {
+            var params = {
+                flat: true,
+                type: $displayMode.type()
+            };
+            $ajax.tracks(filter, params).success(function(data, status) {
                 album.tracks = data.data;
                 if (typeof callback === "function") callback(artist, album);
             });
@@ -489,6 +501,7 @@ angular.module('festival')
 }])
 .controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', '$location', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout, $location) {
     $scope.value = "";
+    $scope.type = "tags";
     $scope.checkboxFilter = {
         artists: true,
         albums: true,
@@ -498,9 +511,10 @@ angular.module('festival')
     var promise = null;
     var lastValue = "";
 
-    function search(param, skip, limit, next) {
+    function search(term, params, next) {
         $rootScope.loading = true;
-        $ajax.search(param, $scope.checkboxFilter, false, skip, limit).success(function(data, status) {
+        params.flat = false;
+        $ajax.search(term, $scope.checkboxFilter, params).success(function(data, status) {
             $rootScope.loading = false;
             next((data.data.length > 0));
             for (var i=0; i<data.data.length ; i++) {
@@ -524,6 +538,18 @@ angular.module('festival')
             promise = $timeout($scope.searchnow, 700);
         }
     }, true);
+
+    $scope.$watch('type', function(newValue, oldValue) {
+        if (!angular.equals(newValue, oldValue)) {
+            $displayMode.type(newValue);
+            $timeout.cancel(promise);
+            promise = $timeout(function() {
+                $rootScope.artists = [];
+                $displayMode.clean();
+                $displayMode.call();
+            }, 400);
+        }
+    });
 
     $scope.search = function() {
         if (lastValue !== $scope.value) {

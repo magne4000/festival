@@ -20,7 +20,13 @@ class CoverURL:
             'artist': '',
             'album': ''
         }
-        self.conn = urllib3.PoolManager(5)
+        self.conn = urllib3.PoolManager(5, timeout=10.)
+
+    @staticmethod
+    def _mbid(jsonobj):
+        if 'album' in jsonobj and 'mbid' in jsonobj['album']:
+            return jsonobj['album']['mbid']
+        return None
 
     @staticmethod
     def _large(jsonobj):
@@ -37,13 +43,13 @@ class CoverURL:
         url = CoverURL.SEARCH_URL + params
         try:
             r = self.conn.request('GET', url)
-            return self._large(json.loads(r.data.decode('utf-8')))
+            ojson = json.loads(r.data.decode('utf-8'))
+            return self._mbid(ojson), self._large(ojson)
         except:
             logger.exception('Error while searching album cover')
-            return None
+            return None, None
 
-    def download(self, artist, album, callback):
-        url = self.search(artist, album)
+    def download(self, url, callback):
         if url is not None:
             try:
                 r = self.conn.request('GET', url)

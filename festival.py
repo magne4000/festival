@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
-from flask import render_template, request, json, send_file, send_from_directory, abort, Response
+from flask import render_template, request, json, send_file, send_from_directory, abort, Response, redirect, url_for
 from flask.json import jsonify
-from festivallib.model import Artist, Album, Track
-from festivallib.request import listartists, listalbumsbyartists, listtracks, listtracksbyalbumsbyartists, gettrack, getalbum, search
+from festivallib.model import Artist, Album, TrackInfo
+from festivallib.request import typed_fct
 from festivallib.thumbs import Thumb
 from app import app
-from scanner import Scanner
+from scanner import Scanner, ScannerTestRegex
 from libs import zipstream
+import argparse
 import json
 import zipfile
+import sys
 
 
 def ziptracks(tracks, filename):
@@ -32,8 +34,9 @@ def hello():
 
 
 @app.route("/music/<sid>")
-def music(sid):
-    tr = gettrack(sid)
+@typed_fct
+def music(typed, sid):
+    tr = typed.gettrack(track_id=sid)
     if tr is None or tr.path is None:
         abort(404)
     else:
@@ -43,23 +46,26 @@ def music(sid):
 
 
 @app.route("/download/artist/<artistid>")
-def downloada(artistid):
-    tracks = listtracks(lambda query: query.filter(Artist.id == artistid))
+@typed_fct
+def downloada(typed, artistid):
+    tracks = typed.listtracks(lambda query: query.filter(Artist.id == artistid))
     if len(tracks) > 0:
         return ziptracks(tracks, tracks[0].artist_name)
     abort(404)
 
 
 @app.route("/download/album/<albumid>")
-def downloadaa(albumid):
-    tracks = listtracks(lambda query: query.filter(Album.id == albumid))
+@typed_fct
+def downloadaa(typed, albumid):
+    tracks = typed.listtracks(lambda query: query.filter(Album.id == albumid))
     if len(tracks) > 0:
         return ziptracks(tracks, "{} - {}".format(tracks[0].artist_name, tracks[0].album_name))
     abort(404)
 
 
 @app.route("/ajax/list/tracks")
-def ltracks():
+@typed_fct
+def ltracks(typed):
     skip = request.args.get('skip', None, type=int)
     limit = request.args.get('limit', None, type=int)
     flat = request.args.get('flat', True, type=json.loads)
@@ -69,52 +75,56 @@ def ltracks():
             if 'artist' in filters:
                 query = query.filter(Album.artist_id == filters['artist'])
             if 'album' in filters:
-                query = query.filter(Track.album_id == filters['album'])
+                query = query.filter(TrackInfo.album_id == filters['album'])
             return query
     else:
         ffilter = None
     if flat:
-        return jsonify(data=[x._asdict() for x in listtracks(ffilter=ffilter, skip=skip, limit=limit)])
+        return jsonify(data=[x._asdict() for x in typed.listtracks(ffilter=ffilter, skip=skip, limit=limit)])
     else:
-        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
+        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/albums")
-def lalbums():
+@typed_fct
+def lalbums(typed):
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
     la = request.args.get('la', type=json.loads)
     if la:
-        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(Album.last_updated.desc(), Track.trackno))])
+        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(Album.last_updated.desc(), TrackInfo.trackno, TrackInfo.name))])
     else:
-        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in listtracksbyalbumsbyartists(skip=skip, limit=limit)])
+        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/artists")
-def lartists():
+@typed_fct
+def lartists(typed):
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
-    return jsonify(data=[x._asdict() for x in listartists(skip=skip, limit=limit+skip)])
+    return jsonify(data=[x._asdict() for x in typed.listartists(skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/albumsbyartists")
-def albumsbyartists():
+@typed_fct
+def albumsbyartists(typed):
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
     filters = request.args.get('filters', type=json.loads)
     ffilter = None
     if filters is not None and 'artist' in filters:
         ffilter = lambda query: query.filter(Artist.id == filters['artist'])
-    return jsonify(data=[x._asdict(albums=True) for x in listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit+skip)])
+    return jsonify(data=[x._asdict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/search")
-def search_():
+@typed_fct
+def search_(typed):
     filters = request.args.get('filters', type=json.loads)
     filters['skip'] = request.args.get('skip', 0, type=int)
     filters['limit'] = request.args.get('limit', 100, type=int)
     term = request.args.get('term', None)
-    return jsonify(data=[x._asdict(albums=True, tracks=True) for x in search(term, **filters)])
+    return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.search(term, **filters)])
 
 
 @app.route("/ajax/fileinfo")
@@ -123,19 +133,37 @@ def fileinfo():
 
 
 @app.route("/albumart/<salbum>")
-def albumart(salbum):
-    al = getalbum(salbum)
-    if al is None or al.albumart is None or al.albumart == '-':
-        abort(404)
+@typed_fct
+def albumart(typed, salbum):
+    cover = typed.getcoverbyalbumid(salbum)
+    if cover is None or cover.mbid == '0':
+        return redirect(url_for('static', filename='images/nocover.png'))
     else:
-        return send_from_directory(Thumb.getdir(), os.path.basename(al.albumart), conditional=True)
+        return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
 
 from api import *
 
 
+def handle_args():
+    parser = argparse.ArgumentParser(description='Festival')
+    parser.add_argument('--with-scanner', action='store_true', help='Start the scanner process with the webserver')
+    parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
+    parser.add_argument('--host', default='0.0.0.0', help='On which host to run webserver')
+    parser.add_argument('--check', action='store_true', help='Check Festival integrity')
+    parser.add_argument('--test-regex', action='store_true', help='Test SCANNER_FOLDER_PATTERNS option')
+    return parser.parse_args()
+
+
 def main():
-    Scanner(app.config['SCANNER_PATH']).start()
-    app.run(host='0.0.0.0', debug=True, use_reloader=False)
+    args = handle_args()
+    if args.test_regex:
+        ScannerTestRegex(app.config['SCANNER_PATH']).start()
+    elif not args.check:
+        if args.with_scanner:
+            Scanner(app.config['SCANNER_PATH']).start()
+        app.run(host=args.host, debug=args.debug, use_reloader=args.debug and not args.with_scanner)
+    else:  # Check is done when importing app, and it exits the program when it fails
+        print('OK')
 
 if __name__ == "__main__":
     main()

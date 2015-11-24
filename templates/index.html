@@ -104,6 +104,15 @@
             <div ng-progress="volumeval" ng-progress-duration="100" class="progress"></div>
           </div><a href="#" ng-click="toggleVolume()"><i ng-class="{'fa-volume-up': volumeval >= 35, 'fa-volume-down': volumeval < 35 && volumeval > 0, 'fa-volume-off': volumeval == 0}" class="fa"></i></a>
         </div>
+        <div class="select-source leftseparated">
+          <label for="select-select-source">
+          Source
+          </label>
+          <select ng-model="type" id="select-select-source">
+            <option value="tags">Tags</option>
+            <option value="folder">Folder</option>
+          </select>
+        </div>
       </div>
     </header>
     <main class="ng-cloak">
@@ -117,7 +126,7 @@
         </div>
         <artists infinite-scroll="pageArtists()" infinite-scroll-distance="1" infinite-scroll-container="'#container'">
           <div ng-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
-          <div ng-repeat="artist in artists track by $index" class="artist">
+          <div ng-repeat="artist in artists track by artist.id" class="artist">
             <h3 ng-click="loadAlbums(artist)"><i ng-class="{'fa-chevron-down': artist.expanded, 'fa-chevron-right': !artist.expanded}" class="fa"></i>{[::artist.name ? artist.name : 'Unknown']}
             </h3>
             <div class="controls">
@@ -127,7 +136,7 @@
               </div>
             </div>
             <div ng-show="artist.expanded" class="albums">
-              <div ng-repeat="album in artist.albums track by $index" ng-class="{hidetracks: !album.tracks || album.trackshidden}" class="album">
+              <div ng-repeat="album in artist.albums track by album.id" ng-class="{hidetracks: !album.tracks || album.trackshidden}" class="album">
                 <h4 ng-click="toggleTracks(artist, album)">{[::album.name]}<span ng-if="::album.year" class="year">({[::album.year]})</span>
                 </h4>
                 <div class="controls">
@@ -138,7 +147,7 @@
                 </div>
                 <div class="album-container"><img ng-click="toggleTracks(artist, album)" lazy-img="albumart/{[::album.id]}" alt="{[::album.name]}" src="static/images/nocover.png">
                   <div class="tracks">
-                    <div ng-repeat="track in album.tracks track by $index" ng-class="{active: currentTrack.id == track.id, playing: currentTrack.id == track.id && playing}" class="track">
+                    <div ng-repeat="track in album.tracks track by track.id" ng-class="{active: currentTrack.id == track.id, playing: currentTrack.id == track.id && playing}" class="track">
                       <span ng-if="::track.trackno" class="trackno">
                         <ul class="audioeffect">
                           <li></li>

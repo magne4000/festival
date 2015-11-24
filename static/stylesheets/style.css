@@ -280,6 +280,7 @@ header .toolbar .leftseparated {
   padding-top: 4px;
   padding-left: 6px;
   border-left: 1px solid #999;
+  height: 24px;
 }
 header .toolbar .search, header .toolbar .special-actions {
   float: left;
@@ -297,7 +298,6 @@ header .toolbar .volume {
   padding-top: 4px;
   padding-left: 6px;
   display: flex;
-  height: 24px;
 }
 header .toolbar .volume .slider {
   width: 100px;
@@ -305,6 +305,31 @@ header .toolbar .volume .slider {
 header .toolbar .volume .fa {
   padding: 3px;
   width: 18px;
+}
+header .toolbar .select-source {
+  float: right;
+  display: flex;
+}
+header .toolbar .select-source label {
+  margin-top: 4px;
+  margin-right: 2px;
+  display: none;
+}
+header .toolbar .select-source:hover label {
+  display: inline;
+}
+header .toolbar .select-source select {
+  font-family: inherit;
+  background-color: #555555;
+  width: 100%;
+  padding: 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0, 0.12);
+}
+header .toolbar .select-source select:focus {
+  outline: none;
 }
 #search {
   width: 200px;

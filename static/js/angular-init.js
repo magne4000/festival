@@ -136,47 +136,44 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
 }])
 .factory('$ajax', ['$http', function($http){
 
-    function filterFactory(filter, skip, limit) {
+    function filterFactory(filter, params) {
         filter = filter || {};
         var ret = {filters: filter};
-        if (skip) ret.skip = skip;
-        if (limit) ret.limit = limit;
+        for (var key in params) {
+            if (params[key]) {
+                ret[key] = params[key];
+            }
+        }
         return ret;
     }
 
-    function artists(filter, skip, limit) {
-        return $http.get('ajax/list/artists', {params: filterFactory(filter, skip, limit)});
+    function artists(filter, params) {
+        return $http.get('ajax/list/artists', {params: filterFactory(filter, params)});
     }
 
-    function albums(filter, skip, limit) {
-        return $http.get('ajax/list/albums', {params: filterFactory(filter, skip, limit)});
+    function albums(filter, params) {
+        return $http.get('ajax/list/albums', {params: filterFactory(filter, params)});
     }
 
-    function lastalbums(filter, skip, limit) {
-        var params = filterFactory(filter, skip, limit);
+    function lastalbums(filter, params) {
+        params = filterFactory(filter, params);
         params.la = true;
         return $http.get('ajax/list/albums', {params: params});
     }
 
-    function albumsbyartists(filter, skip, limit) {
-        return $http.get('ajax/list/albumsbyartists', {params: filterFactory(filter, skip, limit)});
+    function albumsbyartists(filter, params) {
+        return $http.get('ajax/list/albumsbyartists', {params: filterFactory(filter, params)});
     }
 
-    function tracks(filter, flat) {
-        var params = filterFactory(filter);
-        if (typeof flat !== "undefined") params.flat = flat;
+    function tracks(filter, params) {
+        params = filterFactory(filter, params);
         return $http.get('ajax/list/tracks', {params: params});
     }
 
-    function search(term, filters, flat, skip, limit) {
-        flat = !!flat;
-        var params = {
-            term: term,
-            filters: filters,
-            skip: skip,
-            limit: limit,
-            flat: flat
-        };
+    function search(term, filter, params) {
+        params = filterFactory(filter, params);
+        params.term = term;
+        params.flat = !!params.flat;
         return $http.get('ajax/list/search', {params: params});
     }
 
@@ -213,12 +210,20 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     var _loading = false;
     var _moreToLoad = true;
     var _param = {};
+    var _type = 'tags';
 
     function limit(val) {
         if (val && modes[val]) {
             modes[_current].limit = val;
         }
         return modes[_current].limit;
+    }
+
+    function type(val) {
+        if (typeof val !== "undefined") {
+            _type = val;
+        }
+        return _type;
     }
 
     function incSkip() {
@@ -236,8 +241,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         if (val && modes[val]) {
             _current = val;
             if (typeof param !== "undefined") _param = param;
-            _moreToLoad = true;
-            skip(0);
+            clean();
         }
         return _current;
     }
@@ -248,10 +252,20 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         }
     }
 
-    function call() {
+    function clean() {
+        _moreToLoad = true;
+        skip(0);
+    }
+
+    function call(clean) {
         if (!_loading && _moreToLoad) {
             _loading = true;
-            modes[_current].callback(_param, _skip, limit(), function(moreToLoad){
+            var params = {
+                skip: _skip,
+                limit: limit(),
+                type: _type
+            };
+            modes[_current].callback(_param, params, function(moreToLoad){
                 _loading = false;
                 _moreToLoad = moreToLoad;
                 incSkip();
@@ -264,7 +278,9 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         skip: skip,
         current: current,
         setCallback: setCallback,
-        call: call
+        call: call,
+        type: type,
+        clean: clean
     };
 }])
 .factory('$utils', [function(){
