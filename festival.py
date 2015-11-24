@@ -160,7 +160,7 @@ def main():
         ScannerTestRegex(app.config['SCANNER_PATH']).start()
     elif not args.check:
         if args.with_scanner:
-            Scanner(app.config['SCANNER_PATH']).start()
+            Scanner(app.config['SCANNER_PATH'], debug=args.debug).start()
         app.run(host=args.host, debug=args.debug, use_reloader=args.debug and not args.with_scanner)
     else:  # Check is done when importing app, and it exits the program when it fails
         print('OK')
