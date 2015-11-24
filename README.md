@@ -24,7 +24,7 @@ git clone https://github.com/magne4000/festival.git
 ### Update
 ```bash
 git pull
-python3 festival.py test
+python3 festival.py --check
 ```
 
 ### Configuration
