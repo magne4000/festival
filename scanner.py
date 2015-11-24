@@ -76,7 +76,7 @@ class CoverThread(Thread):
             null_cover = db.get_null_cover()
             for album in albums:
                 for val in app.config['COVERS_FETCH']:
-                    self.getattr('run_fetch_%s' % val)(db, null_cover, album)
+                    getattr(self, 'run_fetch_%s' % val)(db, null_cover, album)
                     if album.cover != null_cover:
                         break
                 db.session.commit()
