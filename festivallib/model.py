@@ -374,7 +374,7 @@ class Context:
         return ge
 
     def get_albums_without_cover(self, fetch_mbid_0=False):
-        if fetch_mbid_0:
+        if True:
             cover = self.get_cover_by_mbid(0)
             if cover is not None:
                 yield from self.session.query(Album).filter(Album.cover == cover).all()

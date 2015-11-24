@@ -75,10 +75,10 @@ class CoverThread(Thread):
             albums = db.get_albums_without_cover(self.rescan_albums_without_cover())
             null_cover = db.get_null_cover()
             for album in albums:
-                if app.config['COVERS_FETCH_LOCAL']:
-                    self.run_fetch_local(db, null_cover, album)
-                if album.cover == null_cover and app.config['COVERS_FETCH_ONLINE']:
-                    self.run_fetch_online(db, null_cover, album)
+                for val in app.config['COVERS_FETCH']:
+                    self.getattr('run_fetch_%s' % val)(db, null_cover, album)
+                    if album.cover != null_cover:
+                        break
                 db.session.commit()
         self.update_last_cover_scan()
 
