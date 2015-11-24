@@ -250,6 +250,9 @@ class ScannerTestRegex(Scanner):
             print('#'*len(x))
             print()
 
+        def printw(x, y):
+            print('\033[93m/!\\\033[0m', x, y)
+
         printmsg('Successfully')
         for artist, albums in self.treeview.items():
             print(artist)
@@ -260,7 +263,8 @@ class ScannerTestRegex(Scanner):
                     print('   ', title.ljust(max_len, ' '), mfile)
         if len(self.unable_to_scan) > 0:
             printmsg('Errors')
-            map(print, self.unable_to_scan)
+            for mfile, tags in self.unable_to_scan:
+                printw(mfile, tags)
         else:
             printmsg("All files matched")
 
