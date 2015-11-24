@@ -380,6 +380,10 @@ class Context:
                 yield from self.session.query(Album).filter(Album.cover == cover).all()
         yield from self.session.query(Album).filter(Album.cover_id == None).all()
 
+    def get_album_path(self, album):
+        res = self.session.query(Track.path).join(TrackInfo).filter(TrackInfo.album_id == album.id).first()
+        return os.path.dirname(res[0]) if len(res) > 0 else None
+
     def fetch_album(self, mode, artist, album, year=None):
         artistclean = artist.strip().lower()
         if artistclean in self.infos[mode]['artists']:

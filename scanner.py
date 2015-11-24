@@ -5,6 +5,7 @@ import os
 import uuid
 import logging
 import time
+import re
 from threading import Thread, Timer
 from datetime import datetime
 from festivallib.model import Context, Track, Cover, session_scope, coroutine
@@ -13,6 +14,7 @@ from libs.mediafile import MediaFile, UnreadableFileError
 from app import app
 
 logger = logging.getLogger('scanner')
+filter_cover = lambda fname: re.compile('(cover|folder|album|thumb)\.(jpg|gif)', re.I).match(fname)
 
 
 class CoverThread(Thread):
@@ -37,30 +39,46 @@ class CoverThread(Thread):
     def update_last_cover_scan(self):
         info.Infos.update(last_cover_scan=datetime.now())
 
+    def run_fetch_online(self, db, null_cover, album):
+        mbid, url = self.cu.search(album.artist.name, album.name)
+        res = None
+        if mbid is not None and len(mbid) > 0:
+            res = db.get_cover_by_mbid(mbid)
+        if res:
+            album.cover = res
+            self.print_debug('_')
+        else:
+            cover = self.cu.download(url, self.save)
+            if cover is not None:
+                cover.mbid = mbid
+                album.cover = cover
+                self.print_debug('x')
+            else:
+                album.cover = null_cover
+                self.print_debug('-')
+
+    def run_fetch_local(self, db, null_cover, album):
+        dirname = db.get_album_path(album)
+        try:
+            fname = next(filter(filter_cover, os.listdir(dirname)))
+            fpath = os.path.join(dirname, fname)
+            cover = self.save(fpath)
+            if cover is not None:
+                album.cover = cover
+            else:
+                album.cover = null_cover
+        except StopIteration:
+            album.cover = null_cover
+
     def run(self):
         with Context(expire_on_commit=False) as db:
             albums = db.get_albums_without_cover(self.rescan_albums_without_cover())
             null_cover = db.get_null_cover()
             for album in albums:
                 if app.config['COVERS_FETCH_LOCAL']:
-                    pass  # TODO
-                if app.config['COVERS_FETCH_ONLINE']:
-                    mbid, url = self.cu.search(album.artist.name, album.name)
-                    res = None
-                    if mbid is not None and len(mbid) > 0:
-                        res = db.get_cover_by_mbid(mbid)
-                    if res:
-                        album.cover = res
-                        self.print_debug('_')
-                    else:
-                        cover = self.cu.download(url, self.save)
-                        if cover is not None:
-                            cover.mbid = mbid
-                            album.cover = cover
-                            self.print_debug('x')
-                        else:
-                            album.cover = null_cover
-                            self.print_debug('-')
+                    self.run_fetch_local(db, null_cover, album)
+                if album.cover == null_cover and app.config['COVERS_FETCH_ONLINE']:
+                    self.run_fetch_online(db, null_cover, album)
                 db.session.commit()
         self.update_last_cover_scan()
 
