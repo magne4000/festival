@@ -28,18 +28,22 @@ python3 festival.py --check
 ```
 
 ### Configuration
-In order to configure the app, you need to create a custom `settings.cfg` file:
+You can configure the app automatically on first launch:
+```bash
+python3 festival.py --check
+```
+It'll create the `settings.cfg` file and prompt for mandatory values.
+
+Otherwise, you can manually create a custom `settings.cfg` file:
 ```bash
 cp settings.sample.cfg settings.cfg
 ```
-In the newly created file `settings.cfg`, the only value that really needs to be modified is the path where your musics are stored:
+In the newly created file `settings.cfg`, it is necessary to update the value of `SCANNER_PATH`:
 ```python
 SCANNER_PATH = '</path/to/your/musics/>'
 ```
-You can also launch festival.py manually for the first time, it'll create the `settings.cfg` file and prompt for mandatory values:
-```bash
-python3 festival.pyy --check
-```
+
+It is also recommended to check all other parameters.
 
 ### Startup
 #### First startup
