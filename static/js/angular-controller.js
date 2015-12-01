@@ -410,29 +410,29 @@ angular.module('festival')
         });
     };
 
-    $scope.loadAlbumsAndTracks = function(artist, callback) {
-        if (!artist.everythingLoaded) {
+    $scope.loadAlbumsAndTracks = function(artist, flat, callback) {
+        if (!artist.albums) {
             var filter = {artist: artist.id};
             var params = {
-                flat: true,
+                flat: !!flat,
                 type: $displayMode.type()
             };
             $ajax.tracks(filter, params).success(function(data, status) {
                 artist.albums = data.data[0].albums;
                 artist.expanded = (artist.albums.length > 0);
-                artist.everythingLoaded = true;
                 if (typeof callback === "function") callback(artist);
             });
-        } else {
-            artist.expanded = !artist.expanded;
+            return true;
+        } else if (typeof callback === "function") {
             $timeout(function() {
                 callback(artist);
             }, 0);
         }
+        return false;
     };
 
     $scope.loadAlbumsAndTracksAndAdd = function(artist, autoplay) {
-        $scope.loadAlbumsAndTracks(artist, function(artist1) {
+        $scope.loadAlbumsAndTracks(artist, false, function(artist1) {
             if (artist1.albums) {
                 artist1.expanded = (artist.albums.length > 0);
                 for (var i=0; i<artist1.albums.length; i++) {
@@ -467,15 +467,6 @@ angular.module('festival')
         $scope.loadTracks(artist, album, function(artist1, album1) {
             $scope.add(album1.tracks, autoplay);
         });
-    };
-
-    $scope.toggleTracks = function(artist, album) {
-        if (typeof album.trackshidden === "undefined") {
-            album.trackshidden = (album.tracks && album.tracks.length > 0);
-            $scope.loadTracks(artist, album);
-        } else {
-            album.trackshidden = !album.trackshidden;
-        }
     };
 }])
 .controller('QueueController', ['$scope', '$rootScope', '$tracks', function($scope, $rootScope, $tracks) {

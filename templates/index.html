@@ -127,7 +127,8 @@
         <artists infinite-scroll="pageArtists()" infinite-scroll-distance="1" infinite-scroll-container="'#container'">
           <div ng-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
           <div ng-repeat="artist in artists track by artist.id" class="artist">
-            <h3 ng-click="loadAlbums(artist)"><i ng-class="{'fa-chevron-down': artist.expanded, 'fa-chevron-right': !artist.expanded}" class="fa"></i>{[::artist.name ? artist.name : 'Unknown']}
+            <h3 ng-click="loadAlbumsAndTracks(artist, false) || artist.expanded = !artist.expanded">
+              <i ng-class="{'fa-chevron-down': artist.expanded, 'fa-chevron-right': !artist.expanded}" class="fa"></i>{[::artist.name ? artist.name : 'Unknown']}
             </h3>
             <div class="controls">
               <div title="Play all albums" ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control"><i class="fa fa-play"></i>
@@ -136,8 +137,9 @@
               </div>
             </div>
             <div ng-show="artist.expanded" class="albums">
-              <div ng-repeat="album in artist.albums track by album.id" ng-class="{hidetracks: !album.tracks || album.trackshidden}" class="album">
-                <h4 ng-click="toggleTracks(artist, album)">{[::album.name]}<span ng-if="::album.year" class="year">({[::album.year]})</span>
+              <div ng-repeat="album in artist.albums track by album.id" ng-class="{hidetracks: !album.tracks}" class="album">
+                <h4>
+                  {[::album.name]}<span ng-if="::album.year" class="year">({[::album.year]})</span>
                 </h4>
                 <div class="controls">
                   <div title="Play tracks" ng-click="empty();loadTracksAndAdd(artist, album, true)" class="control"><i class="fa fa-play"></i>

@@ -140,7 +140,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
         filter = filter || {};
         var ret = {filters: filter};
         for (var key in params) {
-            if (params[key]) {
+            if (typeof params[key] !== "undefined") {
                 ret[key] = params[key];
             }
         }
