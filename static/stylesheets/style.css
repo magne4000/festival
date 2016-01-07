@@ -82,7 +82,7 @@ button, .wrap-dd-select {
 button {
   text-transform: uppercase;
 }
-button:not([disabled]):hover {
+button:not([disabled]):hover, .wrap-dd-select:not([disabled]):hover {
   background-color: rgba(0, 0, 0, 0.26);
 }
 button[disabled] {
@@ -468,24 +468,43 @@ main .container {
 main .container .noresult {
   margin: 10px;
 }
-/* Main - controls */
-main .container .controls {
+/* Controls */
+.controls {
   display: flex;
   align-content: stretch;
   font-size: 1.5em;
 }
-main .container .controls .control {
-  align-items: center;
-  border-radius: 10px;
-}
-main .container .heading > .controls {
-  display: inline-block;
-}
-main .container .heading > .controls .control {
+.controls .control {
+  color: rgba(0, 0, 0, 0.7);
+  transition: box-shadow 0.25s, color 0.25s, background-color 0.25s;
   width: 1em;
   height: 1em;
   display: inline-flex;
   cursor: pointer;
+  align-items: center;
+  border-radius: 50%;
+}
+.controls .control:hover {
+  color: whitesmoke;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+main .container .heading > .controls {
+  display: inline-block;
+  margin-left: 6px;
+}
+main .container .heading > .controls .control:hover {
+  box-shadow: 0 0 10px -3px black;
+}
+.track .controls {
+  cursor: pointer;
+  width: 48px;
+}
+.track .controls .control {
+  border-left: 1px solid whitesmoke;
+  border-right: 1px solid whitesmoke;
+  border-collapse: collapse;
+  box-sizing: border-box;
+  flex: 1;
 }
 /* Main - artist and album */
 main .container .heading {
@@ -563,12 +582,15 @@ main .container .albums .album.hidetracks .album-container .tracks {
 main .queue {
   position: absolute;
   right: 0;
-  top: 1px;
-  bottom: 1px;
+  top: 0px;
+  bottom: 0px;
   min-width: 20px;
+  transition: top 0.3s, bottom 0.3s;
 }
 main .queue.show {
   box-shadow: -5px 0 10px rgba(100, 100, 100, 0.6);
+  top: 2px;
+  bottom: 2px;
 }
 main .queue .handle {
   width: 20px;
@@ -656,22 +678,6 @@ main .queue.show .vertical-playlist-text {
 }
 .track:hover .trackno {
   padding-right: 6px;
-}
-/* Tracks controls */
-.track .controls {
-  cursor: pointer;
-  overflow: hidden;
-  width: 47px;
-  margin-left: 10px;
-}
-.track .controls .control {
-  border-left: 1px solid whitesmoke;
-  border-right: 1px solid whitesmoke;
-  border-collapse: collapse;
-}
-.controls .control:hover {
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
 }
 .track .name {
   flex: 1;
