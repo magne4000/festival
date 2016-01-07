@@ -417,10 +417,14 @@ angular.module('festival')
                 flat: !!flat,
                 type: $displayMode.type()
             };
+            artist.loading = true;
             $ajax.tracks(filter, params).success(function(data, status) {
+                artist.loading = false;
                 artist.albums = data.data[0].albums;
                 artist.expanded = (artist.albums.length > 0);
                 if (typeof callback === "function") callback(artist);
+            }).error(function(){
+                artist.loading = false;
             });
             return true;
         } else if (typeof callback === "function") {
@@ -492,7 +496,17 @@ angular.module('festival')
 }])
 .controller('ToolbarController', ['$scope', '$rootScope', '$ajax', '$displayMode', '$utils', '$timeout', '$location', function($scope, $rootScope, $ajax, $displayMode, $utils, $timeout, $location) {
     $scope.value = "";
-    $scope.type = "tags";
+    $scope.type = {text: 'Tags', value: 'tags'};
+    $scope.types = [
+        {
+            text: 'Tags',
+            value: 'tags'
+        },
+        {
+            text: 'Folder',
+            value: 'folder'
+        }
+    ];
     $scope.checkboxFilter = {
         artists: true,
         albums: true,
@@ -530,17 +544,15 @@ angular.module('festival')
         }
     }, true);
 
-    $scope.$watch('type', function(newValue, oldValue) {
-        if (!angular.equals(newValue, oldValue)) {
-            $displayMode.type(newValue);
-            $timeout.cancel(promise);
-            promise = $timeout(function() {
-                $rootScope.artists = [];
-                $displayMode.clean();
-                $displayMode.call();
-            }, 400);
-        }
-    });
+    $scope.typechanged = function(type) {
+        $displayMode.type(type.value);
+        $timeout.cancel(promise);
+        promise = $timeout(function() {
+            $rootScope.artists = [];
+            $displayMode.clean();
+            $displayMode.call();
+        }, 400);
+    };
 
     $scope.search = function() {
         if (lastValue !== $scope.value) {

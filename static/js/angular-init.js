@@ -1,4 +1,4 @@
-angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
+angular.module('festival', ['infinite-scroll', 'angularLazyImg', 'ngDropdowns'])
 .config(['lazyImgConfigProvider', '$locationProvider', function(lazyImgConfigProvider, $locationProvider) {
     var scrollable = document.getElementById('container');
     lazyImgConfigProvider.setOptions({
@@ -387,10 +387,9 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg'])
     };
 }])
 .run([function(){
-    $( document ).on("click", ".artist>.controls>.control", function(evt) {
-        $(evt.target).parents('.artist').effect( "transfer", { to: $( ".handle" ) });
-    });
-    $( document ).on("click", ".album>.controls>.control", function(evt) {
-        $(evt.target).parents('.album').effect( "transfer", { to: $( ".handle" ) });
+    $( document ).on("click", ".container .controls>.control", function(evt) {
+        var elt = $(evt.target).parents('.album');
+        if (elt.length == 0) elt = $(evt.target).parents('.artist');
+        elt.effect( "transfer", { to: $( ".handle" ) });
     });
 }]);

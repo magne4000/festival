@@ -1,20 +1,57 @@
+/* Custom fonts */
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: local('Material Icons'),
+       local('MaterialIcons-Regular'),
+       url(../fonts/MaterialIcons-Regular.woff2) format('woff2'),
+       url(../fonts/MaterialIcons-Regular.woff) format('woff'),
+       url(../fonts/MaterialIcons-Regular.ttf) format('truetype');
+}
 @font-face {
   font-family: 'Open Sans';
   src: url("../fonts/OpenSans/Regular/OpenSans-Regular.eot?v=1.1.0");
-  src: url("../fonts/OpenSans/Regular/OpenSans-Regular.eot?#iefix&v=1.1.0") format("embedded-opentype"), url("../fonts/OpenSans/Regular/OpenSans-Regular.woff2?v=1.1.0") format("woff2"), url("../fonts/OpenSans/Regular/OpenSans-Regular.woff?v=1.1.0") format("woff"), url("../fonts/OpenSans/Regular/OpenSans-Regular.ttf?v=1.1.0") format("truetype"), url("../fonts/OpenSans/Regular/OpenSans-Regular.svg?v=1.1.0#Regular") format("svg");
+  src: local('Open Sans'), local('OpenSans'), url("../fonts/OpenSans/Regular/OpenSans-Regular.eot?#iefix&v=1.1.0") format("embedded-opentype"), url("../fonts/OpenSans/Regular/OpenSans-Regular.woff2?v=1.1.0") format("woff2"), url("../fonts/OpenSans/Regular/OpenSans-Regular.woff?v=1.1.0") format("woff"), url("../fonts/OpenSans/Regular/OpenSans-Regular.ttf?v=1.1.0") format("truetype"), url("../fonts/OpenSans/Regular/OpenSans-Regular.svg?v=1.1.0#Regular") format("svg");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Open Sans';
   src: url("../fonts/OpenSans/Bold/OpenSans-Bold.eot?v=1.1.0");
-  src: url("../fonts/OpenSans/Bold/OpenSans-Bold.eot?#iefix&v=1.1.0") format("embedded-opentype"), url("../fonts/OpenSans/Bold/OpenSans-Bold.woff2?v=1.1.0") format("woff2"), url("../fonts/OpenSans/Bold/OpenSans-Bold.woff?v=1.1.0") format("woff"), url("../fonts/OpenSans/Bold/OpenSans-Bold.ttf?v=1.1.0") format("truetype"), url("../fonts/OpenSans/Bold/OpenSans-Bold.svg?v=1.1.0#Bold") format("svg");
+  src: local('Open Sans Bold'), local('OpenSans-Bold'), url("../fonts/OpenSans/Bold/OpenSans-Bold.eot?#iefix&v=1.1.0") format("embedded-opentype"), url("../fonts/OpenSans/Bold/OpenSans-Bold.woff2?v=1.1.0") format("woff2"), url("../fonts/OpenSans/Bold/OpenSans-Bold.woff?v=1.1.0") format("woff"), url("../fonts/OpenSans/Bold/OpenSans-Bold.ttf?v=1.1.0") format("truetype"), url("../fonts/OpenSans/Bold/OpenSans-Bold.svg?v=1.1.0#Bold") format("svg");
   font-weight: bold;
   font-style: normal;
 }
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: inherit;  /* Preferred icon size */
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+/* Cloak */
 .ng-cloak {
   display: none !important;
 }
+/* Defaults */
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
@@ -27,17 +64,23 @@ body {
   width: 100%;
   overflow: hidden;
 }
-button {
+h3, h4 {
+  margin: 0;
+}
+/* Material */
+button, .wrap-dd-select {
   padding: 4px 6px;
   font-size: 14px;
   text-align: center;
-  text-transform: uppercase;
   text-decoration: none;
   border: none;
   outline: none;
   background: rgba(255, 255, 255, 0.15);
   transition: background-color 0.1s ease-in-out;
   color: whitesmoke;
+}
+button {
+  text-transform: uppercase;
 }
 button:not([disabled]):hover {
   background-color: rgba(0, 0, 0, 0.26);
@@ -52,20 +95,10 @@ button:active, button.active {
 button.tab {
   height: 33px;
 }
-noscript > div {
-  height: 100%;
-  width: 100%;
-  text-align: center;
-  padding-top: 10%;
-}
-noscript > div > span {
-  display: inline-block;
-  padding: 10px;
-  background: #FFDD9F;
-  border: 1px solid orange;
-}
-noscript a {
-  color: #168DFF;
+button.tab .material-icons {
+  font-size: 1.3em;
+  float: left;
+  padding: 0 3px;
 }
 input[type=text] {
   padding: 0.3125em;
@@ -83,11 +116,104 @@ input[type=text]:focus {
   padding-bottom: 0.25em;
   border-bottom: 2px rgba(255, 255, 255, 0.6);
 }
+/* Dropdown */
+/** Dropdown select **/
+.wrap-dd-select {
+  position: relative;
+  min-width: 100px;
+  margin: 0 auto;
+  padding: 8px 40px 8px 8px;
+  user-select:none;
+  border: 1px solid rgba(0,0,0,0.15);
+  box-shadow: 0 1px 1px rgba(50,50,50,0.1);
+  cursor: pointer;
+  outline: none;
+  font-weight: bold;
+  padding-top: 0;
+}
+.wrap-dd-select.disabled {
+  cursor: default;
+  color: #5B6A7D;
+}
+.wrap-dd-select:after {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  margin-top: -3px;
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: white transparent;
+}
+.wrap-dd-select.disabled:after {
+  border: none;
+}
+.wrap-dd-select .selected {
+  position: relative;
+  top: 7px;
+}
+.wrap-dd-select .dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: white;
+  padding: 0;
+  margin: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(0,0,0,0.17);
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  font-weight: normal;
+  list-style: none;
+  visibility: hidden;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.wrap-dd-select .dropdown li a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #121212;
+  border-bottom: 1px solid rgba(0,0,0,0.17);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,1);
+  cursor: pointer;
+}
+.wrap-dd-select .dropdown li i {
+  float: right;
+  color: inherit;
+}
+.wrap-dd-select .dropdown li:hover a {
+  background: #ebebeb;
+}
+.wrap-dd-select.active .dropdown {
+  visibility: visible;
+}
+/* noscript */
+noscript > div {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  padding-top: 10%;
+}
+noscript > div > span {
+  display: inline-block;
+  padding: 10px;
+  background: #FFDD9F;
+  border: 1px solid orange;
+}
+noscript a {
+  color: #168DFF;
+}
+/* Header */
 header {
   height: 82px;
   box-sizing: border-box;
   color: white;
 }
+/* Player */
 header .player {
   height: 48px;
   box-sizing: border-box;
@@ -103,13 +229,14 @@ header .player .control {
   transition: color 0.2s;
   text-decoration: none;
 }
-header .player .control .fa {
+header .player .control .material-icons {
   transition: text-shadow 0.2s;
+  font-size: 2em;
 }
 header .player .control:hover {
   color: #239bd6;
 }
-header .player .control:hover .fa {
+header .player .control:hover .material-icons {
   text-shadow: 0 0 3px #239bd6;
 }
 header .player .control.loop > span {
@@ -119,8 +246,8 @@ header .player .control.active,
 header .player .control:active {
   color: #1c7baa;
 }
-header .player .control.active .fa,
-header .player .control:active .fa {
+header .player .control.active .material-icons,
+header .player .control:active .material-icons {
   text-shadow: 0 0 3px #239bd6;
 }
 header .player .panel {
@@ -151,18 +278,17 @@ header .player .panel > .info-panel .total-time {
   padding: 2px 4px;
 }
 header .slider {
-  height: 12px;
+  height: 14px;
   position: relative;
-  background: none repeat scroll 0% 0% #F2F1F1;
+  background: none repeat scroll 0 0 #F2F1F1;
   margin: 3px;
-  border: 1px solid #DFDFDF;
-  box-shadow: 0px 0px 2px #D5D4D4 inset;
+  box-shadow: 0 0 2px #D5D4D4 inset;
 }
 header .slider .loading {
   position: absolute;
   left: 0;
   top: 0;
-  height: 12px;
+  height: 14px;
   background-color: #ccc;
   z-index: 0;
 }
@@ -171,7 +297,7 @@ header .slider .progress {
   left: 0;
   top: 0;
   width: 0;
-  height: 12px;
+  height: 14px;
   background-color: #239bd6;
   z-index: 1;
 }
@@ -180,11 +306,12 @@ header .slider input {
   left: 0;
   top: 0;
   width: 100%;
-  height: 12px;
+  height: 14px;
   opacity: 0;
   cursor: pointer;
   z-index: 2;
 }
+/* Toolbar */
 header .toolbar {
   height: 34px;
   box-sizing: border-box;
@@ -198,11 +325,16 @@ header .toolbar .volume {
 }
 header .toolbar .search {
   margin-right: 10px;
-  width: 472px;
+  width: 485px;
   transition: margin 0.4s ease-in-out;
 }
+header .toolbar .search .material-icons {
+  font-size: 1.3em;
+  float: left;
+  padding: 5px;
+}
 header .toolbar .search.hide {
-  margin-left: -482px;
+  margin-left: -500px;
 }
 header .toolbar .search .filters {
   margin-left: 10px;
@@ -223,12 +355,12 @@ header .toolbar .search .filters .checkbox {
   height: 1em;
   width: 1em;
   margin-left: 6px;
-  margin-top: 0px;
+  margin-top: 0;
   visibility: visible;
-  background: none repeat scroll 0% 0% transparent;
+  background: none repeat scroll 0 0 transparent;
   transition: all 0.2s ease 0s;
   position: relative;
-  box-shadow: 0px 0px 0px transparent;
+  box-shadow: 0 0 0 transparent;
   color: #239bd6;
 }
 header .toolbar .search .filters label.checkbox:before {
@@ -236,12 +368,11 @@ header .toolbar .search .filters label.checkbox:before {
   margin-left: -0.15em;
   margin-top: -0.15em;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: calc(100% + 0.3em);
   height: calc(100% + 0.3em);
   border-radius: 0.1em;
-  transition: transform 0.2s ease 0s, #000 0.1s ease 0s;
   transition: all 0.2s ease 0s;
   transform: scale(0.1);
 }
@@ -253,7 +384,7 @@ header .toolbar .search .filters input[type="checkbox"]:checked + label.checkbox
 header .toolbar .search .filters label.checkbox:after {
   content: " ";
   border-style: solid;
-  border-width: 0px 0px 0.15em 0.15em;
+  border-width: 0 0 0.15em 0.15em;
   border-color: transparent;
   cursor: pointer;
   height: 0.4em;
@@ -302,41 +433,25 @@ header .toolbar .volume {
 header .toolbar .volume .slider {
   width: 100px;
 }
-header .toolbar .volume .fa {
-  padding: 3px;
+header .toolbar .volume .material-icons {
+  padding: 0 3px 0 0;
   width: 18px;
+  font-size: 1.5em;
 }
 header .toolbar .select-source {
   float: right;
   display: flex;
-}
-header .toolbar .select-source label {
-  margin-top: 4px;
-  margin-right: 2px;
-  display: none;
-}
-header .toolbar .select-source:hover label {
-  display: inline;
-}
-header .toolbar .select-source select {
-  font-family: inherit;
-  background-color: #555555;
-  width: 100%;
-  padding: 0;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.8);
-  border: none;
-  border-bottom: 1px solid rgba(0,0,0, 0.12);
-}
-header .toolbar .select-source select:focus {
-  outline: none;
+  height: 33px;
+  margin: -2px 0 2px 0;
+  padding-right: 6px;
 }
 #search {
   width: 200px;
 }
+/* Main */
 main {
-  background-color: #ffffff;
-  display: flex;
+  background-color: whitesmoke;
+  display: block;
   flex: 1;
   position: absolute;
   top: 82px;
@@ -346,70 +461,65 @@ main {
   line-height: 10px;
 }
 main .container {
-  flex: 1;
+  height: 100%;
+  position: relative;
   overflow: auto;
-  background-color: #f5f5f5;
   line-height: 17px;
+  width: calc(100% - 20px);
 }
+main .container .noresult {
+  margin: 10px;
+}
+/* Main - controls */
+main .container .controls {
+  display: flex;
+  align-content: stretch;
+  font-size: 1.5em;
+}
+main .container .controls .control {
+  align-items: center;
+  border-radius: 10px;
+}
+main .container .heading > .controls {
+  display: inline-block;
+}
+main .container .heading > .controls .control {
+  width: 1em;
+  height: 1em;
+  display: inline-flex;
+  cursor: pointer;
+}
+/* Main - artist and album */
+main .container .heading {
+  margin: 5px 0;
+  display: flex;
+}
+/* Main - artist */
 main .container .artist {
   padding-left: 15px;
   padding-right: 15px;
   white-space: nowrap;
 }
-main .container .noresult {
-  margin: 10px;
-}
-main .container .artist > h3,
-main .container .album > h4 {
-  display: inline-block;
-  text-shadow: 0 0 5px white, 1px 1px 2px #666;
+main .container .artist > .heading > .heading-title {
   cursor: pointer;
-  margin: 5px 0;
 }
-
-main .container .artist > h3 > i {
+main .container .artist > .heading > i {
   width: 1em;
   text-align: center;
   margin-right: 3px;
+  font-size: 1.5em;
 }
-main .container .album > h4 {
+/* Main - album */
+main .container .album > .heading {
   max-width: 400px;
   white-space: normal;
 }
-main .container .album > h4 .year {
+main .container .album > .heading .year {
   font-weight: normal;
   font-size: 0.8em;
   color: #666;
   text-shadow: none;
   margin-left: 4px;
-}
-main .container .artist > h3:hover,
-main .container .album > h4:hover {
-  text-shadow: 0 0 5px white, 1px 1px 2px #222;
-}
-main .container .artist > h3:hover > i,
-main .container .album > h4:hover > i {
-  text-shadow: 1px 1px 2px #222;
-}
-main .container .artist > .controls,
-main .container .album > .controls {
-  display: inline-block;
-  cursor: pointer;
-  margin-left: -30px;
-  opacity: 0;
-  white-space: nowrap;
-  transition: margin-left 0.3s ease-in, opacity 0.3s cubic-bezier(0, 0.9, 0.3, 1.15);
-}
-main .container .artist > .controls .control,
-main .container .album > .controls .control {
-  display: inline-block;
-  padding-left: 10px;
-}
-main .container .artist:hover > .controls,
-main .container .album:hover > .controls {
-  transition: margin-left 0.3s ease-out, opacity 0.3s cubic-bezier(0.7, 0, 0.7, 0);
-  margin-left: 0;
-  opacity: 1;
 }
 main .container .albums {
   display: flex;
@@ -442,7 +552,6 @@ main .container .albums .album img {
   min-width: 140px;
   max-width: 140px;
   max-height: 140px;
-  cursor: pointer;
 }
 main .container .albums .album .album-container .tracks {
   flex: 1;
@@ -452,28 +561,39 @@ main .container .albums .album .album-container .tracks {
 main .container .albums .album.hidetracks .album-container .tracks {
   display: none;
 }
+/* Queue */
 main .queue {
-  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 1px;
+  bottom: 1px;
+  min-width: 20px;
+}
+main .queue.show {
+  box-shadow: -5px 0 10px rgba(100, 100, 100, 0.6);
 }
 main .queue .handle {
-  width: 10px;
+  width: 20px;
   cursor: pointer;
   height: 100%;
   float: left;
   display: flex;
   background-color: #555555;
   transition: background-color 0.3s;
-
   color: white;
+  align-items: center;
+  font-size: 1.8em;
 }
 main .queue .handle:hover {
   background-color: #888888;
 }
-main .queue .handle .fa {
-  margin: auto;
+main .queue .handle:hover .vertical-playlist-text {
+  opacity: 0.8;
+}
+main .queue .handle i {
   transition: transform 0.3s;
 }
-main .queue.show .handle .fa {
+main .queue.show .handle i {
   transform: rotate(180deg);
 }
 main .queue .tracks {
@@ -484,10 +604,31 @@ main .queue .tracks {
   height: 100%;
   line-height: 17px;
   overflow: auto;
+  background-color: whitesmoke;
+  border-top: 1px solid #888888;
+  border-bottom: 1px solid #888888;
+  box-sizing: border-box;
 }
 main .queue.show .tracks {
   margin-right: 0;
 }
+main .queue .vertical-playlist-text {
+  width: 20px;
+  letter-spacing: 10px;
+  font-size: 15px;
+  line-height: 15px;
+  word-wrap: break-word;
+  position: absolute;
+  font-family: "Lucida Console", "Courier New", Courier, monospace;
+  text-transform: capitalize;
+  top: 6px;
+  left: 6px;
+  opacity: 0.5;
+}
+main .queue.show .vertical-playlist-text {
+  opacity: 1;
+}
+/* Tracks */
 .track {
   margin: 1px 2px;
   display: flex;
@@ -504,7 +645,7 @@ main .queue.show .tracks {
   background: #C9E2EE;
   color: #239bd6;
   padding: 1px 3px 0 0;
-  transition: padding 0.3s;
+  transition: padding-right 0.3s;
   position: relative;
 }
 .track .trackno > span {
@@ -518,36 +659,21 @@ main .queue.show .tracks {
 .track:hover .trackno {
   padding-right: 6px;
 }
+/* Tracks controls */
 .track .controls {
-  display: inline-block;
   cursor: pointer;
   overflow: hidden;
   width: 47px;
   margin-left: 10px;
-  opacity: 0;
 }
 .track .controls .control {
-  display: inline-block;
-  height: 100%;
-  float: left;
-  width: 22px;
-  text-align: center;
   border-left: 1px solid whitesmoke;
   border-right: 1px solid whitesmoke;
   border-collapse: collapse;
-  padding: 2px 0;
-}
-.track .controls .control:nth-child(2) {
-  margin:-1px 0 0 -1px;
-  padding: 3px 0 2px 0;
-}
-.controls .control {
-  text-shadow: -1px 0 #808080, 0 1px #808080, 1px 0 #808080, 0 -1px #808080;
-  color: whitesmoke;
 }
 .controls .control:hover {
-  text-shadow: -1px 0 #239bd6, 0 1px #239bd6, 1px 0 #239bd6, 0 -1px #239bd6;
-  color: #239bd6;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
 }
 .track .name {
   flex: 1;
@@ -573,11 +699,21 @@ main .queue.show .tracks {
   opacity: 0.6;
 }
 .track.failed:before {
-  content: "\f071";
-  font-family: FontAwesome;
+  content: "\e000";
+  font-family: 'Material Icons';
   padding-right: 3px;
   padding-top: 1px;
   color: red;
+}
+.track.active .trackno > span {
+  text-shadow: -1px 0 #239bd6, 0 1px #239bd6, 1px 0 #239bd6, 0 -1px #239bd6;
+  color: whitesmoke;
+}
+.track:nth-child(even) {
+  background: #ebebeb;
+}
+.track:hover .name {
+  font-weight: bold;
 }
 /* Spinner */
 .spinner {
@@ -650,6 +786,7 @@ main .queue.show .tracks {
   background: #ddd;
   opacity: 0.4;
 }
+/* Audio animation */
 .track .audioeffect {
   display: none;
 }
@@ -675,15 +812,11 @@ main .queue.show .tracks {
   pointer-events: none;
   animation-play-state: paused !important;
 }
-.track.active .trackno > span {
-  text-shadow: -1px 0 #239bd6, 0 1px #239bd6, 1px 0 #239bd6, 0 -1px #239bd6;
-  color: whitesmoke;
-}
 .track.playing .audioeffect li {
   animation-play-state: running !important;
 }
 .track.active .audioeffect li:nth-child(0) {
-  animation: playing1 1s ease infinite 0;
+  animation: playing1 1s ease infinite;
 }
 .track.active .audioeffect li:nth-child(1) {
   animation: playing2 0.9s ease infinite 0.1s;
@@ -700,9 +833,31 @@ main .queue.show .tracks {
 .track.active .audioeffect li:nth-child(5) {
   animation: playing2 0.9s ease infinite 0.5s;
 }
-.track:nth-child(even) {
-  background: #ebebeb;
+/* Loading animation */
+.sp-circle {
+  border: 3px rgba(0, 0, 0, 0.25) solid;
+  border-top: 3px black solid;
+  border-radius: 50%;
+  animation: spCircRot .6s infinite linear;
+  width: 9px;
+  height: 9px;
+  margin: 0;
+  display: inline-block;
 }
-.track:hover .name {
-  font-weight: bold;
+
+@-webkit-keyframes spCircRot {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(359deg);
+  }
+}
+@keyframes spCircRot {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
 }
