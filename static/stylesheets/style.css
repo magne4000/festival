@@ -462,7 +462,8 @@ main {
 main .container {
   height: 100%;
   position: relative;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   line-height: 17px;
   width: calc(100% - 20px);
 }
@@ -655,7 +656,7 @@ main .queue .tracks {
   display: inline-block;
   width: 300px;
   margin-right: -300px;
-  transition: margin-right 0.3s;
+  transition: margin-right 0.3s ease-in-out;
   height: 100%;
   line-height: 17px;
   overflow: auto;
