@@ -489,8 +489,15 @@ main .container .noresult {
   background-color: rgba(0, 0, 0, 0.5);
 }
 main .container .heading > .controls {
+  opacity: 0;
+  visibility: hidden;
+  margin-left: 5px;
   display: inline-block;
-  margin-left: 6px;
+  transition: opacity 0.3s;
+}
+main .container .heading:hover > .controls {
+  opacity: 1;
+  visibility: visible;
 }
 main .container .heading > .controls .control:hover {
   box-shadow: 0 0 10px -3px black;
@@ -510,6 +517,7 @@ main .container .heading > .controls .control:hover {
 main .container .heading {
   margin: 5px 0;
   display: flex;
+  height: 21px;
 }
 /* Main - artist */
 main .container .artist {
@@ -520,11 +528,38 @@ main .container .artist {
 main .container .artist > .heading > .heading-title {
   cursor: pointer;
 }
-main .container .artist > .heading > i {
+main .container .artist > .heading > .heading-title > .heading-text {
+  transition: margin-left 0.3s, text-shadow 0.3s;
+}
+main .container .artist > .heading > .heading-title > .heading-text:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  top: calc(100% + 1px);
+  background-color: rgba(0, 0, 0, 0.4);
+  visibility: hidden;
+  transform: scaleX(0);
+  transition: all 0.3s ease-in-out 0s;
+}
+main .container .artist > .heading:hover > .heading-title > .heading-text {
+  margin-left: 6px;
+  position: relative;
+}
+main .container .artist > .heading:hover > .heading-title > .heading-text:before {
+  visibility: visible;
+  transform: scaleX(1);
+}
+main .container .artist > .heading > .heading-title > .material-icons {
   width: 1em;
-  text-align: center;
-  margin-right: 3px;
-  font-size: 1.5em;
+  height: 1em;
+  font-size: 1.2em;
+  float: left;
+}
+main .container .artist > .heading > .heading-title > .material-icons:hover {
+  font-weight: bold;
 }
 /* Main - album */
 main .container .album > .heading {

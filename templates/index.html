@@ -131,7 +131,8 @@
             <span class="heading">
               <h3 ng-click="loadAlbumsAndTracks(artist, false) ? true : artist.expanded = !artist.expanded" class="heading-title" ng-switch on="artist.loading">
                 <div class="sp-circle" ng-switch-when="true"></div>
-                <i class="material-icons" ng-switch-default>{[artist.expanded ? 'expand_more' : 'chevron_right']}</i>{[::artist.name ? artist.name : 'Unknown']}
+                <i class="material-icons" ng-switch-default>{[artist.expanded ? 'expand_more' : 'chevron_right']}</i>
+                <span class="heading-text">{[::artist.name ? artist.name : 'Unknown']}</span>
               </h3>
               <span class="controls">
                 <span title="Play all albums" ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control">
