@@ -297,6 +297,7 @@ header .slider .progress {
   width: 0;
   height: 14px;
   background-color: #239bd6;
+  transition: width 0.1s ease-in-out;
   z-index: 1;
 }
 header .slider input {
@@ -488,6 +489,9 @@ main .container .noresult {
   color: whitesmoke;
   background-color: rgba(0, 0, 0, 0.5);
 }
+.controls .control:active {
+  background-color: rgba(0, 0, 0, 0.8);
+}
 main .container .heading > .controls {
   opacity: 0;
   visibility: hidden;
@@ -507,10 +511,6 @@ main .container .heading > .controls .control:hover {
   width: 48px;
 }
 .track .controls .control {
-  border-left: 1px solid whitesmoke;
-  border-right: 1px solid whitesmoke;
-  border-collapse: collapse;
-  box-sizing: border-box;
   flex: 1;
 }
 /* Main - artist and album */
