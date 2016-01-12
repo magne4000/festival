@@ -37,7 +37,7 @@ def purge_cover_on_delete(session, query, query_context, result):
                 os.remove(elt[2])
 
 def _fk_pragma_on_connect(dbapi_con, con_record):
-    dbapi_con.execute('PRAGMA journal_mode = MEMORY')
+    dbapi_con.execute('PRAGMA journal_mode = WAL')
 
 class TypedQuery(Query):
 
