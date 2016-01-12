@@ -96,6 +96,7 @@ def lalbums(typed):
     else:
         return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit)])
 
+
 @app.route("/ajax/list/artists")
 @typed_fct
 def lartists(typed):

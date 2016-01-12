@@ -4,6 +4,7 @@ angular.module('festival')
     var indicesToBePlayed = [];
     var currentIndice = 0;
     var timer = null;
+    var currentlyPrefetching = null;
     var progress = 0;
     var lastvolume = 100;
     var usingAdd = false;
@@ -74,7 +75,9 @@ angular.module('festival')
 
     function stop() {
         if ($scope.currentSound) {
-            $scope.currentSound.unload();
+            if (!$scope.currentSound.fullyLoaded) {
+                $scope.currentSound.unload();
+            }
             $scope.currentSound.stop();
         }
     }
@@ -82,6 +85,23 @@ angular.module('festival')
     function play() {
         if ($scope.currentSound) {
             $scope.currentSound.play();
+        }
+    }
+
+    function attach(asound) {
+        $scope.currentSound = asound;
+        if (asound) {
+            asound.onCompleteLoad(asound.fullyLoaded);
+        }
+    }
+
+    function loadNext() {
+        var nextTrack = next(true);
+        if (nextTrack) {
+            console.log('Load finished, loading next track')
+            $scope.$apply(function(){
+                $scope.load(nextTrack, false, true);  // preload next track
+            });
         }
     }
 
@@ -137,7 +157,7 @@ angular.module('festival')
          */
         if (!usingAdd) {
             usingAdd = true;
-            var tracklist = [], ind = 0, trackslen = $tracks.size(), orilen = trackslen, randno = null;
+            var tracklist = [], ind = 0, trackslen = $tracks.size(), orilen = trackslen, randno = null, loadthisone = null;
             if (!!track.id){ // only one track
                 tracklist.push(track);
             } else {
@@ -150,16 +170,17 @@ angular.module('festival')
                 indicesToBePlayed.push(indicesToBePlayed.length);
                 var addedTrack = $tracks.add(tracklist[ind]);
                 if (idToPlay === tracklist[ind].id) {
-                    $scope.load(addedTrack, autoPlay);
+                    loadthisone = addedTrack;
                 } else if (trackslen === 0 && !$scope.shuffle) {
                     // First track, load it (if not in shuffle mode)
-                    $scope.load(addedTrack, autoPlay);
+                    loadthisone = addedTrack;
                 } else if (randno === trackslen && orilen === 0 && $scope.shuffle) {
                     // load random track
-                    $scope.load(addedTrack, autoPlay);
+                    loadthisone = addedTrack;
                 }
                 trackslen++;
             }
+            $scope.load(loadthisone, autoPlay);
             usingAdd = false;
         }
     };
@@ -170,27 +191,38 @@ angular.module('festival')
         }
     };
 
-    $scope.load = function(track, autoPlay) {
+    $scope.load = function(track, autoPlay, prefetch) {
         if (track){
             clearTimeout(timer);
             timer = setTimeout(function(){
-                $scope.currentTrack = track;
+                if (!prefetch) {
+                    $scope.currentTrack = track;
+                } else {
+                    console.log('Preload next track')
+                }
                 if (autoPlay) {
                     stop();
                 }
                 var soundId = 't_'+track.id;
-                $scope.currentSound = soundManager.getSoundById(soundId);
-                if ($scope.currentSound) {
+                var asound = soundManager.getSoundById(soundId);
+                if (currentlyPrefetching !== null && soundId != currentlyPrefetching.id) {
+                    console.log('Unload currently prefetching track');
+                    currentlyPrefetching.unload();
+                    currentlyPrefetching = null;
+                }
+                if (asound) {
                     if (autoPlay) {
-                        $scope.currentSound.play();
+                        asound.play();
                     }
                 } else {
-                    $scope.currentSound = soundManager.createSound({
+                    asound = soundManager.createSound({
                         id: soundId,
                         url: track.url,
                         type: track.mime,
                         autoLoad: true,
                         autoPlay: !!autoPlay,
+                        multiShot: false,
+                        volume: $scope.volume() || 100,
                         whileplaying: function(){
                             var self = this;
                             $scope.$apply(function(){
@@ -199,10 +231,24 @@ angular.module('festival')
                         },
                         whileloading: function(){
                             var self = this;
-                            $scope.$apply(function(){
-                                $scope.duration = Math.floor(self.durationEstimate / 1000);
-                                $scope.buffered = self.buffered;
-                            });
+                            if (self.id == $scope.currentSound.id) {
+                                $scope.$apply(function(){
+                                    $scope.duration = Math.floor(self.durationEstimate / 1000);
+                                    $scope.buffered = self.buffered;
+                                });
+                                console.log('CURR Loading', self.id, '- Playing', $scope.currentSound.id);
+                            } else {
+                                console.log('NEXT Loading', self.id, '- Playing', $scope.currentSound.id);
+                                currentlyPrefetching = self;
+                            }
+                            console.log(this.bytesLoaded, this.bytesTotal);
+                            console.log(this.buffered, this.duration);
+                            if (this.bytesLoaded == this.bytesTotal || this.buffered.length > 0 ? parseInt(this.buffered[0].end, 10) == parseInt(this.duration, 10) : false) {
+                                self.fullyLoaded = true;
+                                setTimeout(function() {
+                                    self.onCompleteLoad(true);
+                                }, 0);
+                            }
                         },
                         onfinish: function(){
                             $scope.$apply(function(){
@@ -212,10 +258,8 @@ angular.module('festival')
                             });
                         },
                         onstop: function(){
-                            $scope.$apply(function(){
-                                progress = 0;
-                                $scope.playing = false;
-                            });
+                            progress = 0;
+                            $scope.playing = false;
                         },
                         onpause: function(){
                             $scope.$apply(function(){
@@ -223,34 +267,50 @@ angular.module('festival')
                             });
                         },
                         onplay: function(){
+                            this.setVolume($scope.volume());
                             $scope.$apply(function(){
                                 $scope.playing = true;
                             });
                         },
                         onload: function(success){
                             var self = this;
-                            if (success) {
-                                $scope.$apply(function(){
-                                    if (track.failed) track.failed = false;
-                                    $scope.duration = Math.floor(self.duration / 1000);
-                                    $scope.buffered = self.buffered;
-                                });
-                            } else {
-                                $scope.$apply(function(){
-                                    track.failed = true;
-                                    progress = 0;
-                                    $scope.playing = false;
-                                    $scope.next(true);
-                                });
+                            if (!success) {
+                                self.failed = true;
+                                if (self.id == $scope.currentSound.id) {
+                                    $scope.$apply(function(){
+                                        progress = 0;
+                                        $scope.playing = false;
+                                        $scope.next(true);
+                                    });
+                                }
                             }
                         },
                         onresume: function(){
                             $scope.$apply(function(){
                                 $scope.playing = true;
                             });
-                        },
-                        volume: $scope.volume() || 100
+                        }
                     });
+                    asound.onCompleteLoad = function(bLoadNext) {
+                        var self = this;
+                        if (self.id == $scope.currentSound.id) {
+                            $scope.$apply(function(){
+                                if (track.failed) track.failed = false;
+                                $scope.duration = Math.floor(self.duration / 1000);
+                                $scope.buffered = self.buffered;
+                                console.log(self.duration, self.buffered);
+                            });
+                            if (bLoadNext) {
+                                loadNext();
+                            }
+                        } else {
+                            console.log('Preload finished')
+                            currentlyPrefetching = null;
+                        }
+                    };
+                }
+                if (!prefetch) {
+                    attach(asound);
                 }
             }, 10);
         }
@@ -312,7 +372,7 @@ angular.module('festival')
             $scope.volumeval = val;
             if ($scope.currentSound) {
                 $timeout(function() {
-                    $scope.currentSound.setVolume(val);
+                    soundManager.setVolume(val);
                 }, 0);
             }
         }

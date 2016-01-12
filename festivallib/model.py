@@ -36,6 +36,9 @@ def purge_cover_on_delete(session, query, query_context, result):
             if os.path.isfile(elt[2]):
                 os.remove(elt[2])
 
+def _fk_pragma_on_connect(dbapi_con, con_record):
+    dbapi_con.execute('PRAGMA journal_mode = MEMORY')
+
 class TypedQuery(Query):
 
     def __iter__(self):
@@ -448,6 +451,8 @@ class Context:
 from app import app
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
+if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
+    event.listen(engine, 'connect', _fk_pragma_on_connect)
 mimetypes.init()
 Session = sessionmaker(bind=engine)
 event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
