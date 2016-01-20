@@ -285,6 +285,7 @@ angular.module('festival')
                     });
                     asound.onCompleteLoad = function(bLoadNext) {
                         var self = this;
+                        currentlyPrefetching = null;
                         if (self.id == $scope.currentSound.id) {
                             $scope.$apply(function(){
                                 if (track.failed) track.failed = false;
@@ -294,8 +295,6 @@ angular.module('festival')
                             if (bLoadNext) {
                                 loadNext();
                             }
-                        } else {
-                            currentlyPrefetching = null;
                         }
                     };
                 }
