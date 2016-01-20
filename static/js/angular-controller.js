@@ -98,7 +98,6 @@ angular.module('festival')
     function loadNext() {
         var nextTrack = next(true);
         if (nextTrack) {
-            console.log('Load finished, loading next track')
             $scope.$apply(function(){
                 $scope.load(nextTrack, false, true);  // preload next track
             });
@@ -197,8 +196,6 @@ angular.module('festival')
             timer = setTimeout(function(){
                 if (!prefetch) {
                     $scope.currentTrack = track;
-                } else {
-                    console.log('Preload next track')
                 }
                 if (autoPlay) {
                     stop();
@@ -206,7 +203,6 @@ angular.module('festival')
                 var soundId = 't_'+track.id;
                 var asound = soundManager.getSoundById(soundId);
                 if (currentlyPrefetching !== null && soundId != currentlyPrefetching.id) {
-                    console.log('Unload currently prefetching track');
                     currentlyPrefetching.unload();
                     currentlyPrefetching = null;
                 }
@@ -236,14 +232,10 @@ angular.module('festival')
                                     $scope.duration = Math.floor(self.durationEstimate / 1000);
                                     $scope.buffered = self.buffered;
                                 });
-                                console.log('CURR Loading', self.id, '- Playing', $scope.currentSound.id);
                             } else {
-                                console.log('NEXT Loading', self.id, '- Playing', $scope.currentSound.id);
                                 currentlyPrefetching = self;
                             }
-                            console.log(this.bytesLoaded, this.bytesTotal);
-                            console.log(this.buffered, this.duration);
-                            if (this.bytesLoaded == this.bytesTotal || this.buffered.length > 0 ? parseInt(this.buffered[0].end, 10) == parseInt(this.duration, 10) : false) {
+                            if (this.bytesLoaded == this.bytesTotal || this.buffered.length > 0 ? parseInt(this.buffered[this.buffered.length-1].end, 10) == parseInt(this.duration, 10) : false) {
                                 self.fullyLoaded = true;
                                 setTimeout(function() {
                                     self.onCompleteLoad(true);
@@ -298,13 +290,11 @@ angular.module('festival')
                                 if (track.failed) track.failed = false;
                                 $scope.duration = Math.floor(self.duration / 1000);
                                 $scope.buffered = self.buffered;
-                                console.log(self.duration, self.buffered);
                             });
                             if (bLoadNext) {
                                 loadNext();
                             }
                         } else {
-                            console.log('Preload finished')
                             currentlyPrefetching = null;
                         }
                     };
@@ -326,7 +316,6 @@ angular.module('festival')
 
     $scope.playOrPause = function(track, tracks) {
         $timeout(function() {
-            console.log(track);
             if (!track || ($scope.currentTrack && $scope.currentTrack.id === track.id)) {
                 $scope.currentSound.togglePause();
             } else {
