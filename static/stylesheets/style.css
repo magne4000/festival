@@ -518,7 +518,7 @@ main .container .heading > .controls .control:hover {
 main .container .heading {
   margin: 5px 0;
   display: flex;
-  height: 21px;
+  min-height: 21px;
 }
 /* Main - artist */
 main .container .artist {
