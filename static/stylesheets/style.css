@@ -610,6 +610,7 @@ main .container .albums .album .album-container .tracks {
   flex: 1;
   width: auto;
   padding: 0 10px;
+  max-width: 420px;
 }
 main .container .albums .album.hidetracks .album-container .tracks {
   display: none;
@@ -664,6 +665,7 @@ main .queue .tracks {
   border-top: 1px solid #888888;
   border-bottom: 1px solid #888888;
   box-sizing: border-box;
+  float: left;
 }
 main .queue.show .tracks {
   margin-right: 0;

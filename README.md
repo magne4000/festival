@@ -113,6 +113,11 @@ Then edit `/etc/systemd/system/festival.service` and replace values between `{}`
 Subsonic client apps can be plugged to Festival. You just need to add it like any other server to your app.
 As it doesn't support login, if your app requires login/password, just fill credentials with random letters.
 
+### Testing
+```bash
+pip3 install xmlunittest
+```
+
 ### License
 MIT License
 

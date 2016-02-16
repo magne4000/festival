@@ -5,12 +5,12 @@ import logging
 from flask import Flask
 from festivallib.data import Data
 from festivallib.info import Infos
-from festivallib.model import SCHEMA_VERSION
 from datetime import timedelta
 
 settings_filepath = os.path.join(os.path.dirname(__file__), 'settings.cfg')
 settings_sample_filepath = os.path.join(os.path.dirname(__file__), 'settings.sample.cfg')
 
+SCHEMA_VERSION = 2
 
 def interval_to_timedelta(interval):
     if isinstance(interval, int):

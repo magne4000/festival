@@ -97,8 +97,7 @@ class Typed:
                 obj = session.query(TrackInfo).join(TrackInfo.album).join(Album.artist).options(
                     joinedload(TrackInfo.genre),
                     contains_eager(TrackInfo.artist),
-                    contains_eager(TrackInfo.album, Album.artist),
-                    joinedload(Album.cover)
+                    contains_eager(TrackInfo.album, Album.artist)
                 ).filter(TrackInfo.id == track_id).one()
                 session.expunge_all()
                 return obj

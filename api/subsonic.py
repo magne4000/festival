@@ -132,7 +132,7 @@ def format_track(track, child=False):
     if 'genre' in track.__dict__ and track.genre:
         info['genre'] = track.genre.name
     if track.track.bitrate:
-        info['bitRate'] = float(track.track.bitrate) / 1000.0
+        info['bitRate'] = int(float(track.track.bitrate) / 1000.0)
     return info
 
 
@@ -301,7 +301,7 @@ def check_parameter(request, key, allow_none=True, choices=None, fct=None):
 
 
 def _album_list(typed):
-    ok, atype = check_parameter(request, 'type', allow_none=False, choices=['random', 'newest', 'highest', 'frequent', 'recent', 'starred', 'alphabeticalByName', 'alphabeticalByArtist'])
+    ok, atype = check_parameter(request, 'type', allow_none=False, choices=['random', 'newest', 'highest', 'frequent', 'recent', 'starred', 'alphabeticalByName', 'alphabeticalByArtist', 'byYear', 'genre'])
     if not ok:
         return False, atype
     ok, size = check_parameter(request, 'size', fct=lambda val: int(val) if val else 10)
@@ -428,19 +428,17 @@ def cover_art(typed):
     if not is_track_id(eid) and not is_album_id(eid):
         return request.error_formatter(10, 'Invalid id')
 
-    if is_album_id(eid):
-        cover = typed.getcoverbyalbumid(cid)
-        if cover is None or cover.mbid == '0':
+    if is_track_id(eid):
+        tr = typed.gettrackinfo(cid)
+        if tr is None or tr.album_id is None:
             return request.error_formatter(70, 'Cover art not found'), 404
         else:
-            print(cover.id, cover.path)
-            return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
+            cid = tr.album_id
+    cover = typed.getcoverbyalbumid(cid)
+    if cover is None or cover.mbid == '0':
+        return request.error_formatter(70, 'Cover art not found'), 404
     else:
-        tr = typed.gettrackfull(cid)
-        if tr is None or tr.album is None or tr.album.albumart is None:
-            return request.error_formatter(70, 'Cover art not found'), 404
-        else:
-            return send_from_directory(Thumb.getdir(), os.path.basename(tr.album.albumart), conditional=True)
+        return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
 
 
 @app.route('/rest/download.view', methods=['GET', 'POST'])

@@ -14,9 +14,6 @@ from contextlib import contextmanager
 from .thumbs import Thumb
 
 
-SCHEMA_VERSION = 2
-
-
 Base = declarative_base()
 
 
