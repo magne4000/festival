@@ -480,7 +480,11 @@ main .container .noresult {
   color: rgba(0, 0, 0, 0.7);
   transition: box-shadow 0.25s, color 0.25s, background-color 0.25s;
   width: 1em;
+  min-width: 1em;
+  max-width: 1em;
   height: 1em;
+  min-height: 1em;
+  max-height: 1em;
   display: inline-flex;
   cursor: pointer;
   align-items: center;
