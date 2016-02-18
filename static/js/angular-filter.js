@@ -1,3 +1,4 @@
+/* global angular */
 angular.module('festival')
 .filter('duration', function() {
     return function(diffInS) {

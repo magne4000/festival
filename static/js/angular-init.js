@@ -1,3 +1,4 @@
+/* global angular */
 angular.module('festival', ['infinite-scroll', 'angularLazyImg', 'ngDropdowns'])
 .config(['lazyImgConfigProvider', '$locationProvider', function(lazyImgConfigProvider, $locationProvider) {
     var scrollable = document.getElementById('container');

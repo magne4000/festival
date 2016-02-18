@@ -1,3 +1,4 @@
+/* global angular */
 angular.module('festival')
 .directive('ngProgress', [function(){
     return {

@@ -1,3 +1,5 @@
+/* global angular */
+/* global soundManager */
 angular.module('festival')
 .controller('PlayerController', ['$scope', '$tracks', '$timeout', function($scope, $tracks, $timeout) {
     var indicesAlreadyPlayed = [];
