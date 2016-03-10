@@ -73,7 +73,8 @@
           dropdownModel: '=',
           dropdownItemLabel: '@',
           dropdownOnchange: '&',
-          dropdownDisabled: '='
+          dropdownDisabled: '=',
+          dropdownDefaultValue: '@'
         },
 
         controller: ['$scope', '$element', function ($scope, $element) {
@@ -101,6 +102,13 @@
           $scope.$on('$destroy', function () {
             DropdownService.unregister($element);
           });
+
+          for (var ind in $scope.dropdownSelect) {
+            if ($scope.dropdownSelect[ind].value === $scope.dropdownDefaultValue) {
+              $scope.dropdownModel = $scope.dropdownSelect[ind];
+              break;
+            }
+          }
         }],
         templateUrl: 'ngDropdowns/templates/dropdownSelect.html'
       };
