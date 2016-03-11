@@ -105,7 +105,7 @@
 
           for (var ind in $scope.dropdownSelect) {
             if ($scope.dropdownSelect[ind].value === $scope.dropdownDefaultValue) {
-              $scope.dropdownModel = $scope.dropdownSelect[ind];
+              this.select($scope.dropdownSelect[ind]);
               break;
             }
           }
