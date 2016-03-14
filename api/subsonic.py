@@ -450,9 +450,9 @@ def download(typed):
     if not is_track_id(eid):
         return request.error_formatter(10, 'Invalid id')
 
-    tr = typed.gettrackinfo(cid)
+    tr = typed.gettrack(cid)
 
-    if tr is None or tr.track.path is None:
+    if tr is None or tr.path is None:
         return request.error_formatter(70, 'Track not found'), 404
     else:
-        return send_file(tr.track.path, conditional=True)
+        return send_file(tr.path, conditional=True)
