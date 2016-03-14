@@ -195,28 +195,33 @@
           <span class="vertical-playlist-text"> PLAYLIST </span>
           <i class="material-icons">chevron_left</i>
         </div>
-        <div class="tracks">
-          <div ng-repeat="track in tracks" ng-class="{active: currentTrack == track, failed: track.failed, playing: currentTrack.id == track.id && playing}" class="track">
-            <span ng-if="::track.trackno" class="trackno">
-              <ul class="audioeffect">
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-              </ul>
-              <span>{[track.trackno]}</span>
-            </span>
-            <span title="Track: {[::track.name]}&#010;Album: {[::track.album_name]}&#010;Artist: {[::track.artist_name]}" class="name">{[::track.name]}</span>
-            <span class="controls">
-              <span title="Play" ng-click="playOrPause(track)" class="control">
-                <i class="material-icons">{[currentTrack.id == track.id && playing ? 'pause' : 'play_arrow']}</i>
+        <div class="queue-content">
+          <div class="tracks">
+            <div ng-repeat="track in tracks" ng-class="{active: currentTrack == track, failed: track.failed, playing: currentTrack.id == track.id && playing}" class="track">
+              <span ng-if="::track.trackno" class="trackno">
+                <ul class="audioeffect">
+                  <li></li>
+                  <li></li>
+                  <li></li>
+                  <li></li>
+                  <li></li>
+                </ul>
+                <span>{[track.trackno]}</span>
               </span>
-              <span title="Remove" ng-click="remove(track)" class="control">
-                <i class="material-icons">clear</i>
+              <span title="Track: {[::track.name]}&#010;Album: {[::track.album_name]}&#010;Artist: {[::track.artist_name]}" class="name">{[::track.name]}</span>
+              <span class="controls">
+                <span title="Play" ng-click="playOrPause(track)" class="control">
+                  <i class="material-icons">{[currentTrack.id == track.id && playing ? 'pause' : 'play_arrow']}</i>
+                </span>
+                <span title="Remove" ng-click="remove(track)" class="control">
+                  <i class="material-icons">clear</i>
+                </span>
               </span>
-            </span>
-            <span class="duration">{[::track.duration ? (track.duration | duration) : '-']}</span>
+              <span class="duration">{[::track.duration ? (track.duration | duration) : '-']}</span>
+            </div>
+          </div>
+          <div class="queue-actions" ng-show="tracks.length">
+            <button type="button" ng-click="empty()">Clear playlist</button>
           </div>
         </div>
       </div>
