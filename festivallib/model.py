@@ -30,7 +30,7 @@ def purge_cover_on_delete(session, query, query_context, result):
     if affected_table.name == 'cover':
         deleted_elts = engine.execute(query_context.statement).fetchall()
         for elt in deleted_elts:
-            if os.path.isfile(elt[2]):
+            if elt[2] is not None and os.path.isfile(elt[2]):
                 os.remove(elt[2])
 
 def _fk_pragma_on_connect(dbapi_con, con_record):
