@@ -141,7 +141,7 @@ class Scanner(Thread):
             info['length'] = mutagen_tags.length
             info['bitrate'] = mutagen_tags.bitrate
         except UnreadableFileError as e:
-            logger.exception('Error in scanner.add_track: %s', e)
+            logger.exception('Error in scanner.get_tags_and_info')
         return tags, info
 
     def get_tags_from_folders(self, mfile):
@@ -175,7 +175,10 @@ class Scanner(Thread):
                         tags_from_folders = self.get_tags_from_folders(mfile)
                         if tags_from_folders is not None:
                             tags['folder'] = tags_from_folders
-                    _ = db.add_track_full(mfile, mtime, tags, info)
+                    try:
+                        _ = db.add_track_full(mfile, mtime, tags, info)
+                    except Exception as e:
+                        logger.exception('Error in scanner.add_track: %s\nTags: %s', mfile, tags)
             except GeneratorExit:
                 pass
 
