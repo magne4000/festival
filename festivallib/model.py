@@ -26,12 +26,13 @@ def coroutine(func):
 
 
 def purge_cover_on_delete(session, query, query_context, result):
-    affected_table = query_context.statement.froms[0]
-    if affected_table.name == 'cover':
-        deleted_elts = engine.execute(query_context.statement).fetchall()
-        for elt in deleted_elts:
-            if elt[2] is not None and os.path.isfile(elt[2]):
-                os.remove(elt[2])
+    if query_context.statement is not None:
+        affected_table = query_context.statement.froms[0]
+        if affected_table.name == 'cover':
+            deleted_elts = engine.execute(query_context.statement).fetchall()
+            for elt in deleted_elts:
+                if elt[2] is not None and os.path.isfile(elt[2]):
+                    os.remove(elt[2])
 
 def _fk_pragma_on_connect(dbapi_con, con_record):
     dbapi_con.execute('PRAGMA journal_mode = WAL')

@@ -5,7 +5,6 @@ from festivallib.request import typed_fct
 from festivallib.model import Artist, Album, TrackInfo
 from libs import zipstream
 import os
-import sys
 import json
 import zipfile
 from app import app
