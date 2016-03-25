@@ -178,6 +178,7 @@ class Scanner(Thread):
                     try:
                         _ = db.add_track_full(mfile, mtime, tags, info)
                     except Exception as e:
+                        db.session.rollback()
                         logger.exception('Error in scanner.add_track: %s\nTags: %s', mfile, tags)
             except GeneratorExit:
                 pass
