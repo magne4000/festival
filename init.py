@@ -1,6 +1,5 @@
 import os
 import sys
-import re
 import logging
 from festivallib.info import Infos
 from festivallib.data import Data

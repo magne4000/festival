@@ -17,14 +17,14 @@ def handle_args():
 def main():
     args = handle_args()
     check(args)
-    app = init()
+    myapp = init()
     from scanner import Scanner, ScannerTestRegex
     if args.test_regex:
-        ScannerTestRegex(app.config['SCANNER_PATH']).start()
+        ScannerTestRegex(myapp.config['SCANNER_PATH']).start()
     elif not args.check:
         if args.with_scanner:
-            Scanner(app.config['SCANNER_PATH'], debug=args.debug).start()
-        app.run(host=args.host, debug=args.debug, use_reloader=args.debug and not args.with_scanner)
+            Scanner(myapp.config['SCANNER_PATH'], debug=args.debug).start()
+        myapp.run(host=args.host, debug=args.debug, use_reloader=args.debug and not args.with_scanner)
     else:
         print('OK')
 
