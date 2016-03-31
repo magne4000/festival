@@ -4,6 +4,8 @@ from festivallib.thumbs import Thumb
 from festivallib.request import typed_fct
 from festivallib.model import Artist, Album, TrackInfo
 from libs import zipstream
+from warnings import warn
+from zlib import adler32
 import os
 import json
 import zipfile
@@ -35,8 +37,23 @@ def music(typed, sid):
     if tr is None or tr.path is None:
         abort(404)
     else:
-        resp = send_file(tr.path, conditional=True, as_attachment=True)
+        resp = send_file(tr.path, conditional=True, add_etags=False)
+        try:
+            resp.set_etag('%s-%s-%s' % (
+                os.path.getmtime(tr.path),
+                os.path.getsize(tr.path),
+                adler32(tr.path.encode('utf-8', 'replace')) & 0xffffffff
+            ))
+        except OSError:
+            warn('Access %s failed, maybe it does not exist, so ignore etags in '
+                 'headers' % tr.path, stacklevel=2)
+        resp = resp.make_conditional(request)
+        if resp.status_code == 304:
+            resp.headers.pop('x-sendfile', None)
         resp.headers['Accept-Ranges'] = 'bytes'
+        attachment_filename = os.path.basename(tr.path)
+        resp.headers.add('Content-Disposition', 'attachment', filename=attachment_filename.encode('utf-8', 'replace').decode('utf8'))
+        print(resp.headers)
         return resp
 
 
