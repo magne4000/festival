@@ -4,6 +4,7 @@ import mimetypes
 from datetime import datetime
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session, contains_eager, joinedload
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, distinct, event, UniqueConstraint, create_engine
+from sqlalchemy import types
 from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
@@ -37,6 +38,23 @@ def purge_cover_on_delete(session, query, query_context, result):
 
 def _fk_pragma_on_connect(dbapi_con, con_record):
     dbapi_con.execute('PRAGMA journal_mode = WAL')
+
+
+class UnicodeSurrogateEscape(types.TypeDecorator):
+    '''Prefixes Unicode values with "PREFIX:" on the way in and
+    strips it off on the way out.
+    '''
+
+    impl = types.String
+
+    def process_bind_param(self, value, dialect):
+        return value.encode('utf-8', errors="surrogateescape")
+
+    def process_result_value(self, value, dialect):
+        return value.decode('utf-8', errors="surrogateescape")
+
+    def copy(self):
+        return UnicodeSurrogateEscape(self.impl.length)
 
 
 class TypedQuery(Query):
@@ -85,7 +103,7 @@ class Track(Base):
     __tablename__ = "track"
 
     id = Column(Integer, primary_key=True)
-    path = Column(Text(500), nullable=False, unique=True)
+    path = Column(UnicodeSurrogateEscape(500), nullable=False, unique=True)
     duration = Column(Float, nullable=True)
     bitrate = Column(String(10), nullable=True)
     last_updated = Column(DateTime)
@@ -133,7 +151,7 @@ class TrackInfo(Base, TypedInfo):
     __tablename__ = "trackinfo"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(254), nullable=False, index=True)
+    name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
     track_id = Column(Integer, ForeignKey("track.id"), nullable=False)
     track = relationship("Track", backref='infos', lazy='joined')
     album_id = Column(Integer, ForeignKey("album.id"), nullable=False)
@@ -167,7 +185,7 @@ class Artist(Base, TypedInfo):
     __tablename__ = "artist"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(254), nullable=False, index=True)
+    name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
     albums = relationship("Album", backref="artist", innerjoin=True)
     tracks = relationship("TrackInfo", backref="artist", innerjoin=True)
     UniqueConstraint('name', 'type')
@@ -194,7 +212,7 @@ class Album(Base, TypedInfo):
 
     id = Column(Integer, primary_key=True)
     artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
-    name = Column(String(254), nullable=False, index=True)
+    name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
     year = Column(Integer, nullable=True)
     cover_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
     cover = relationship("Cover", backref="albums")
@@ -240,7 +258,7 @@ class Genre(Base, TypedInfo):
     __tablename__ = "genre"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(254), nullable=False, unique=True)
+    name = Column(UnicodeSurrogateEscape(254), nullable=False, unique=True)
     tracks = relationship("TrackInfo", backref="genre")
     UniqueConstraint('name', 'type')
 

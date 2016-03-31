@@ -9,7 +9,7 @@ import re
 from collections import defaultdict
 from threading import Thread, Timer
 from datetime import datetime
-from festivallib.model import Context, Track, Cover, session_scope, coroutine
+from festivallib.model import Context, Track, Cover, session_scope, coroutine, _clean_tag
 from festivallib import coverurl, thumbs, info
 from libs.mediafile import MediaFile, UnreadableFileError
 from app import app
@@ -154,7 +154,7 @@ class Scanner(Thread):
                         for key in ['artist', 'album', 'title', 'year', 'trackno']:
                             try:
                                 if match.group(key) is not None:
-                                    tags[key] = match.group(key)
+                                    tags[key] = _clean_tag(match.group(key), allow_none=key in ['year', 'trackno'])
                             except IndexError:
                                 pass
                 except IndexError:
