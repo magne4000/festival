@@ -362,7 +362,6 @@ class Context:
         )
         for mode in tags:
             self.add_track_info(track, mode, **tags[mode])
-        self.session.flush()
         return track
 
     def fetch_genre(self, mode, genre):
