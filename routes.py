@@ -53,7 +53,6 @@ def music(typed, sid):
         resp.headers['Accept-Ranges'] = 'bytes'
         attachment_filename = os.path.basename(tr.path)
         resp.headers.add('Content-Disposition', 'attachment', filename=attachment_filename.encode('utf-8', 'replace').decode('utf8'))
-        print(resp.headers)
         return resp
 
 
