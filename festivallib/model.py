@@ -48,10 +48,14 @@ class UnicodeSurrogateEscape(types.TypeDecorator):
     impl = types.String
 
     def process_bind_param(self, value, dialect):
-        return value.encode('utf-8', errors="surrogateescape")
+        if isinstance(value, str):
+            return value.encode('utf-8', errors="surrogateescape")
+        return value
 
     def process_result_value(self, value, dialect):
-        return value.decode('utf-8', errors="surrogateescape")
+        if isinstance(value, bytes):
+            return value.decode('utf-8', errors="surrogateescape")
+        return value
 
     def copy(self):
         return UnicodeSurrogateEscape(self.impl.length)
