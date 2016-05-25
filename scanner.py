@@ -133,10 +133,10 @@ class Scanner(Thread):
         try:
             mutagen_tags = MediaFile(mfile)
             tags['title'] = mutagen_tags.title
-            tags['artist'] = mutagen_tags.artist if mutagen_tags.artist is not None else 'Unknown'
+            tags['artist'] = mutagen_tags.albumartist if mutagen_tags.albumartist is not None else mutagen_tags.artist if mutagen_tags.artist is not None else 'Unknown'
             tags['genre'] = mutagen_tags.genre
             tags['album'] = mutagen_tags.album if mutagen_tags.album is not None else 'Unknown'
-            tags['trackno'] = mutagen_tags.track
+            tags['trackno'] = str(mutagen_tags.track)
             tags['year'] = mutagen_tags.year
             info['length'] = mutagen_tags.length
             info['bitrate'] = mutagen_tags.bitrate
