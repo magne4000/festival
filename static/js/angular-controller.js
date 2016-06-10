@@ -525,15 +525,15 @@ angular.module('festival')
     };
     
     $scope.downloadArtist = function(artist) {
-        window.location = '/download/artist/' + artist.id + '?type=' + $displayMode.type();
+        window.location = 'download/artist/' + artist.id + '?type=' + $displayMode.type();
     };
     
     $scope.downloadAlbum = function(album) {
-        window.location = '/download/album/' + album.id + '?type=' + $displayMode.type();
+        window.location = 'download/album/' + album.id + '?type=' + $displayMode.type();
     };
     
     $scope.downloadTrack = function(track) {
-        window.location = '/music/' + track.id + '?type=' + $displayMode.type();
+        window.location = 'music/' + track.id + '?type=' + $displayMode.type();
     };
 }])
 .controller('QueueController', ['$scope', '$rootScope', '$tracks', function($scope, $rootScope, $tracks) {
