@@ -1,3 +1,4 @@
+/* global $ */
 /* global angular */
 angular.module('festival', ['infinite-scroll', 'angularLazyImg', 'ngDropdowns'])
 .config(['lazyImgConfigProvider', '$locationProvider', function(lazyImgConfigProvider, $locationProvider) {
@@ -388,7 +389,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg', 'ngDropdowns'])
     };
 }])
 .run([function(){
-    $( document ).on("click", ".container .controls>.control", function(evt) {
+    $(document).on("click", ".container .controls>.control.animate", function(evt) {
         var elt = $(evt.target).parents('.album');
         if (elt.length == 0) elt = $(evt.target).parents('.artist');
         elt.effect( "transfer", { to: $( ".handle" ) });

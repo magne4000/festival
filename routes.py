@@ -14,9 +14,9 @@ from app import app
 def ziptracks(tracks, filename):
     def generator():
         z = zipstream.ZipFile(mode='w', compression=zipfile.ZIP_STORED)
-        for track in tracks:
-            filename = os.path.basename(track.path)
-            z.write(track.path, os.path.join(track.artist_name, track.album_name, filename))
+        for trackinfo in tracks:
+            filename = os.path.basename(trackinfo.track.path)
+            z.write(trackinfo.track.path, os.path.join(trackinfo.artist.name, trackinfo.album.name, filename))
         for chunk in z:
             yield chunk
 
@@ -61,7 +61,7 @@ def music(typed, sid):
 def downloada(typed, artistid):
     tracks = typed.listtracks(lambda query: query.filter(Artist.id == artistid))
     if len(tracks) > 0:
-        return ziptracks(tracks, tracks[0].artist_name)
+        return ziptracks(tracks, tracks[0].artist.name)
     abort(404)
 
 
@@ -70,7 +70,7 @@ def downloada(typed, artistid):
 def downloadaa(typed, albumid):
     tracks = typed.listtracks(lambda query: query.filter(Album.id == albumid))
     if len(tracks) > 0:
-        return ziptracks(tracks, "{} - {}".format(tracks[0].artist_name, tracks[0].album_name))
+        return ziptracks(tracks, "{} - {}".format(tracks[0].artist.name, tracks[0].album.name))
     abort(404)
 
 

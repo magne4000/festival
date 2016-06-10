@@ -513,7 +513,8 @@ main .container .heading > .controls .control:hover {
 }
 .track .controls {
   cursor: pointer;
-  width: 48px;
+  min-width: 48px;
+  max-width: 72px;
 }
 .track .controls .control {
   flex: 1;
