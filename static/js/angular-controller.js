@@ -2,7 +2,7 @@
 /* global angular */
 /* global soundManager */
 angular.module('festival')
-.controller('PlayerController', ['$scope', '$tracks', '$timeout', function($scope, $tracks, $timeout) {
+.controller('PlayerController', ['$scope', '$tracks', '$timeout', '$desktop', function($scope, $tracks, $timeout, $desktop) {
     var indicesAlreadyPlayed = [];
     var indicesToBePlayed = [];
     var currentIndice = 0;
@@ -266,6 +266,7 @@ angular.module('festival')
                             $scope.$apply(function(){
                                 $scope.playing = true;
                             });
+                            $desktop('Now playing', $scope.currentTrack.name + ', by ' + $scope.currentTrack.artist_name + ', on ' + $scope.currentTrack.album_name);
                         },
                         onload: function(success){
                             var self = this;
@@ -523,15 +524,15 @@ angular.module('festival')
             $scope.add(album1.tracks, autoplay);
         });
     };
-    
+
     $scope.downloadArtist = function(artist) {
         window.location = 'download/artist/' + artist.id + '?type=' + $displayMode.type();
     };
-    
+
     $scope.downloadAlbum = function(album) {
         window.location = 'download/album/' + album.id + '?type=' + $displayMode.type();
     };
-    
+
     $scope.downloadTrack = function(track) {
         window.location = 'music/' + track.id + '?type=' + $displayMode.type();
     };

@@ -285,6 +285,39 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg', 'ngDropdowns'])
         clean: clean
     };
 }])
+.factory('$desktop', [function(){
+    var granted = false;
+    if (!("Notification" in window)) {
+        granted = false;
+    } else if (Notification.permission === "granted") {
+        granted = true;
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission(function (permission) {
+            if(!('permission' in Notification)) {
+                Notification.permission = permission;
+            }
+            granted = permission === "granted";
+        });
+    }
+
+    return function(title, body, timeout){
+        if (granted) {
+            var options = {
+                'icon': 'static/images/favicon.png',
+                'silent': true
+            };
+            timeout = timeout || 5000;
+            if (body) options.body = body;
+            var notif = new Notification(title, options);
+            setTimeout(function(){
+                if (notif) {
+                    notif.close();
+                }
+            }, timeout);
+            return notif;
+        }
+    };
+}])
 .factory('$utils', [function(){
 
     function fixelement(element, type) {
