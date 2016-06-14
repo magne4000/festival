@@ -1,19 +1,20 @@
+import mimetypes
 import os
 import re
-import mimetypes
+from contextlib import contextmanager
 from datetime import datetime
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session, contains_eager, joinedload
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, distinct, event, UniqueConstraint, create_engine
+
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, distinct, event, UniqueConstraint, create_engine
 from sqlalchemy import types
-from sqlalchemy.sql import column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session, contains_eager, joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from sqlalchemy.pool import NullPool
-from contextlib import contextmanager
-from .thumbs import Thumb
+from sqlalchemy.sql import column
 
+from .thumbs import Thumb
 
 Base = declarative_base()
 

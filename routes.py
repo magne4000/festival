@@ -1,22 +1,21 @@
-from flask import render_template, request, json, send_file, send_from_directory, abort, Response, redirect, url_for
-from flask.json import jsonify
-from festivallib.thumbs import Thumb
-from festivallib.request import typed_fct
-from festivallib.model import Artist, Album, TrackInfo
-from libs import zipstream
-from warnings import warn
-from zlib import adler32
-import os
 import json
 import zipfile
+from warnings import warn
+from zlib import adler32
+
+from flask import render_template, json, abort, redirect, url_for
+
 from app import app
+from festivallib.request import typed_fct
+from libs import zipstream
+
 
 def ziptracks(tracks, filename):
     def generator():
         z = zipstream.ZipFile(mode='w', compression=zipfile.ZIP_STORED)
         for trackinfo in tracks:
-            filename = os.path.basename(trackinfo.track.path)
-            z.write(trackinfo.track.path, os.path.join(trackinfo.artist.name, trackinfo.album.name, filename))
+            afilename = os.path.basename(trackinfo.track.path)
+            z.write(trackinfo.track.path, os.path.join(trackinfo.artist.name, trackinfo.album.name, afilename))
         for chunk in z:
             yield chunk
 

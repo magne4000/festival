@@ -1,7 +1,9 @@
 import io
-import os
 import logging
+import os
+
 from PIL import Image
+
 from .data import Data
 
 logger = logging.getLogger('thumbs')

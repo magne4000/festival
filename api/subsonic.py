@@ -1,13 +1,15 @@
 import os
-import re
 import random
+import re
 from datetime import datetime
+
 from flask import request, send_file, send_from_directory
-from app import app
-from festivallib.model import session_scope, Artist, Album, TrackInfo, Track
-from festivallib.thumbs import Thumb
-from festivallib.request import typed_fct
 from sqlalchemy import func, desc
+
+from app import app
+from festivallib.model import Artist, Album, TrackInfo
+from festivallib.request import typed_fct
+from festivallib.thumbs import Thumb
 
 
 def get_filter(fromYear=None, toYear=None, genre=None):

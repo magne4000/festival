@@ -1,10 +1,12 @@
-from .model import session_scope, Track, TrackInfo, Album, Artist, Cover
+from functools import wraps
+
+from flask import request
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, contains_eager, attributes
-from sqlalchemy.util import KeyedTuple
 from sqlalchemy.orm.exc import NoResultFound
-from functools import wraps
-from flask import request
+from sqlalchemy.util import KeyedTuple
+
+from .model import session_scope, Track, TrackInfo, Album, Artist, Cover
 
 
 def limitoffset(query, skip, limit):

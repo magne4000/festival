@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-import urllib.parse
-import urllib3
 import json
 import logging
+import urllib.parse
+
+import urllib3
+
 from app import app
 
 logger = logging.getLogger('coverurl')

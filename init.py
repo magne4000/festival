@@ -62,6 +62,7 @@ def check(args=None, unattented=False):
                 print("\033[93mArborting.\033[0m")
                 sys.exit(3)
 
+
 def init():
     from app import app
     logging_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
