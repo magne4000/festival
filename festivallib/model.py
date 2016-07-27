@@ -277,7 +277,7 @@ class Genre(Base, TypedInfo):
         }
 
 
-def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254):
+def clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254):
     """ Clean the given `tag` instance depending of its `mytype`."""
     if default is None and allow_none is False:
         if mytype == 'string':
@@ -390,7 +390,7 @@ class Context:
     def fetch_genre(self, mode, genre):
         if genre is None:
             return None
-        genre = _clean_tag(genre)
+        genre = clean_tag(genre)
         lgenre = genre.lower()
         if lgenre in self.infos[mode]['genres']:
             ge = self.infos[mode]['genres'][lgenre]
@@ -429,13 +429,13 @@ class Context:
 
     def add_track_info(self, track, mode, artist=None, album=None, title=None, trackno=None, year=None, genre=None):
         found = False
-        name = _clean_tag(title)
-        artist = _clean_tag(artist)
-        album = _clean_tag(album)
-        year = _clean_tag(year, mytype='integer', max_len=4)
+        name = clean_tag(title)
+        artist = clean_tag(artist)
+        album = clean_tag(album)
+        year = clean_tag(year, mytype='integer', max_len=4)
         if trackno is not None:
             trackno = trackno.split("/")[0]
-        trackno = _clean_tag(trackno, mytype='integer')
+        trackno = clean_tag(trackno, mytype='integer')
         trackinfo = None
 
         for trackinfo in track.infos:
@@ -456,8 +456,8 @@ class Context:
         return trackinfo
 
     def add_track(self, path, duration=0.0, bitrate=None, last_mod_time=None):
-        duration = _clean_tag(duration, mytype='float')
-        bitrate = _clean_tag(bitrate, allow_none=True)
+        duration = clean_tag(duration, mytype='float')
+        bitrate = clean_tag(bitrate, allow_none=True)
 
         if path in self.tracks:
             track = self.session.query(Track).filter(Track.path == path).one()
