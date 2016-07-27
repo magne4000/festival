@@ -8,9 +8,9 @@ DEFAULT_VERSION = '1.10.1'
 
 
 def dict2xml(d, root_node=None):
-    wrap = False if None == root_node or isinstance(d, list) else True
-    root = 'objects' if None == root_node else root_node
-    root_singular = root[:-1] if 's' == root[-1] and None == root_node else root
+    wrap = False if None is root_node or isinstance(d, list) else True
+    root = 'objects' if None is root_node else root_node
+    root_singular = root[:-1] if 's' == root[-1] and None is root_node else root
     xml = ''
     children = []
 
