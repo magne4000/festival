@@ -42,9 +42,9 @@ def _fk_pragma_on_connect(dbapi_con, con_record):
 
 
 class UnicodeSurrogateEscape(types.TypeDecorator):
-    '''Prefixes Unicode values with "PREFIX:" on the way in and
+    """Prefixes Unicode values with "PREFIX:" on the way in and
     strips it off on the way out.
-    '''
+    """
 
     impl = types.String
 
