@@ -30,13 +30,15 @@ class CoverThread(Thread):
             sys.stdout.write(char)
             sys.stdout.flush()
 
-    def rescan_albums_without_cover(self):
+    @staticmethod
+    def rescan_albums_without_cover():
         last_cover_scan = info.Infos.get('last_cover_scan')
         if last_cover_scan is not None:
             return last_cover_scan + app.config['COVERS_FETCH_ONLINE_INTERVAL'] <= datetime.now()
         return False
 
-    def update_last_cover_scan(self):
+    @staticmethod
+    def update_last_cover_scan():
         info.Infos.update(last_cover_scan=datetime.now())
 
     def run_fetch_online(self, db, null_cover, album):
@@ -127,7 +129,8 @@ class Scanner(Thread):
             db.delete_orphans()
             db.purge_downloaded_covers()
 
-    def get_tags_and_info(self, mfile):
+    @staticmethod
+    def get_tags_and_info(mfile):
         tags = {}
         info = {}
         try:
@@ -144,7 +147,8 @@ class Scanner(Thread):
             logger.exception('Error in scanner.get_tags_and_info')
         return tags, info
 
-    def get_tags_from_folders(self, mfile):
+    @staticmethod
+    def get_tags_from_folders(mfile):
         tags = {}
         for pattern in app.config['SCANNER_FOLDER_PATTERNS']:
             match = pattern.search(mfile)
@@ -222,7 +226,8 @@ class Scanner(Thread):
     def run(self):
         self._run()
 
-    def update_last_scan(self):
+    @staticmethod
+    def update_last_scan():
         info.Infos.update(last_scan=datetime.now())
 
     def walk(self, purge=True):
