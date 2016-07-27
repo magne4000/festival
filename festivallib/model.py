@@ -334,7 +334,6 @@ class Context:
         self.session.close()
 
     def get_null_cover(self):
-        obj = None
         try:
             obj = self.session.query(Cover).filter(Cover.mbid == '0').one()
         except NoResultFound:
