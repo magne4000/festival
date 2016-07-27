@@ -15,7 +15,7 @@ from libs.mediafile import MediaFile, UnreadableFileError
 from app import app
 
 logger = logging.getLogger('scanner')
-filter_cover = lambda fname: re.compile('(cover|folder|album|thumb)\.(jpg|gif)', re.I).match(fname)
+filter_cover = lambda fname: re.compile(r'(cover|folder|album|thumbs?)\.(jpe?g|gif|png)', re.I).match(fname)
 
 
 class CoverThread(Thread):
