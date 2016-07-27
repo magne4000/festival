@@ -144,7 +144,7 @@ class Scanner(Thread):
             info['length'] = mutagen_tags.length
             info['bitrate'] = mutagen_tags.bitrate
         except UnreadableFileError as e:
-            logger.exception('Error in scanner.get_tags_and_info')
+            logger.exception('Error in scanner.get_tags_and_info: %s', e)
         return tags, info
 
     @staticmethod
@@ -183,7 +183,7 @@ class Scanner(Thread):
                         _ = db.add_track_full(mfile, mtime, tags, info)
                     except Exception as e:
                         db.session.rollback()
-                        logger.exception('Error in scanner.add_track: %s\nTags: %s', mfile, tags)
+                        logger.exception('Error in scanner.add_track: %s\nTags: %s: %s', mfile, tags, e)
             except GeneratorExit:
                 pass
 
