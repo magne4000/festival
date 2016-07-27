@@ -203,14 +203,14 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
     #TODO /rest/getRandomSongs.view
 
     def test_get_album_list(self):
-        '''
+        """
             str             type in ['random', 'newest', 'highest', 'frequent', 'recent', 'starred', 'alphabeticalByName', 'alphabeticalByArtist', 'byYear', 'genre']
             int optionnal   size (default 10)
             int optionnal   offset (default 0)
             int optionnal   fromYear
             int optionnal   toYear
             str optionnal   genre
-        '''
+        """
         # No parameters
         rv = self.app.get('/rest/getAlbumList.view')
         subject = b'''<?xml version="1.0" encoding="UTF-8"?>
@@ -336,7 +336,7 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
     def test_search2(self): # Also valid for search3
-        '''
+        """
             str             query
             int optionnal   artistCount (default 20)
             int optionnal   artistOffset (default 0)
@@ -344,7 +344,7 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
             int optionnal   albumOffset (default 0)
             int optionnal   songCount (default 20)
             int optionnal   songOffset (default 0)
-        '''
+        """
         # No query parameter
         rv = self.app.get('/rest/search2.view')
         subject = b'''<?xml version="1.0" encoding="UTF-8"?>

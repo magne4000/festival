@@ -9,13 +9,13 @@ import re
 from collections import defaultdict
 from threading import Thread, Timer
 from datetime import datetime
-from festivallib.model import Context, Track, Cover, session_scope, coroutine, _clean_tag
+from festivallib.model import Context, Track, Cover, session_scope, coroutine, clean_tag
 from festivallib import coverurl, thumbs, info
 from libs.mediafile import MediaFile, UnreadableFileError
 from app import app
 
 logger = logging.getLogger('scanner')
-filter_cover = lambda fname: re.compile('(cover|folder|album|thumb)\.(jpg|gif)', re.I).match(fname)
+filter_cover = lambda fname: re.compile(r'(cover|folder|album|thumbs?)\.(jpe?g|gif|png)', re.I).match(fname)
 
 
 class CoverThread(Thread):
@@ -30,13 +30,15 @@ class CoverThread(Thread):
             sys.stdout.write(char)
             sys.stdout.flush()
 
-    def rescan_albums_without_cover(self):
+    @staticmethod
+    def rescan_albums_without_cover():
         last_cover_scan = info.Infos.get('last_cover_scan')
         if last_cover_scan is not None:
             return last_cover_scan + app.config['COVERS_FETCH_ONLINE_INTERVAL'] <= datetime.now()
         return False
 
-    def update_last_cover_scan(self):
+    @staticmethod
+    def update_last_cover_scan():
         info.Infos.update(last_cover_scan=datetime.now())
 
     def run_fetch_online(self, db, null_cover, album):
@@ -127,7 +129,8 @@ class Scanner(Thread):
             db.delete_orphans()
             db.purge_downloaded_covers()
 
-    def get_tags_and_info(self, mfile):
+    @staticmethod
+    def get_tags_and_info(mfile):
         tags = {}
         info = {}
         try:
@@ -141,10 +144,11 @@ class Scanner(Thread):
             info['length'] = mutagen_tags.length
             info['bitrate'] = mutagen_tags.bitrate
         except UnreadableFileError as e:
-            logger.exception('Error in scanner.get_tags_and_info')
+            logger.exception('Error in scanner.get_tags_and_info: %s', e)
         return tags, info
 
-    def get_tags_from_folders(self, mfile):
+    @staticmethod
+    def get_tags_from_folders(mfile):
         tags = {}
         for pattern in app.config['SCANNER_FOLDER_PATTERNS']:
             match = pattern.search(mfile)
@@ -154,7 +158,7 @@ class Scanner(Thread):
                         for key in ['artist', 'album', 'title', 'year', 'trackno']:
                             try:
                                 if match.group(key) is not None:
-                                    tags[key] = _clean_tag(match.group(key), allow_none=key in ['year', 'trackno'])
+                                    tags[key] = clean_tag(match.group(key), allow_none=key in ['year', 'trackno'])
                             except IndexError:
                                 pass
                 except IndexError:
@@ -179,7 +183,7 @@ class Scanner(Thread):
                         _ = db.add_track_full(mfile, mtime, tags, info)
                     except Exception as e:
                         db.session.rollback()
-                        logger.exception('Error in scanner.add_track: %s\nTags: %s', mfile, tags)
+                        logger.exception('Error in scanner.add_track: %s\nTags: %s: %s', mfile, tags, e)
             except GeneratorExit:
                 pass
 
@@ -222,7 +226,8 @@ class Scanner(Thread):
     def run(self):
         self._run()
 
-    def update_last_scan(self):
+    @staticmethod
+    def update_last_scan():
         info.Infos.update(last_scan=datetime.now())
 
     def walk(self, purge=True):
