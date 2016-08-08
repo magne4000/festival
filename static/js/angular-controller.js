@@ -538,8 +538,7 @@ angular.module('festival')
 
     function computeTracks() {
         $scope.$apply(function(){
-            var head = $tracks.getHead();
-            var track = head;
+            var track = $tracks.getHead();
             $scope.tracks = [];
             if (track) {
                 $scope.tracks.push(track);
