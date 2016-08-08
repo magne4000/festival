@@ -1,4 +1,7 @@
+import os
 import unittest
+
+import collections
 import xmlunittest
 import re
 
@@ -7,10 +10,21 @@ re_lm = re.compile(b'lastModified="(\d+?)"')
 
 class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
     def setUp(self):
-        from app import app
+        from app import get_app
+        from api.subsonic import subsonic
+        Args = collections.namedtuple('Args', 'with_scanner config debug yes host port check test_regex')
+        app = get_app(Args(
+            with_scanner=False,
+            config=os.path.join(os.path.dirname(__file__), 'test', 'settings.cfg'),
+            debug=False,
+            yes=False,
+            host='0.0.0.0',
+            port='5000',
+            check=False,
+            test_regex=False))
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test/festival.db'
         app.config['TESTING'] = True
-        from api import subsonic
+        app.register_blueprint(subsonic)
         self.app = app.test_client()
 
     def tearDown(self):

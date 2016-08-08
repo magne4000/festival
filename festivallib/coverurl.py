@@ -5,8 +5,7 @@ import logging
 import urllib.parse
 
 import urllib3
-
-from app import app
+from flask import current_app
 
 logger = logging.getLogger('coverurl')
 
@@ -64,5 +63,5 @@ class CoverURL:
 
 
 if __name__ == "__main__":
-    cu = CoverURL(app.config['LASTFM_API_KEY'])
+    cu = CoverURL(current_app.config['LASTFM_API_KEY'])
     print(cu.search('Dagoba', 'Tales of the Black Dawn'))

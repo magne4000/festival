@@ -1,14 +1,19 @@
 import json
-import zipfile
 import mimetypes
+import os
+import zipfile
 from warnings import warn
 from zlib import adler32
 
-from flask import render_template, json, abort, redirect, url_for
+from flask import Blueprint, jsonify, Response, render_template, json, abort, redirect, url_for, request, send_file, \
+    send_from_directory
 
-from app import app
+from festivallib.model import Album, TrackInfo, Artist
 from festivallib.request import typed_fct
+from festivallib.thumbs import Thumb
 from libs import zipstream
+
+routes = Blueprint('routes', __name__, template_folder='templates')
 
 
 def ziptracks(tracks, filename):
@@ -127,12 +132,12 @@ def send_file_partial(path, **kwargs):
     return rv
 
 
-@app.route("/")
+@routes.route("/")
 def hello():
     return render_template('index.html')
 
 
-@app.route("/music/<sid>")
+@routes.route("/music/<sid>")
 @typed_fct
 def music(typed, sid):
     tr = typed.gettrack(track_id=sid)
@@ -142,7 +147,7 @@ def music(typed, sid):
         return send_file_partial(tr.path, conditional=True, add_etags=False)
 
 
-@app.route("/download/artist/<artistid>")
+@routes.route("/download/artist/<artistid>")
 @typed_fct
 def downloada(typed, artistid):
     tracks = typed.listtracks(lambda query: query.filter(Artist.id == artistid))
@@ -151,7 +156,7 @@ def downloada(typed, artistid):
     abort(404)
 
 
-@app.route("/download/album/<albumid>")
+@routes.route("/download/album/<albumid>")
 @typed_fct
 def downloadaa(typed, albumid):
     tracks = typed.listtracks(lambda query: query.filter(Album.id == albumid))
@@ -160,7 +165,7 @@ def downloadaa(typed, albumid):
     abort(404)
 
 
-@app.route("/ajax/list/tracks")
+@routes.route("/ajax/list/tracks")
 @typed_fct
 def ltracks(typed):
     skip = request.args.get('skip', None, type=int)
@@ -183,7 +188,7 @@ def ltracks(typed):
                              typed.listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
-@app.route("/ajax/list/albums")
+@routes.route("/ajax/list/albums")
 @typed_fct
 def lalbums(typed):
     skip = request.args.get('skip', 0, type=int)
@@ -198,7 +203,7 @@ def lalbums(typed):
                              typed.listtracksbyalbumsbyartists(skip=skip, limit=limit)])
 
 
-@app.route("/ajax/list/artists")
+@routes.route("/ajax/list/artists")
 @typed_fct
 def lartists(typed):
     skip = request.args.get('skip', 0, type=int)
@@ -206,7 +211,7 @@ def lartists(typed):
     return jsonify(data=[x.as_dict() for x in typed.listartists(skip=skip, limit=limit)])
 
 
-@app.route("/ajax/list/albumsbyartists")
+@routes.route("/ajax/list/albumsbyartists")
 @typed_fct
 def albumsbyartists(typed):
     skip = request.args.get('skip', 0, type=int)
@@ -219,7 +224,7 @@ def albumsbyartists(typed):
         data=[x.as_dict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
-@app.route("/ajax/list/search")
+@routes.route("/ajax/list/search")
 @typed_fct
 def search_(typed):
     filters = request.args.get('filters', type=json.loads)
@@ -229,12 +234,12 @@ def search_(typed):
     return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in typed.search(term, **filters)])
 
 
-@app.route("/ajax/fileinfo")
+@routes.route("/ajax/fileinfo")
 def fileinfo():
     pass
 
 
-@app.route("/albumart/<salbum>")
+@routes.route("/albumart/<salbum>")
 @typed_fct
 def albumart(typed, salbum):
     cover = typed.getcoverbyalbumid(salbum)
@@ -242,5 +247,3 @@ def albumart(typed, salbum):
         return redirect(url_for('static', filename='images/nocover.png'))
     else:
         return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
-
-from api import *

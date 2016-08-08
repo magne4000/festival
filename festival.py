@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import argparse
+
 from init import init, check
 
 
 def handle_args():
     parser = argparse.ArgumentParser(description='Festival')
     parser.add_argument('--with-scanner', action='store_true', help='Start the scanner process with the webserver')
+    parser.add_argument('-c', '--config', help='Path to configuration file. Default to local settings.cfg file')
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
     parser.add_argument('-y', '--yes', action='store_true', help='Assume "yes" as answer to all prompts')
     parser.add_argument('--host', default='0.0.0.0', help='On which host to run webserver')
@@ -15,10 +17,14 @@ def handle_args():
     return parser.parse_args()
 
 
-def main():
+def simple_main(unattented=False):
     args = handle_args()
-    check(args)
-    myapp = init()
+    check(args, unattented=unattented)
+    return init(args), args
+
+
+def main():
+    myapp, args = simple_main()
     from scanner import Scanner, ScannerTestRegex
     if args.test_regex:
         ScannerTestRegex(myapp.config['SCANNER_PATH']).start()
@@ -32,5 +38,4 @@ def main():
 if __name__ == "__main__":
     main()
 else:
-    check(unattented=True)
-    app = init()
+    app, _ = simple_main(unattented=True)

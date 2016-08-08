@@ -1,28 +1,33 @@
 #!/usr/bin/env python3
-import sys
-sys.path.insert(0, './libs')
-import os
-import uuid
 import logging
-import time
+import os
 import re
+import sys
+import time
+import uuid
 from collections import defaultdict
-from threading import Thread, Timer
 from datetime import datetime
-from festivallib.model import Context, Track, Cover, session_scope, coroutine, clean_tag
+from threading import Thread, Timer
+
+from flask import current_app
+
 from festivallib import coverurl, thumbs, info
+from festivallib.model import Context, Track, Cover, session_scope, coroutine, clean_tag
 from libs.mediafile import MediaFile, UnreadableFileError
-from app import app
 
 logger = logging.getLogger('scanner')
-filter_cover = lambda fname: re.compile('(cover|folder|album|thumb)\.(jpg|gif)', re.I).match(fname)
+RE_COVER = re.compile('(cover|folder|album|thumb)\.(jpe?g|gif)', re.I)
+
+
+def filter_cover(fname):
+    return RE_COVER.match(fname)
 
 
 class CoverThread(Thread):
 
     def __init__(self, debug=False):
         super(CoverThread, self).__init__()
-        self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
+        self.cu = coverurl.CoverURL(current_app.config['LASTFM_API_KEY'])
         self.debug = debug
 
     def print_debug(self, char):
@@ -34,7 +39,7 @@ class CoverThread(Thread):
     def rescan_albums_without_cover():
         last_cover_scan = info.Infos.get('last_cover_scan')
         if last_cover_scan is not None:
-            return last_cover_scan + app.config['COVERS_FETCH_ONLINE_INTERVAL'] <= datetime.now()
+            return last_cover_scan + current_app.config['COVERS_FETCH_ONLINE_INTERVAL'] <= datetime.now()
         return False
 
     @staticmethod
@@ -77,7 +82,7 @@ class CoverThread(Thread):
             albums = db.get_albums_without_cover(self.rescan_albums_without_cover())
             null_cover = db.get_null_cover()
             for album in albums:
-                for val in app.config['COVERS_FETCH']:
+                for val in current_app.config['COVERS_FETCH']:
                     getattr(self, 'run_fetch_%s' % val)(db, null_cover, album)
                     if album.cover != null_cover:
                         break
@@ -150,7 +155,7 @@ class Scanner(Thread):
     @staticmethod
     def get_tags_from_folders(mfile):
         tags = {}
-        for pattern in app.config['SCANNER_FOLDER_PATTERNS']:
+        for pattern in current_app.config['SCANNER_FOLDER_PATTERNS']:
             match = pattern.search(mfile)
             if match is not None:
                 try:
@@ -174,9 +179,9 @@ class Scanner(Thread):
                     mfile, mtime, = (yield)
                     tags = {}
                     aninfo = {}
-                    if 'tags' in app.config['SCANNER_MODES']:
+                    if 'tags' in current_app.config['SCANNER_MODES']:
                         tags['tags'], aninfo = self.get_tags_and_info(mfile)
-                    if 'folder' in app.config['SCANNER_MODES']:
+                    if 'folder' in current_app.config['SCANNER_MODES']:
                         tags_from_folders = self.get_tags_from_folders(mfile)
                         if tags_from_folders is not None:
                             tags['folder'] = tags_from_folders
@@ -208,7 +213,7 @@ class Scanner(Thread):
 
     @staticmethod
     def filter_music_file(path):
-        return os.path.splitext(path)[1].lower() in app.config['SCANNER_EXTS']
+        return os.path.splitext(path)[1].lower() in current_app.config['SCANNER_EXTS']
 
     def _run(self):
         logger.debug('New scan started')
@@ -221,7 +226,7 @@ class Scanner(Thread):
             t.join()
             logger.debug('Cover thread terminated')
         if self.infinite:
-            t = Timer(app.config['SCANNER_REFRESH_INTERVAL'].total_seconds(), self._run)
+            t = Timer(current_app.config['SCANNER_REFRESH_INTERVAL'].total_seconds(), self._run)
             t.start()
 
     def run(self):
@@ -297,7 +302,7 @@ class ScannerTestRegex(Scanner):
 
 if __name__ == "__main__":
     while True:
-        s = Scanner(app.config['SCANNER_PATH'], infinite=False, debug='-d' in sys.argv)
+        s = Scanner(current_app.config['SCANNER_PATH'], infinite=False, debug='-d' in sys.argv)
         s.start()
         s.join()
-        time.sleep(app.config['SCANNER_REFRESH_INTERVAL'].total_seconds())
+        time.sleep(current_app.config['SCANNER_REFRESH_INTERVAL'].total_seconds())

@@ -1,10 +1,10 @@
-from flask import request, Response
-from flask.json import jsonify
-from app import app
-
 from xml.dom.minidom import Text
 
+from flask import Response, Blueprint, request
+from flask.json import jsonify
+
 DEFAULT_VERSION = '1.10.1'
+subsonic_routes = Blueprint('subsonic', 'subsonic')
 
 
 def dict2xml(d, root_node=None):
@@ -84,7 +84,7 @@ def xmlresponse(resp, error=False, version=DEFAULT_VERSION):
                     content_type='text/xml; charset=utf-8')
 
 
-@app.before_request
+@subsonic_routes.before_request
 def subsonicify():
     if not request.path.endswith('.view'):
         return
@@ -110,7 +110,7 @@ def subsonicify():
     request.error_formatter = lambda code, msg: request.formatter({'error': {'code': code, 'message': msg}}, error=True)
 
 
-@app.after_request
+@subsonic_routes.after_request
 def set_content_type(response):
     if not request.path.endswith('.view'):
         return response
@@ -122,11 +122,9 @@ def set_content_type(response):
     return response
 
 
-@app.errorhandler(404)
+@subsonic_routes.errorhandler(404)
 def not_found(error):
     if not request.path.endswith('.view'):
         return error
 
     return request.error_formatter(0, 'Not implemented'), 501
-
-from .subsonic import *

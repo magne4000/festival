@@ -4,6 +4,7 @@ import re
 from contextlib import contextmanager
 from datetime import datetime
 
+from flask import current_app
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, distinct, event, UniqueConstraint, \
     create_engine
 from sqlalchemy import types
@@ -18,6 +19,8 @@ from sqlalchemy.sql import column
 from .thumbs import Thumb
 
 Base = declarative_base()
+engine = None
+Session = None
 
 
 def coroutine(func):
@@ -32,7 +35,7 @@ def purge_cover_on_delete(session, query, query_context, result):
     if query_context.statement is not None:
         affected_table = query_context.statement.froms[0]
         if affected_table.name == 'cover':
-            deleted_elts = engine.execute(query_context.statement).fetchall()
+            deleted_elts = get_engine().execute(query_context.statement).fetchall()
             for elt in deleted_elts:
                 if elt[2] is not None and os.path.isfile(elt[2]):
                     os.remove(elt[2])
@@ -90,7 +93,7 @@ def get_typed_query_class(stype):
 @contextmanager
 def session_scope(mode='tags'):
     """Provide a transactional scope around a series of operations."""
-    session = scoped_session(Session)(query_cls=get_typed_query_class(mode))
+    session = scoped_session(get_session())(query_cls=get_typed_query_class(mode))
     try:
         yield session
         session.commit()
@@ -322,7 +325,7 @@ class Context:
         self.infos = {}
         if self.load:
             self.tracks = [x.path for x in self.session.query(Track.path).all()]
-            for mode in app.config['SCANNER_MODES']:
+            for mode in current_app.config['SCANNER_MODES']:
                 self.infos[mode] = {}
                 self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in
                                                self.session.query(Artist).join(Artist.albums).options(
@@ -475,13 +478,22 @@ class Context:
         return track
 
 
-from app import app
+def get_engine():
+    global engine
+    if engine is None:
+        engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool,
+                               connect_args={'check_same_thread': False})
+    return engine
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool,
-                       connect_args={'check_same_thread': False})
-if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
-    event.listen(engine, 'connect', _fk_pragma_on_connect)
-mimetypes.init()
-Session = sessionmaker(bind=engine)
-event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
-Base.metadata.create_all(bind=engine)
+
+def get_session():
+    global Session
+    if Session is None:
+        localengine = get_engine()
+        if current_app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
+            event.listen(localengine, 'connect', _fk_pragma_on_connect)
+        mimetypes.init()
+        Session = sessionmaker(bind=localengine)
+        event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
+        Base.metadata.create_all(bind=localengine)
+    return Session
