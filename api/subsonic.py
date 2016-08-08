@@ -303,7 +303,9 @@ def check_parameter(request, key, allow_none=True, choices=None, fct=None):
 
 
 def _album_list(typed):
-    ok, atype = check_parameter(request, 'type', allow_none=False, choices=['random', 'newest', 'highest', 'frequent', 'recent', 'starred', 'alphabeticalByName', 'alphabeticalByArtist', 'byYear', 'genre'])
+    ok, atype = check_parameter(request, 'type', allow_none=False,
+                                choices=['random', 'newest', 'highest', 'frequent', 'recent', 'starred',
+                                         'alphabeticalByName', 'alphabeticalByArtist', 'byYear', 'genre'])
     if not ok:
         return False, atype
     ok, size = check_parameter(request, 'size', fct=lambda val: int(val) if val else 10)

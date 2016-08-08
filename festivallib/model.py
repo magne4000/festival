@@ -4,7 +4,8 @@ import re
 from contextlib import contextmanager
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, distinct, event, UniqueConstraint, create_engine
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, distinct, event, UniqueConstraint, \
+    create_engine
 from sqlalchemy import types
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
@@ -42,9 +43,9 @@ def _fk_pragma_on_connect(dbapi_con, con_record):
 
 
 class UnicodeSurrogateEscape(types.TypeDecorator):
-    '''Prefixes Unicode values with "PREFIX:" on the way in and
+    """Prefixes Unicode values with "PREFIX:" on the way in and
     strips it off on the way out.
-    '''
+    """
 
     impl = types.String
 
@@ -208,7 +209,8 @@ class Artist(Base, TypedInfo):
         return {
             'id': self.id,
             'name': self.name,
-            'albums': [x.as_dict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
+            'albums': [x.as_dict(tracks=tracks) for x in self.albums] if (
+                       albums and 'albums' in self.__dict__) else None
         }
 
 
@@ -322,8 +324,11 @@ class Context:
             self.tracks = [x.path for x in self.session.query(Track.path).all()]
             for mode in app.config['SCANNER_MODES']:
                 self.infos[mode] = {}
-                self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in self.session.query(Artist).join(Artist.albums).options(contains_eager(Artist.albums)).filter(Artist.type == mode).all()}
-                self.infos[mode]['genres'] = {x.name.strip().lower(): x for x in self.session.query(Genre).filter(Artist.type == mode).all()}
+                self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in
+                                               self.session.query(Artist).join(Artist.albums).options(
+                                                   contains_eager(Artist.albums)).filter(Artist.type == mode).all()}
+                self.infos[mode]['genres'] = {x.name.strip().lower(): x for x in
+                                              self.session.query(Genre).filter(Artist.type == mode).all()}
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -334,7 +339,6 @@ class Context:
         self.session.close()
 
     def get_null_cover(self):
-        obj = None
         try:
             obj = self.session.query(Cover).filter(Cover.mbid == '0').one()
         except NoResultFound:
@@ -369,7 +373,8 @@ class Context:
                         os.remove(fpath)
 
     def delete_tracks(self, tracks_path):
-        tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(joinedload(Track.infos)).all()
+        tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(
+            joinedload(Track.infos)).all()
         for track in tracks:
             for trackinfo in track.infos:
                 self.session.delete(trackinfo)
@@ -472,7 +477,8 @@ class Context:
 
 from app import app
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool,
+                       connect_args={'check_same_thread': False})
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
     event.listen(engine, 'connect', _fk_pragma_on_connect)
 mimetypes.init()
