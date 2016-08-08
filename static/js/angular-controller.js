@@ -1,6 +1,6 @@
 /* global $ */
 /* global angular */
-/* global soundManager */
+/* global buzz */
 angular.module('festival')
 .controller('PlayerController', ['$scope', '$tracks', '$timeout', '$desktop', function($scope, $tracks, $timeout, $desktop) {
     var indicesAlreadyPlayed = [];
@@ -11,6 +11,7 @@ angular.module('festival')
     var progress = 0;
     var lastvolume = 100;
     var usingAdd = false;
+    var sounds = {};
 
     $scope.currentTrack = null;
     $scope.currentSound = null;
@@ -20,6 +21,7 @@ angular.module('festival')
     $scope.duration = 0;
     $scope.playing = false;
     $scope.volumeval = 100;
+    $scope.waitingbuf = false;
 
     function next(bypassLoop) {
         if ($scope.currentTrack) {
@@ -78,9 +80,9 @@ angular.module('festival')
 
     function stop() {
         if ($scope.currentSound) {
-            if (!$scope.currentSound.fullyLoaded) {
+            /*if (!$scope.currentSound.fullyLoaded) {
                 $scope.currentSound.unload();
-            }
+            }*/
             $scope.currentSound.stop();
         }
     }
@@ -204,88 +206,80 @@ angular.module('festival')
                     stop();
                 }
                 var soundId = 't_'+track.id;
-                var asound = soundManager.getSoundById(soundId);
                 if (currentlyPrefetching !== null && soundId != currentlyPrefetching.id) {
-                    currentlyPrefetching.unload();
+                    /* currentlyPrefetching.unload(); */
                     currentlyPrefetching = null;
                 }
+                var asound = sounds[soundId];
                 if (asound) {
                     if (autoPlay) {
                         asound.play();
                     }
                 } else {
-                    asound = soundManager.createSound({
-                        id: soundId,
-                        url: track.url,
-                        type: track.mime,
-                        autoLoad: true,
-                        autoPlay: !!autoPlay,
-                        multiShot: false,
-                        volume: $scope.volume() || 100,
-                        whileplaying: function(){
-                            var self = this;
+                    asound = new buzz.sound(track.url, {
+                        webAudioApi: false,
+                        preload: true,
+                        autoplay: !!autoPlay,
+                        volume: $scope.volume() || 100
+                    });
+                    asound.id = soundId;
+                    asound.bind('progress', function(){
+                        var self = this;
+                        
+                        var buffered = this.getBuffered();
+                        var duration = this.getDuration();
+                        if (self.id == $scope.currentSound.id) {
                             $scope.$apply(function(){
-                                progress = self.position / 1000;
-                            });
-                        },
-                        whileloading: function(){
-                            var self = this;
-                            if (self.id == $scope.currentSound.id) {
-                                $scope.$apply(function(){
-                                    $scope.duration = Math.floor(self.durationEstimate / 1000);
-                                    $scope.buffered = self.buffered;
-                                });
-                            } else {
-                                currentlyPrefetching = self;
-                            }
-                            if (this.bytesLoaded == this.bytesTotal || this.buffered.length > 0 ? parseInt(this.buffered[this.buffered.length-1].end, 10) == parseInt(this.duration, 10) : false) {
-                                self.fullyLoaded = true;
-                                setTimeout(function() {
-                                    self.onCompleteLoad(true);
-                                }, 0);
-                            }
-                        },
-                        onfinish: function(){
-                            $scope.$apply(function(){
-                                progress = 0;
-                                $scope.playing = false;
-                                $scope.next(true);
-                            });
-                        },
-                        onstop: function(){
-                            progress = 0;
-                            $scope.playing = false;
-                        },
-                        onpause: function(){
-                            $scope.$apply(function(){
-                                $scope.playing = false;
-                            });
-                        },
-                        onplay: function(){
-                            this.setVolume($scope.volume());
-                            $scope.$apply(function(){
-                                $scope.playing = true;
-                            });
-                            $desktop('Now playing', $scope.currentTrack.name + ', by ' + $scope.currentTrack.artist_name + ', on ' + $scope.currentTrack.album_name);
-                        },
-                        onload: function(success){
-                            var self = this;
-                            if (!success) {
-                                self.failed = true;
-                                if (self.id == $scope.currentSound.id) {
-                                    $scope.$apply(function(){
-                                        progress = 0;
-                                        $scope.playing = false;
-                                        $scope.next(true);
-                                    });
+                                if ($scope.waitingbuf && buffered.length > 0) {
+                                    $scope.waitingbuf = false;
                                 }
-                            }
-                        },
-                        onresume: function(){
+                                $scope.duration = duration;
+                                $scope.buffered = buffered;
+                            });
+                        } else {
+                            currentlyPrefetching = self;
+                        }
+                        if (!self.fullyLoaded && buffered.length > 0 ? parseFloat(buffered[buffered.length-1].end) >= parseFloat(duration) : false) {
+                            self.fullyLoaded = true;
+                            setTimeout(function() {
+                                self.onCompleteLoad(true);
+                            }, 0);
+                        }
+                    }).bind('timeupdate', function(){
+                        progress = this.getTime();
+                        $scope.$apply();
+                    }).bind('loadstart', function(e){
+                        if (this.id == $scope.currentSound.id) {
                             $scope.$apply(function(){
-                                $scope.playing = true;
+                                $scope.waitingbuf = true;
                             });
                         }
+                    }).bind('ended', function(){
+                        $scope.$apply(function(){
+                            progress = 0;
+                            $scope.playing = false;
+                            $scope.next(true);
+                        });
+                    }).bind('abort', function(){
+                        progress = 0;
+                        $scope.$apply(function(){
+                            $scope.playing = false;
+                        });
+                    }).bind('pause', function(){
+                        $scope.$apply(function(){
+                            $scope.playing = false;
+                        });
+                    }).bind('play', function(){
+                        this.setVolume($scope.volume());
+                        $desktop('Now playing', $scope.currentTrack.name + ', by ' + $scope.currentTrack.artist_name + ', on ' + $scope.currentTrack.album_name);
+                    }).bind('playing', function(){
+                        $scope.$apply(function(){
+                            $scope.playing = true;
+                        });
+                    }).bind('error', function(e){
+                        console.log(e, this.sound);
+                    }).bind('sourceerror', function(e){
+                        console.log(e);
                     });
                     asound.onCompleteLoad = function(bLoadNext) {
                         var self = this;
@@ -293,14 +287,15 @@ angular.module('festival')
                         if (self.id == $scope.currentSound.id) {
                             $scope.$apply(function(){
                                 if (track.failed) track.failed = false;
-                                $scope.duration = Math.floor(self.duration / 1000);
-                                $scope.buffered = self.buffered;
+                                $scope.duration = self.getDuration();
+                                $scope.buffered = self.getBuffered();
                             });
                             if (bLoadNext) {
                                 loadNext();
                             }
                         }
                     };
+                    sounds[soundId] = asound;
                 }
                 if (!prefetch) {
                     attach(asound);
@@ -312,7 +307,7 @@ angular.module('festival')
     $scope.togglePlayPause = function() {
         $timeout(function() {
             if ($scope.currentSound) {
-                $scope.currentSound.togglePause();
+                $scope.currentSound.togglePlay();
             }
         }, 0);
     };
@@ -320,7 +315,7 @@ angular.module('festival')
     $scope.playOrPause = function(track, tracks) {
         $timeout(function() {
             if (!track || ($scope.currentTrack && $scope.currentTrack.id === track.id)) {
-                $scope.currentSound.togglePause();
+                $scope.currentSound.togglePlay();
             } else {
                 if (tracks) {
                     $scope.empty();
@@ -350,7 +345,7 @@ angular.module('festival')
     $scope.progress = function(val) {
         if (val && $scope.currentSound) {
             $timeout(function() {
-                $scope.currentSound.setPosition(val * 1000);
+                $scope.currentSound.setTime(val);
             }, 0);
         }
         return progress;
@@ -364,7 +359,7 @@ angular.module('festival')
             $scope.volumeval = val;
             if ($scope.currentSound) {
                 $timeout(function() {
-                    soundManager.setVolume(val);
+                    buzz.setVolume(val);
                 }, 0);
             }
         }

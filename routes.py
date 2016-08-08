@@ -1,5 +1,6 @@
 import json
 import zipfile
+import mimetypes
 from warnings import warn
 from zlib import adler32
 
@@ -24,6 +25,107 @@ def ziptracks(tracks, filename):
     return response
 
 
+def parse_range_header(value):
+    if not value or '=' not in value:
+        return None
+
+    ranges = []
+    last_end = 0
+    units, rng = value.split('=', 1)
+    units = units.strip().lower()
+
+    for item in rng.split(','):
+        item = item.strip()
+        if '-' not in item:
+            return None
+        if item.startswith('-'):
+            if last_end < 0:
+                return None
+            try:
+                begin = int(item)
+            except ValueError:
+                return None
+            end = None
+            last_end = -1
+        elif '-' in item:
+            begin, end = item.split('-', 1)
+            begin = begin.strip()
+            end = end.strip()
+            if not begin.isdigit():
+                return None
+            begin = int(begin)
+            if begin < last_end or last_end < 0:
+                return None
+            if end:
+                if not end.isdigit():
+                    return None
+                end = int(end) + 1
+                if begin >= end:
+                    return None
+            else:
+                end = None
+            last_end = end
+        ranges.append((begin, end))
+
+    return units, ranges
+
+
+def send_file_partial(path, **kwargs):
+    range_header = request.headers.get('Range', None)
+    rv = None
+    if range_header:
+        rh = parse_range_header(range_header)
+        if rh is not None and len(rh[1]) == 1:
+            size = os.path.getsize(path)
+            start, end = rh[1][0]
+            if end is None:
+                end = size
+            length = end - start
+            if length != size:
+                    
+                def yield_file(chunk=8192):
+                    remaining = length
+                    with open(path, 'rb') as f:
+                        f.seek(start)
+                        while remaining > 0:
+                            data = f.read(min(chunk, remaining))
+                            if len(data) > 0:
+                                remaining = remaining - len(data)
+                                yield data
+                            else:
+                                remaining = 0
+            
+                rv = Response(
+                    yield_file(),
+                    206,
+                    mimetype=mimetypes.guess_type(path)[0],
+                    direct_passthrough=True
+                )
+                rv.headers.add(
+                    'Content-Range',
+                    'bytes {0}-{1}/{2}'.format(start, end - 1, size)
+                )
+                rv.headers['Content-Length'] = length
+    if rv is None:
+        rv = send_file(path, **kwargs)
+    try:
+        rv.set_etag('%s-%s-%s' % (
+            os.path.getmtime(path),
+            size,
+            adler32(path.encode('utf-8', 'replace')) & 0xffffffff
+        ))
+    except OSError:
+        warn('Access %s failed, maybe it does not exist, so ignore etags in '
+             'headers' % path, stacklevel=2)
+    rv = rv.make_conditional(request)
+    if rv.status_code == 304:
+        rv.headers.pop('x-sendfile', None)
+    rv.headers['Accept-Ranges'] = 'bytes'
+    attachment_filename = os.path.basename(path)
+    rv.headers.add('Content-Disposition', 'attachment', filename=attachment_filename.encode('utf-8', 'replace').decode('utf8'))
+    return rv
+
+
 @app.route("/")
 def hello():
     return render_template('index.html')
@@ -36,23 +138,7 @@ def music(typed, sid):
     if tr is None or tr.path is None:
         abort(404)
     else:
-        resp = send_file(tr.path, conditional=True, add_etags=False)
-        try:
-            resp.set_etag('%s-%s-%s' % (
-                os.path.getmtime(tr.path),
-                os.path.getsize(tr.path),
-                adler32(tr.path.encode('utf-8', 'replace')) & 0xffffffff
-            ))
-        except OSError:
-            warn('Access %s failed, maybe it does not exist, so ignore etags in '
-                 'headers' % tr.path, stacklevel=2)
-        resp = resp.make_conditional(request)
-        if resp.status_code == 304:
-            resp.headers.pop('x-sendfile', None)
-        resp.headers['Accept-Ranges'] = 'bytes'
-        attachment_filename = os.path.basename(tr.path)
-        resp.headers.add('Content-Disposition', 'attachment', filename=attachment_filename.encode('utf-8', 'replace').decode('utf8'))
-        return resp
+        return send_file_partial(tr.path, conditional=True, add_etags=False)
 
 
 @app.route("/download/artist/<artistid>")

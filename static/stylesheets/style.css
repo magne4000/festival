@@ -275,6 +275,12 @@ header .player .panel > .info-panel .elapsed-time,
 header .player .panel > .info-panel .total-time {
   padding: 2px 4px;
 }
+header .player .panel > .info-panel .title.waiting:before {
+    content: "loading";
+    display: inline-block;
+    opacity: 0.5;
+    margin-right: 5px;
+}
 header .slider {
   height: 14px;
   position: relative;

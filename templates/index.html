@@ -17,16 +17,7 @@
     <script type='text/javascript' src='static/js/angular-directive.js'></script>
     <script type='text/javascript' src='static/js/angular-filter.js'></script>
     <script type='text/javascript' src='static/js/angular-controller.js'></script>
-    <script type='text/javascript' src='static/js/soundmanager2-jsmin.js'></script>
-    <script type="text/javascript">
-      soundManager.setup({
-        url: {{config.SM_URL|tojson}},
-        flashVersion: {{config.SM_FLASH_VERSION|tojson}},
-        useFlashBlock: {{config.SM_USE_FLASH_BLOCK|tojson}},
-        useHTML5Audio: {{config.SM_USE_HTML_AUDIO|tojson}},
-        preferFlash: {{config.SM_PREFER_FLASH|tojson}}
-      });
-    </script>
+    <script type='text/javascript' src='static/js/buzz.min.js'></script>
     <title>{[currentTrack.name ? currentTrack.name + " - " + currentTrack.artist_name : "{{config.TITLE}}"]}</title>
   </head>
   <body>
@@ -53,7 +44,7 @@
           <div class="info-panel">
             <span class="elapsed-time">{[progress() | duration]}</span>
             <span ng-if="currentTrack" class="name">
-              <span class="title">{[currentTrack.name]}</span>
+              <span class="title" ng-class="{waiting: waitingbuf}">{[currentTrack.name]}</span>
               <span class="artist">{[currentTrack.artist_name]}</span>
               <span class="album">{[currentTrack.album_name]}</span>
             </span>
