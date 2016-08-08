@@ -144,7 +144,7 @@ def ping():
 
 
 @subsonic.route('/rest/getLicense.view', methods=['GET', 'POST'])
-def license():
+def show_license():
     return request.formatter({'license': {'valid': True}})
 
 

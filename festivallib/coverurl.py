@@ -25,17 +25,19 @@ class CoverURL:
 
     @staticmethod
     def _mbid(jsonobj):
-        if 'album' in jsonobj and 'mbid' in jsonobj['album']:
+        try:
             return jsonobj['album']['mbid']
-        return None
+        except KeyError:
+            return None
 
     @staticmethod
     def _large(jsonobj):
-        if 'album' in jsonobj and 'image' in jsonobj['album']:
+        try:
             for elt in jsonobj['album']['image']:
-                if elt['size'] == 'large':
-                    return elt['#text'] if '#text' in elt and elt['#text'] != '' else None
-        return None
+                if elt['size'] == 'large' and elt['#text'] != '':
+                    return elt['#text']
+        except KeyError:
+            return None
 
     def search(self, artist, album):
         self.params['artist'] = artist

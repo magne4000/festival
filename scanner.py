@@ -16,7 +16,7 @@ from festivallib.model import Context, Track, Cover, session_scope, coroutine, c
 from libs.mediafile import MediaFile, UnreadableFileError
 
 logger = logging.getLogger('scanner')
-RE_COVER = re.compile('(cover|folder|album|thumb)\.(jpe?g|gif)', re.I)
+RE_COVER = re.compile(r'(cover|folder|album|thumbs?)\.(jpe?g|gif|png)', re.I)
 
 
 def filter_cover(fname):
