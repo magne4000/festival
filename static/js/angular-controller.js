@@ -161,7 +161,7 @@ angular.module('festival')
          */
         if (!usingAdd) {
             usingAdd = true;
-            var tracklist = [], ind = 0, trackslen = $tracks.size(), orilen = trackslen, randno = null, loadthisone = null;
+            var tracklist = [], trackslen = $tracks.size(), orilen = trackslen, randno = null, loadthisone = null;
             if (!!track.id){ // only one track
                 tracklist.push(track);
             } else {
@@ -170,7 +170,7 @@ angular.module('festival')
             if ($scope.shuffle) {
                 randno = Math.floor(Math.random()*tracklist.length);
             }
-            for (ind in tracklist){
+            for (var ind in tracklist){
                 indicesToBePlayed.push(indicesToBePlayed.length);
                 var addedTrack = $tracks.add(tracklist[ind]);
                 if (idToPlay === tracklist[ind].id) {
@@ -225,7 +225,7 @@ angular.module('festival')
                     asound.id = soundId;
                     asound.bind('progress', function(){
                         var self = this;
-                        
+
                         var buffered = this.getBuffered();
                         var duration = this.getDuration();
                         if (self.id == $scope.currentSound.id) {
@@ -248,7 +248,7 @@ angular.module('festival')
                     }).bind('timeupdate', function(){
                         progress = this.getTime();
                         $scope.$apply();
-                    }).bind('loadstart', function(e){
+                    }).bind('loadstart', function(){
                         if (this.id == $scope.currentSound.id) {
                             $scope.$apply(function(){
                                 $scope.waitingbuf = true;

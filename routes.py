@@ -73,16 +73,16 @@ def parse_range_header(value):
 def send_file_partial(path, **kwargs):
     range_header = request.headers.get('Range', None)
     rv = None
+    size = os.path.getsize(path)
     if range_header:
         rh = parse_range_header(range_header)
         if rh is not None and len(rh[1]) == 1:
-            size = os.path.getsize(path)
             start, end = rh[1][0]
             if end is None:
                 end = size
             length = end - start
             if length != size:
-                    
+
                 def yield_file(chunk=8192):
                     remaining = length
                     with open(path, 'rb') as f:
@@ -90,11 +90,11 @@ def send_file_partial(path, **kwargs):
                         while remaining > 0:
                             data = f.read(min(chunk, remaining))
                             if len(data) > 0:
-                                remaining = remaining - len(data)
+                                remaining -= len(data)
                                 yield data
                             else:
                                 remaining = 0
-            
+
                 rv = Response(
                     yield_file(),
                     206,
@@ -122,7 +122,8 @@ def send_file_partial(path, **kwargs):
         rv.headers.pop('x-sendfile', None)
     rv.headers['Accept-Ranges'] = 'bytes'
     attachment_filename = os.path.basename(path)
-    rv.headers.add('Content-Disposition', 'attachment', filename=attachment_filename.encode('utf-8', 'replace').decode('utf8'))
+    rv.headers.add('Content-Disposition', 'attachment',
+                   filename=attachment_filename.encode('utf-8', 'replace').decode('utf8'))
     return rv
 
 
@@ -176,9 +177,10 @@ def ltracks(typed):
     else:
         ffilter = None
     if flat:
-        return jsonify(data=[x._asdict() for x in typed.listtracks(ffilter=ffilter, skip=skip, limit=limit)])
+        return jsonify(data=[x.as_dict() for x in typed.listtracks(ffilter=ffilter, skip=skip, limit=limit)])
     else:
-        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
+        return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in
+                             typed.listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/albums")
@@ -188,9 +190,12 @@ def lalbums(typed):
     limit = request.args.get('limit', 50, type=int)
     la = request.args.get('la', type=json.loads)
     if la:
-        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(Album.last_updated.desc(), TrackInfo.trackno, TrackInfo.name))])
+        return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in
+                             typed.listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(
+                                 Album.last_updated.desc(), TrackInfo.trackno, TrackInfo.name))])
     else:
-        return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.listtracksbyalbumsbyartists(skip=skip, limit=limit)])
+        return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in
+                             typed.listtracksbyalbumsbyartists(skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/artists")
@@ -198,7 +203,7 @@ def lalbums(typed):
 def lartists(typed):
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
-    return jsonify(data=[x._asdict() for x in typed.listartists(skip=skip, limit=limit)])
+    return jsonify(data=[x.as_dict() for x in typed.listartists(skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/albumsbyartists")
@@ -210,7 +215,8 @@ def albumsbyartists(typed):
     ffilter = None
     if filters is not None and 'artist' in filters:
         ffilter = lambda query: query.filter(Artist.id == filters['artist'])
-    return jsonify(data=[x._asdict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
+    return jsonify(
+        data=[x.as_dict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
 @app.route("/ajax/list/search")
@@ -220,7 +226,7 @@ def search_(typed):
     filters['skip'] = request.args.get('skip', 0, type=int)
     filters['limit'] = request.args.get('limit', 100, type=int)
     term = request.args.get('term', None)
-    return jsonify(data=[x._asdict(albums=True, tracks=True) for x in typed.search(term, **filters)])
+    return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in typed.search(term, **filters)])
 
 
 @app.route("/ajax/fileinfo")

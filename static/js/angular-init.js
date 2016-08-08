@@ -205,7 +205,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg', 'ngDropdowns'])
         search: {
             limit: 100,
             callback: function(){}
-        },
+        }
     };
     var _skip = 0;
     var _current = 'artists';
@@ -259,7 +259,7 @@ angular.module('festival', ['infinite-scroll', 'angularLazyImg', 'ngDropdowns'])
         skip(0);
     }
 
-    function call(clean) {
+    function call() {
         if (!_loading && _moreToLoad) {
             _loading = true;
             var params = {

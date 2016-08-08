@@ -166,13 +166,13 @@ class TrackInfo(Base, TypedInfo):
     year = Column(Integer, nullable=True)
     UniqueConstraint('track_id', 'type')
 
-    def _asdict(self, genre=False, album=False):
+    def as_dict(self, genre=False, album=False):
         return {
             'id': self.track_id,
             'genre_id': self.genre_id,
             'album_id': self.album_id,
-            'genre': self.genre._asdict() if (genre and 'genre' in self.__dict__) else None,
-            'album': self.album._asdict(artist=False) if (album and 'album' in self.__dict__) else None,
+            'genre': self.genre.as_dict() if (genre and 'genre' in self.__dict__) else None,
+            'album': self.album.as_dict(artist=False) if (album and 'album' in self.__dict__) else None,
             'album_name': self.album.name,
             'artist_name': self.artist.name,
             'name': self.name,
@@ -204,11 +204,11 @@ class Artist(Base, TypedInfo):
     def __repr__(self):
         return "<Artist %r %r>" % (self.type, self.name)
 
-    def _asdict(self, albums=False, tracks=False):
+    def as_dict(self, albums=False, tracks=False):
         return {
             'id': self.id,
             'name': self.name,
-            'albums': [x._asdict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
+            'albums': [x.as_dict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
         }
 
 
@@ -240,14 +240,14 @@ class Album(Base, TypedInfo):
     def __repr__(self):
         return "<Album %r %r.%r>" % (self.type, self.artist_id, self.name)
 
-    def _asdict(self, artist=False, tracks=False):
+    def as_dict(self, artist=False, tracks=False):
         return {
             'id': self.id,
             'artist_id': self.artist_id,
-            'artist': self.artist._asdict() if (artist and 'artist' in self.__dict__) else None,
+            'artist': self.artist.as_dict() if (artist and 'artist' in self.__dict__) else None,
             'name': self.name,
             'year': self.year,
-            'tracks': [x._asdict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
+            'tracks': [x.as_dict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
         }
 
 
@@ -270,14 +270,14 @@ class Genre(Base, TypedInfo):
     def __repr__(self):
         return "<Genre %r %r>" % (self.type, self.name)
 
-    def _asdict(self):
+    def as_dict(self):
         return {
             'id': self.id,
             'name': self.name
         }
 
 
-def _clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254):
+def clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254):
     """ Clean the given `tag` instance depending of its `mytype`."""
     if default is None and allow_none is False:
         if mytype == 'string':
@@ -390,7 +390,7 @@ class Context:
     def fetch_genre(self, mode, genre):
         if genre is None:
             return None
-        genre = _clean_tag(genre)
+        genre = clean_tag(genre)
         lgenre = genre.lower()
         if lgenre in self.infos[mode]['genres']:
             ge = self.infos[mode]['genres'][lgenre]
@@ -429,13 +429,13 @@ class Context:
 
     def add_track_info(self, track, mode, artist=None, album=None, title=None, trackno=None, year=None, genre=None):
         found = False
-        name = _clean_tag(title)
-        artist = _clean_tag(artist)
-        album = _clean_tag(album)
-        year = _clean_tag(year, mytype='integer', max_len=4)
+        name = clean_tag(title)
+        artist = clean_tag(artist)
+        album = clean_tag(album)
+        year = clean_tag(year, mytype='integer', max_len=4)
         if trackno is not None:
             trackno = trackno.split("/")[0]
-        trackno = _clean_tag(trackno, mytype='integer')
+        trackno = clean_tag(trackno, mytype='integer')
         trackinfo = None
 
         for trackinfo in track.infos:
@@ -456,8 +456,8 @@ class Context:
         return trackinfo
 
     def add_track(self, path, duration=0.0, bitrate=None, last_mod_time=None):
-        duration = _clean_tag(duration, mytype='float')
-        bitrate = _clean_tag(bitrate, allow_none=True)
+        duration = clean_tag(duration, mytype='float')
+        bitrate = clean_tag(bitrate, allow_none=True)
 
         if path in self.tracks:
             track = self.session.query(Track).filter(Track.path == path).one()

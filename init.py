@@ -24,7 +24,8 @@ def get_config_dict_from_file(filename):
 def check(args=None, unattented=False):
     if not os.path.isfile(settings_filepath):
         if unattented:
-            print("'settings.cfg' file does not exists. First launch festival.py in an interactive console for initial configuration.")
+            print("'settings.cfg' file does not exists. First launch festival.py in an interactive"
+                  " console for initial configuration.")
             sys.exit(1)
         print("\033[93m'settings.cfg' file does not exists, it will be created.\033[0m")
         print("\033[93mYou just need to fill the following form\033[0m\n")
@@ -45,7 +46,8 @@ def check(args=None, unattented=False):
         c_sample = get_config_dict_from_file(settings_sample_filepath)
         config_diff = set(c_sample.keys()) - set(c.keys())
         if len(config_diff) > 0:
-            print("\033[93m'settings.cfg' needs a manual update. The following keys from 'settings.sample.cfg' need to be added:\033[0m")
+            print("\033[93m'settings.cfg' needs a manual update. The following keys from 'settings.sample.cfg'"
+                  " need to be added:\033[0m")
             print("\t", "\n\t".join(config_diff), sep='')
             sys.exit(2)
         schema_version = Infos.get('schema_version')
