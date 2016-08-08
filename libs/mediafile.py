@@ -32,17 +32,12 @@ Internally ``MediaFile`` uses ``MediaField`` descriptors to access the
 data from the tags. In turn ``MediaField`` uses a number of
 ``StorageStyle`` strategies to handle format specific logic.
 """
-import sys
-sys.path.append('.')
-import mutagen
-import mutagen.mp3
-import mutagen.oggopus
-import mutagen.oggvorbis
-import mutagen.mp4
-import mutagen.flac
-import mutagen.monkeysaudio
-import mutagen.asf
-import mutagen.aiff
+try:
+    import mutagen
+except ImportError:
+    from . import mutagen
+
+
 import datetime
 import re
 import base64

@@ -3,5 +3,5 @@
 .c9
 settings-user.js
 __pycache__/
-settings.cfg
+/settings.cfg
 *.pyc
