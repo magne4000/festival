@@ -127,7 +127,6 @@ input[type=text]:focus {
   cursor: pointer;
   outline: none;
   font-weight: bold;
-  padding-top: 0;
 }
 .wrap-dd-select.disabled {
   cursor: default;
@@ -630,8 +629,8 @@ main .container .albums .album.hidetracks .album-container .tracks {
 main .queue {
   position: absolute;
   right: 0;
-  top: 0px;
-  bottom: 0px;
+  top: 0;
+  bottom: 0;
   min-width: 20px;
   transition: top 0.3s, bottom 0.3s;
 }
