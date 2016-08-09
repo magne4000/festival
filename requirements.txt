@@ -1,0 +1,4 @@
+xmlunittest
+flask
+sqlalchemy
+Pillow
