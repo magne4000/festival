@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/magne4000/festival.svg?branch=master)](https://travis-ci.org/magne4000/festival)
+
 # Festival 2.0
 Festival 2.0 is an HTML5 web application that can play music files.
 It also implements a piece of subsonic api which allows subsonic client apps to connect (like android apps) !
