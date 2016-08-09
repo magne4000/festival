@@ -87,6 +87,8 @@ def format_artist(artist):
 
 
 def format_album(album, child=False):
+    if not isinstance(album, Album):
+        album = album[0]
     info = {
         'id': format_album_id(album.id),
         'name': album.name,

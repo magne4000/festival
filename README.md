@@ -9,9 +9,9 @@ It also implements a piece of subsonic api which allows subsonic client apps to 
 ### Dependencies (ubuntu)
 You will need at least Python 3.4
 
-Install Flask with SQLAlchemy and other python3 dependencies
+Install Flask, SQLAlchemy and other python3 dependencies
 ```bash
-sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-pil python3-urllib3
+sudo apt-get install python3-flask python3-sqlalchemy python3-pil python3-urllib3
 ```
 If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
 
@@ -121,7 +121,7 @@ pip3 install xmlunittest
 ### License
 MIT License
 
-Copyright © 2014-2015 Joël Charles
+Copyright © 2014-2016 Joël Charles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
