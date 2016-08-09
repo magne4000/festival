@@ -21,7 +21,11 @@ class CoverURL:
             'artist': '',
             'album': ''
         }
-        self.conn = urllib3.PoolManager(5, timeout=10.)
+        try:
+            import certifi
+            self.conn = urllib3.PoolManager(5, timeout=10., cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+        except ImportError:
+            self.conn = urllib3.PoolManager(5, timeout=10.)
 
     @staticmethod
     def _mbid(jsonobj):

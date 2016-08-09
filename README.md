@@ -6,20 +6,25 @@ It also implements a piece of subsonic api which allows subsonic client apps to 
 
 [Live demo !](http://getonmyhor.se/festival-demo/)
 
-### Dependencies (ubuntu)
-You will need at least Python 3.4
-
-Install Flask, SQLAlchemy and other python3 dependencies
-```bash
-sudo apt-get install python3-flask python3-sqlalchemy python3-pil python3-urllib3
-```
-If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
-
 ### Installation
+
 Clone the project
 ```bash
 git clone https://github.com/magne4000/festival.git
 ```
+Festival needs Python 3.4 or greater in order to run.
+
+#### Dependencies using PIP
+```bash
+pip3 install -r requirements.txt
+```
+
+#### Dependencies (ubuntu 16.04)
+Install Flask, SQLAlchemy and other python3 dependencies
+```bash
+sudo apt-get install python3-flask python3-sqlalchemy python3-pil python3-urllib3 python3-mutagen
+```
+If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
 
 ### Update
 ```bash

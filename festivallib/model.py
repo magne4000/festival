@@ -31,16 +31,6 @@ def coroutine(func):
     return wrapper
 
 
-def purge_cover_on_delete(session, query, query_context, result):
-    if query_context.statement is not None:
-        affected_table = query_context.statement.froms[0]
-        if affected_table.name == 'cover':
-            deleted_elts = get_engine().execute(query_context.statement).fetchall()
-            for elt in deleted_elts:
-                if elt[2] is not None and os.path.isfile(elt[2]):
-                    os.remove(elt[2])
-
-
 def _fk_pragma_on_connect(dbapi_con, con_record):
     dbapi_con.execute('PRAGMA journal_mode = WAL')
 
@@ -91,9 +81,9 @@ def get_typed_query_class(stype):
 
 
 @contextmanager
-def session_scope(mode='tags'):
+def session_scope(mode='tags', config=None):
     """Provide a transactional scope around a series of operations."""
-    session = scoped_session(get_session())(query_cls=get_typed_query_class(mode))
+    session = scoped_session(get_session(config))(query_cls=get_typed_query_class(mode))
     try:
         yield session
         session.commit()
@@ -316,16 +306,20 @@ def clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254)
 
 class Context:
 
-    def __init__(self, load=False, expire_on_commit=True):
+    def __init__(self, config=None, load=False, expire_on_commit=True):
         self.load = load
         self.expire_on_commit = expire_on_commit
+        if config is None:
+            self.config = current_app.config
+        else:
+            self.config = config
 
     def __enter__(self):
-        self.session = get_session()(expire_on_commit=self.expire_on_commit)
+        self.session = get_session(self.config)(expire_on_commit=self.expire_on_commit)
         self.infos = {}
         if self.load:
             self.tracks = [x.path for x in self.session.query(Track.path).all()]
-            for mode in current_app.config['SCANNER_MODES']:
+            for mode in self.config['SCANNER_MODES']:
                 self.infos[mode] = {}
                 self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in
                                                self.session.query(Artist).join(Artist.albums).options(
@@ -478,22 +472,25 @@ class Context:
         return track
 
 
-def get_engine():
+def get_engine(config=None):
     global engine
     if engine is None:
-        engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool,
+        if config is None:
+            config = current_app.config
+        engine = create_engine(config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool,
                                connect_args={'check_same_thread': False})
     return engine
 
 
-def get_session():
+def get_session(config=None):
     global Session
     if Session is None:
-        localengine = get_engine()
-        if current_app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
+        if config is None:
+            config = current_app.config
+        localengine = get_engine(config)
+        if config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
             event.listen(localengine, 'connect', _fk_pragma_on_connect)
         mimetypes.init()
         Session = sessionmaker(bind=localengine)
-        event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
         Base.metadata.create_all(bind=localengine)
     return Session

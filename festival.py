@@ -25,12 +25,13 @@ def simple_main(unattented=False):
 
 def main():
     myapp, args = simple_main()
-    from scanner import Scanner, ScannerTestRegex
     if args.test_regex:
+        from scanner import ScannerTestRegex
         ScannerTestRegex(myapp.config['SCANNER_PATH']).start()
     elif not args.check:
         if args.with_scanner:
-            Scanner(myapp.config['SCANNER_PATH'], debug=args.debug).start()
+            from scanner import Scanner
+            Scanner(myapp.config, debug=args.debug).start()
         myapp.run(host=args.host, port=args.port, debug=args.debug, use_reloader=args.debug and not args.with_scanner)
     else:
         print('OK')
