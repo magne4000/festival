@@ -3,6 +3,7 @@ angular.module('festival')
 .filter('duration', function() {
     return function(diffInS) {
         diffInS = Math.floor(diffInS);
+        if (isNaN(diffInS)) return '--';
         var diffInMinutes = Math.max(0, Math.floor(diffInS / 60));
         diffInS = diffInS % 60;
         return [

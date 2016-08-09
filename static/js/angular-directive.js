@@ -41,7 +41,7 @@ angular.module('festival')
         require: '?ngLoadingDuration',
         link: function(scope, element, attrs) {
             function setWidth(buffer, duration) {
-                var newWidth = ((buffer.end - buffer.start) / (duration * 10));
+                var newWidth = ((buffer.end - buffer.start) / duration) * 100;
                 if (newWidth > 100) newWidth = 100;
                 element.width(newWidth + '%');
             }

@@ -6,10 +6,10 @@ from datetime import datetime
 from flask import request, send_file, send_from_directory
 from sqlalchemy import func, desc
 
-from app import app
 from festivallib.model import Artist, Album, TrackInfo
 from festivallib.request import typed_fct
 from festivallib.thumbs import Thumb
+from . import subsonic_routes as subsonic
 
 
 def get_filter(fromYear=None, toYear=None, genre=None):
@@ -87,6 +87,8 @@ def format_artist(artist):
 
 
 def format_album(album, child=False):
+    if not isinstance(album, Album):
+        album = album[0]
     info = {
         'id': format_album_id(album.id),
         'name': album.name,
@@ -138,22 +140,22 @@ def format_track(track, child=False):
     return info
 
 
-@app.route('/rest/ping.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/ping.view', methods=['GET', 'POST'])
 def ping():
     return request.formatter({})
 
 
-@app.route('/rest/getLicense.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getLicense.view', methods=['GET', 'POST'])
 def show_license():
     return request.formatter({'license': {'valid': True}})
 
 
-@app.route('/rest/validateLicense.view')
+@subsonic.route('/rest/validateLicense.view')
 def validate_licence():
     return True
 
 
-@app.route('/rest/getMusicFolders.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getMusicFolders.view', methods=['GET', 'POST'])
 def music_folders():
     return request.formatter({
         'musicFolders': {
@@ -165,8 +167,8 @@ def music_folders():
     })
 
 
-@app.route('/rest/getArtists.view', methods=['GET', 'POST'])
-@app.route('/rest/getIndexes.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getArtists.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getIndexes.view', methods=['GET', 'POST'])
 @typed_fct
 def indexes(typed):
     """
@@ -205,7 +207,7 @@ def indexes(typed):
     })
 
 
-@app.route('/rest/getMusicDirectory.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getMusicDirectory.view', methods=['GET', 'POST'])
 @typed_fct
 def music_directory(typed):
     eid = request.args.get('id')
@@ -230,7 +232,7 @@ def music_directory(typed):
     }})
 
 
-@app.route('/rest/getArtist.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getArtist.view', methods=['GET', 'POST'])
 @typed_fct
 def artist(typed):
     eid = request.args.get('id')
@@ -251,7 +253,7 @@ def artist(typed):
     }})
 
 
-@app.route('/rest/getAlbum.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getAlbum.view', methods=['GET', 'POST'])
 @typed_fct
 def album(typed):
     eid = request.args.get('id')
@@ -272,7 +274,7 @@ def album(typed):
     }})
 
 
-@app.route('/rest/getSong.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getSong.view', methods=['GET', 'POST'])
 @typed_fct
 def song(typed):
     eid = request.args.get('id')
@@ -303,7 +305,9 @@ def check_parameter(request, key, allow_none=True, choices=None, fct=None):
 
 
 def _album_list(typed):
-    ok, atype = check_parameter(request, 'type', allow_none=False, choices=['random', 'newest', 'highest', 'frequent', 'recent', 'starred', 'alphabeticalByName', 'alphabeticalByArtist', 'byYear', 'genre'])
+    ok, atype = check_parameter(request, 'type', allow_none=False,
+                                choices=['random', 'newest', 'highest', 'frequent', 'recent', 'starred',
+                                         'alphabeticalByName', 'alphabeticalByArtist', 'byYear', 'genre'])
     if not ok:
         return False, atype
     ok, size = check_parameter(request, 'size', fct=lambda val: int(val) if val else 10)
@@ -336,7 +340,7 @@ def _album_list(typed):
         return True, typed.listalbums(fltr, skip=offset, limit=size, order_by=srt)
 
 
-@app.route('/rest/getRandomSongs.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getRandomSongs.view', methods=['GET', 'POST'])
 @typed_fct
 def random_songs(typed):
     ok, size = check_parameter(request, 'size', fct=lambda val: int(val) if val else 10)
@@ -361,7 +365,7 @@ def random_songs(typed):
     }})
 
 
-@app.route('/rest/getAlbumList.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getAlbumList.view', methods=['GET', 'POST'])
 @typed_fct
 def album_list(typed):
     ok, albums = _album_list(typed)
@@ -373,7 +377,7 @@ def album_list(typed):
     }})
 
 
-@app.route('/rest/getAlbumList2.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getAlbumList2.view', methods=['GET', 'POST'])
 @typed_fct
 def album_list2(typed):
     ok, albums = _album_list(typed)
@@ -385,8 +389,8 @@ def album_list2(typed):
     }})
 
 
-@app.route('/rest/search2.view', methods=['GET', 'POST'])
-@app.route('/rest/search3.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/search2.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/search3.view', methods=['GET', 'POST'])
 @typed_fct
 def search2and3(typed):
     q = request.args.get('query')
@@ -422,7 +426,7 @@ def search2and3(typed):
     }})
 
 
-@app.route('/rest/getCoverArt.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/getCoverArt.view', methods=['GET', 'POST'])
 @typed_fct
 def cover_art(typed):
     eid = request.args.get('id')
@@ -443,8 +447,8 @@ def cover_art(typed):
         return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
 
 
-@app.route('/rest/download.view', methods=['GET', 'POST'])
-@app.route('/rest/stream.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/download.view', methods=['GET', 'POST'])
+@subsonic.route('/rest/stream.view', methods=['GET', 'POST'])
 @typed_fct
 def download(typed):
     eid = request.args.get('id')

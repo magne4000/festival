@@ -1,25 +1,32 @@
+[![Build Status](https://travis-ci.org/magne4000/festival.svg?branch=master)](https://travis-ci.org/magne4000/festival)
+
 # Festival 2.0
-Festival 2.0 is an HTML5 web application that can play music files.
-It also implements a piece of subsonic api which allows subsonic client apps to connect (like android apps) !
+Your personnal, self-hosted, online music player. [Live demo !](http://getonmyhor.se/festival-demo/)
 
 ![Webmusic screenshot](https://github.com/magne4000/magne4000.github.com/raw/master/images/festival.screen1.jpg)
 
-[Live demo !](http://getonmyhor.se/festival-demo/)
+## Android client
+As Festival implements a piece of subsonic api, it allows subsonic client apps to connect, like [DSub](https://github.com/daneren2005/Subsonic) !
 
-### Dependencies (ubuntu)
-You will need at least Python 3.4
+## Installation
 
-Install Flask with SQLAlchemy and other python3 dependencies
-```bash
-sudo apt-get install python3-flask python3-sqlalchemy python3-flask-sqlalchemy python3-pil python3-urllib3
-```
-If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
-
-### Installation
 Clone the project
 ```bash
 git clone https://github.com/magne4000/festival.git
 ```
+Festival needs Python 3.4 or greater in order to run.
+
+### Dependencies using PIP
+```bash
+pip3 install -r requirements.txt
+```
+
+### Dependencies (ubuntu 16.04)
+Install Flask, SQLAlchemy and other python3 dependencies
+```bash
+sudo apt-get install python3-flask python3-sqlalchemy python3-pil python3-urllib3 python3-mutagen
+```
+If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
 
 ### Update
 ```bash
@@ -121,7 +128,7 @@ pip3 install xmlunittest
 ### License
 MIT License
 
-Copyright © 2014-2015 Joël Charles
+Copyright © 2014-2016 Joël Charles
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

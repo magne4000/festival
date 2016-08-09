@@ -4,7 +4,9 @@ import re
 from contextlib import contextmanager
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, distinct, event, UniqueConstraint, create_engine
+from flask import current_app
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, distinct, event, UniqueConstraint, \
+    create_engine
 from sqlalchemy import types
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
@@ -17,6 +19,8 @@ from sqlalchemy.sql import column
 from .thumbs import Thumb
 
 Base = declarative_base()
+engine = None
+Session = None
 
 
 def coroutine(func):
@@ -25,16 +29,6 @@ def coroutine(func):
         next(generator)
         return generator
     return wrapper
-
-
-def purge_cover_on_delete(session, query, query_context, result):
-    if query_context.statement is not None:
-        affected_table = query_context.statement.froms[0]
-        if affected_table.name == 'cover':
-            deleted_elts = engine.execute(query_context.statement).fetchall()
-            for elt in deleted_elts:
-                if elt[2] is not None and os.path.isfile(elt[2]):
-                    os.remove(elt[2])
 
 
 def _fk_pragma_on_connect(dbapi_con, con_record):
@@ -87,9 +81,9 @@ def get_typed_query_class(stype):
 
 
 @contextmanager
-def session_scope(mode='tags'):
+def session_scope(mode='tags', config=None):
     """Provide a transactional scope around a series of operations."""
-    session = scoped_session(Session)(query_cls=get_typed_query_class(mode))
+    session = scoped_session(get_session(config))(query_cls=get_typed_query_class(mode))
     try:
         yield session
         session.commit()
@@ -166,13 +160,13 @@ class TrackInfo(Base, TypedInfo):
     year = Column(Integer, nullable=True)
     UniqueConstraint('track_id', 'type')
 
-    def _asdict(self, genre=False, album=False):
+    def as_dict(self, genre=False, album=False):
         return {
             'id': self.track_id,
             'genre_id': self.genre_id,
             'album_id': self.album_id,
-            'genre': self.genre._asdict() if (genre and 'genre' in self.__dict__) else None,
-            'album': self.album._asdict(artist=False) if (album and 'album' in self.__dict__) else None,
+            'genre': self.genre.as_dict() if (genre and 'genre' in self.__dict__) else None,
+            'album': self.album.as_dict(artist=False) if (album and 'album' in self.__dict__) else None,
             'album_name': self.album.name,
             'artist_name': self.artist.name,
             'name': self.name,
@@ -204,11 +198,12 @@ class Artist(Base, TypedInfo):
     def __repr__(self):
         return "<Artist %r %r>" % (self.type, self.name)
 
-    def _asdict(self, albums=False, tracks=False):
+    def as_dict(self, albums=False, tracks=False):
         return {
             'id': self.id,
             'name': self.name,
-            'albums': [x._asdict(tracks=tracks) for x in self.albums] if (albums and 'albums' in self.__dict__) else None
+            'albums': [x.as_dict(tracks=tracks) for x in self.albums] if (
+                       albums and 'albums' in self.__dict__) else None
         }
 
 
@@ -240,14 +235,14 @@ class Album(Base, TypedInfo):
     def __repr__(self):
         return "<Album %r %r.%r>" % (self.type, self.artist_id, self.name)
 
-    def _asdict(self, artist=False, tracks=False):
+    def as_dict(self, artist=False, tracks=False):
         return {
             'id': self.id,
             'artist_id': self.artist_id,
-            'artist': self.artist._asdict() if (artist and 'artist' in self.__dict__) else None,
+            'artist': self.artist.as_dict() if (artist and 'artist' in self.__dict__) else None,
             'name': self.name,
             'year': self.year,
-            'tracks': [x._asdict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
+            'tracks': [x.as_dict() for x in self.tracks] if (tracks and 'tracks' in self.__dict__) else None
         }
 
 
@@ -270,7 +265,7 @@ class Genre(Base, TypedInfo):
     def __repr__(self):
         return "<Genre %r %r>" % (self.type, self.name)
 
-    def _asdict(self):
+    def as_dict(self):
         return {
             'id': self.id,
             'name': self.name
@@ -311,19 +306,26 @@ def clean_tag(tag, allow_none=False, mytype='string', default=None, max_len=254)
 
 class Context:
 
-    def __init__(self, load=False, expire_on_commit=True):
+    def __init__(self, config=None, load=False, expire_on_commit=True):
         self.load = load
         self.expire_on_commit = expire_on_commit
+        if config is None:
+            self.config = current_app.config
+        else:
+            self.config = config
 
     def __enter__(self):
-        self.session = Session(expire_on_commit=self.expire_on_commit)
+        self.session = get_session(self.config)(expire_on_commit=self.expire_on_commit)
         self.infos = {}
         if self.load:
             self.tracks = [x.path for x in self.session.query(Track.path).all()]
-            for mode in app.config['SCANNER_MODES']:
+            for mode in self.config['SCANNER_MODES']:
                 self.infos[mode] = {}
-                self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in self.session.query(Artist).join(Artist.albums).options(contains_eager(Artist.albums)).filter(Artist.type == mode).all()}
-                self.infos[mode]['genres'] = {x.name.strip().lower(): x for x in self.session.query(Genre).filter(Artist.type == mode).all()}
+                self.infos[mode]['artists'] = {x.name.strip().lower(): x for x in
+                                               self.session.query(Artist).join(Artist.albums).options(
+                                                   contains_eager(Artist.albums)).filter(Artist.type == mode).all()}
+                self.infos[mode]['genres'] = {x.name.strip().lower(): x for x in
+                                              self.session.query(Genre).filter(Artist.type == mode).all()}
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -368,7 +370,8 @@ class Context:
                         os.remove(fpath)
 
     def delete_tracks(self, tracks_path):
-        tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(joinedload(Track.infos)).all()
+        tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(
+            joinedload(Track.infos)).all()
         for track in tracks:
             for trackinfo in track.infos:
                 self.session.delete(trackinfo)
@@ -403,7 +406,7 @@ class Context:
             cover = self.get_cover_by_mbid(0)
             if cover is not None:
                 yield from self.session.query(Album).filter(Album.cover == cover).all()
-        yield from self.session.query(Album).filter(Album.cover_id is None).all()
+        yield from self.session.query(Album).filter(Album.cover_id == None).all()
 
     def get_album_path(self, album):
         res = self.session.query(Track.path).join(TrackInfo).filter(TrackInfo.album_id == album.id).first()
@@ -469,12 +472,25 @@ class Context:
         return track
 
 
-from app import app
+def get_engine(config=None):
+    global engine
+    if engine is None:
+        if config is None:
+            config = current_app.config
+        engine = create_engine(config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool,
+                               connect_args={'check_same_thread': False})
+    return engine
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool, connect_args={'check_same_thread': False})
-if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
-    event.listen(engine, 'connect', _fk_pragma_on_connect)
-mimetypes.init()
-Session = sessionmaker(bind=engine)
-event.listen(Session, "after_bulk_delete", purge_cover_on_delete)
-Base.metadata.create_all(bind=engine)
+
+def get_session(config=None):
+    global Session
+    if Session is None:
+        if config is None:
+            config = current_app.config
+        localengine = get_engine(config)
+        if config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite://'):
+            event.listen(localengine, 'connect', _fk_pragma_on_connect)
+        mimetypes.init()
+        Session = sessionmaker(bind=localengine)
+        Base.metadata.create_all(bind=localengine)
+    return Session

@@ -5,8 +5,7 @@ import logging
 import urllib.parse
 
 import urllib3
-
-from app import app
+from flask import current_app
 
 logger = logging.getLogger('coverurl')
 
@@ -22,7 +21,11 @@ class CoverURL:
             'artist': '',
             'album': ''
         }
-        self.conn = urllib3.PoolManager(5, timeout=10.)
+        try:
+            import certifi
+            self.conn = urllib3.PoolManager(5, timeout=10., cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+        except ImportError:
+            self.conn = urllib3.PoolManager(5, timeout=10.)
 
     @staticmethod
     def _mbid(jsonobj):
@@ -66,5 +69,5 @@ class CoverURL:
 
 
 if __name__ == "__main__":
-    cu = CoverURL(app.config['LASTFM_API_KEY'])
+    cu = CoverURL(current_app.config['LASTFM_API_KEY'])
     print(cu.search('Dagoba', 'Tales of the Black Dawn'))

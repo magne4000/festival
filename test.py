@@ -1,18 +1,30 @@
 import os
-import sqlite3
 import unittest
+
+import collections
 import xmlunittest
 import re
 
 re_lm = re.compile(b'lastModified="(\d+?)"')
 
-class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
 
+class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
     def setUp(self):
-        from app import app
+        from app import get_app
+        from api.subsonic import subsonic
+        Args = collections.namedtuple('Args', 'with_scanner config debug yes host port check test_regex')
+        app = get_app(Args(
+            with_scanner=False,
+            config=os.path.join(os.path.dirname(__file__), 'test', 'settings.cfg'),
+            debug=False,
+            yes=False,
+            host='0.0.0.0',
+            port='5000',
+            check=False,
+            test_regex=False))
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test/festival.db'
         app.config['TESTING'] = True
-        from api import subsonic
+        app.register_blueprint(subsonic)
         self.app = app.test_client()
 
     def tearDown(self):
@@ -200,7 +212,7 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
         </subsonic-response>'''
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
-    #TODO /rest/getRandomSongs.view
+    # TODO /rest/getRandomSongs.view
 
     def test_get_album_list(self):
         """
@@ -259,7 +271,7 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
         </subsonic-response>'''
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
-        #TODO type == 'random'
+        # TODO type == 'random'
 
         # type == 'newest'
         rv = self.app.get('/rest/getAlbumList.view?type=newest')
@@ -320,7 +332,7 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
         </subsonic-response>'''
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
-        #TODO size & offset
+        # TODO size & offset
 
     def test_get_album_list2(self):
         # type == 'newest'
@@ -335,7 +347,7 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
         </subsonic-response>'''
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
-    def test_search2(self): # Also valid for search3
+    def test_search2(self):  # Also valid for search3
         """
             str             query
             int optionnal   artistCount (default 20)
@@ -381,8 +393,9 @@ class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
         </subsonic-response>'''
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
-#TODO /rest/getCoverArt.view
-#TODO /rest/download.view
+
+# TODO /rest/getCoverArt.view
+# TODO /rest/download.view
 
 if __name__ == '__main__':
     unittest.main()

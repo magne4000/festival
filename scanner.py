@@ -1,40 +1,42 @@
 #!/usr/bin/env python3
-import sys
-sys.path.insert(0, './libs')
-import os
-import uuid
 import logging
-import time
+import os
 import re
+import sys
+import uuid
 from collections import defaultdict
-from threading import Thread, Timer
 from datetime import datetime
-from festivallib.model import Context, Track, Cover, session_scope, coroutine, clean_tag
+from threading import Thread, Timer
+
 from festivallib import coverurl, thumbs, info
+from festivallib.model import Context, Track, Cover, session_scope, coroutine, clean_tag
 from libs.mediafile import MediaFile, UnreadableFileError
-from app import app
 
 logger = logging.getLogger('scanner')
-filter_cover = lambda fname: re.compile(r'(cover|folder|album|thumbs?)\.(jpe?g|gif|png)', re.I).match(fname)
+RE_COVER = re.compile(r'(cover|folder|album|thumbs?)\.(jpe?g|gif|png)', re.I)
+
+
+def filter_cover(fname):
+    return RE_COVER.match(fname)
 
 
 class CoverThread(Thread):
 
-    def __init__(self, debug=False):
+    def __init__(self, config, debug=False):
         super(CoverThread, self).__init__()
-        self.cu = coverurl.CoverURL(app.config['LASTFM_API_KEY'])
+        self.config = config
         self.debug = debug
+        self.cu = coverurl.CoverURL(self.config['LASTFM_API_KEY'])
 
     def print_debug(self, char):
         if self.debug:
             sys.stdout.write(char)
             sys.stdout.flush()
 
-    @staticmethod
-    def rescan_albums_without_cover():
+    def rescan_albums_without_cover(self):
         last_cover_scan = info.Infos.get('last_cover_scan')
         if last_cover_scan is not None:
-            return last_cover_scan + app.config['COVERS_FETCH_ONLINE_INTERVAL'] <= datetime.now()
+            return last_cover_scan + self.config['COVERS_FETCH_ONLINE_INTERVAL'] <= datetime.now()
         return False
 
     @staticmethod
@@ -73,11 +75,11 @@ class CoverThread(Thread):
             album.cover = null_cover
 
     def run(self):
-        with Context(expire_on_commit=False) as db:
+        with Context(self.config, expire_on_commit=False) as db:
             albums = db.get_albums_without_cover(self.rescan_albums_without_cover())
             null_cover = db.get_null_cover()
             for album in albums:
-                for val in app.config['COVERS_FETCH']:
+                for val in self.config['COVERS_FETCH']:
                     getattr(self, 'run_fetch_%s' % val)(db, null_cover, album)
                     if album.cover != null_cover:
                         break
@@ -96,9 +98,10 @@ class CoverThread(Thread):
 
 class Scanner(Thread):
 
-    def __init__(self, root, fetch_covers=True, infinite=True, debug=False):
+    def __init__(self, config, fetch_covers=True, infinite=True, debug=False):
         super(Scanner, self).__init__()
-        self.root = root
+        self.config = config
+        self.root = config['SCANNER_PATH']
         self.progress_timeout = None
         self.scan_in_progess = False
         self.rescan_after = False
@@ -108,7 +111,7 @@ class Scanner(Thread):
         self.infinite = infinite
 
     def init_tracks(self):
-        with session_scope() as session:
+        with session_scope(self.config) as session:
             self.tracks = {x.path: x.last_updated for x in session.query(Track.path, Track.last_updated).all()}
 
     def scan(self, mfile):
@@ -123,7 +126,7 @@ class Scanner(Thread):
 
     def purgeold(self):
         logger.debug('Purging %d old tracks', len(self.tracks))
-        with Context() as db:
+        with Context(self.config) as db:
             if len(self.tracks) > 0:
                 db.delete_tracks(list(self.tracks.keys()))
             db.delete_orphans()
@@ -132,7 +135,7 @@ class Scanner(Thread):
     @staticmethod
     def get_tags_and_info(mfile):
         tags = {}
-        info = {}
+        aninfo = {}
         try:
             mutagen_tags = MediaFile(mfile)
             tags['title'] = mutagen_tags.title
@@ -141,20 +144,20 @@ class Scanner(Thread):
             tags['album'] = mutagen_tags.album if mutagen_tags.album is not None else 'Unknown'
             tags['trackno'] = str(mutagen_tags.track)
             tags['year'] = mutagen_tags.year
-            info['length'] = mutagen_tags.length
-            info['bitrate'] = mutagen_tags.bitrate
-        except UnreadableFileError as e:
-            logger.exception('Error in scanner.get_tags_and_info: %s', e)
-        return tags, info
+            aninfo['length'] = mutagen_tags.length
+            aninfo['bitrate'] = mutagen_tags.bitrate
+        except UnreadableFileError:
+            logger.exception('Error in scanner.get_tags_and_info')
+        return tags, aninfo
 
-    @staticmethod
-    def get_tags_from_folders(mfile):
+    def get_tags_from_folders(self, mfile):
         tags = {}
-        for pattern in app.config['SCANNER_FOLDER_PATTERNS']:
+        for pattern in self.config['SCANNER_FOLDER_PATTERNS']:
             match = pattern.search(mfile)
             if match is not None:
                 try:
-                    if all((match.group(key) for key in ['artist', 'album', 'title'])):  # 'artist', 'album' and 'title' groups are mandatory
+                    if all((match.group(key) for key in ['artist', 'album', 'title'])):
+                        # 'artist', 'album' and 'title' groups are mandatory
                         for key in ['artist', 'album', 'title', 'year', 'trackno']:
                             try:
                                 if match.group(key) is not None:
@@ -167,23 +170,23 @@ class Scanner(Thread):
 
     @coroutine
     def add_track(self):
-        with Context(True) as db:
+        with Context(self.config, True) as db:
             try:
                 while True:
                     mfile, mtime, = (yield)
                     tags = {}
-                    info = {}
-                    if 'tags' in app.config['SCANNER_MODES']:
-                        tags['tags'], info = self.get_tags_and_info(mfile)
-                    if 'folder' in app.config['SCANNER_MODES']:
+                    aninfo = {}
+                    if 'tags' in self.config['SCANNER_MODES']:
+                        tags['tags'], aninfo = self.get_tags_and_info(mfile)
+                    if 'folder' in self.config['SCANNER_MODES']:
                         tags_from_folders = self.get_tags_from_folders(mfile)
                         if tags_from_folders is not None:
                             tags['folder'] = tags_from_folders
                     try:
-                        _ = db.add_track_full(mfile, mtime, tags, info)
-                    except Exception as e:
+                        _ = db.add_track_full(mfile, mtime, tags, aninfo)
+                    except Exception:
                         db.session.rollback()
-                        logger.exception('Error in scanner.add_track: %s\nTags: %s: %s', mfile, tags, e)
+                        logger.exception('Error in scanner.add_track: %s\nTags: %s', mfile, tags)
             except GeneratorExit:
                 pass
 
@@ -205,9 +208,8 @@ class Scanner(Thread):
             pass
         h.close()
 
-    @staticmethod
-    def filter_music_file(path):
-        return os.path.splitext(path)[1].lower() in app.config['SCANNER_EXTS']
+    def filter_music_file(self, path):
+        return os.path.splitext(path)[1].lower() in self.config['SCANNER_EXTS']
 
     def _run(self):
         logger.debug('New scan started')
@@ -215,12 +217,12 @@ class Scanner(Thread):
         logger.debug('Scan finished')
         if self.fetch_covers:
             logger.debug('Starting cover thread')
-            t = CoverThread(debug=self.debug)
+            t = CoverThread(self.config, debug=self.debug)
             t.start()
             t.join()
             logger.debug('Cover thread terminated')
         if self.infinite:
-            t = Timer(app.config['SCANNER_REFRESH_INTERVAL'].total_seconds(), self._run)
+            t = Timer(self.config['SCANNER_REFRESH_INTERVAL'].total_seconds(), self._run)
             t.start()
 
     def run(self):
@@ -293,10 +295,3 @@ class ScannerTestRegex(Scanner):
 
     def _run(self):
         self.walk(purge=False)
-
-if __name__ == "__main__":
-    while True:
-        s = Scanner(app.config['SCANNER_PATH'], infinite=False, debug='-d' in sys.argv)
-        s.start()
-        s.join()
-        time.sleep(app.config['SCANNER_REFRESH_INTERVAL'].total_seconds())

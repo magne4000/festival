@@ -1,9 +1,7 @@
-/node_modules
-/npm-debug.log
 .c9revisions
 .settings
 .c9
 settings-user.js
 __pycache__/
-settings.cfg
+/settings.cfg
 *.pyc
