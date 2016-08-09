@@ -321,7 +321,7 @@ class Context:
         self.expire_on_commit = expire_on_commit
 
     def __enter__(self):
-        self.session = Session(expire_on_commit=self.expire_on_commit)
+        self.session = get_session()(expire_on_commit=self.expire_on_commit)
         self.infos = {}
         if self.load:
             self.tracks = [x.path for x in self.session.query(Track.path).all()]
