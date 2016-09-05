@@ -239,6 +239,16 @@ def fileinfo():
     pass
 
 
+@routes.route("/artistart/<sartist>")
+@typed_fct
+def artistart(typed, sartist):
+    cover = typed.getcoverbyartistid(sartist)
+    if cover is None or cover.mbid == '0':
+        return redirect(url_for('static', filename='images/nocover.png'))
+    else:
+        return send_from_directory(Thumb.getdir(), os.path.basename(cover.path), conditional=True)
+
+
 @routes.route("/albumart/<salbum>")
 @typed_fct
 def albumart(typed, salbum):

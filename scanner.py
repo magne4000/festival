@@ -43,6 +43,24 @@ class CoverThread(Thread):
     def update_last_cover_scan():
         info.Infos.update(last_cover_scan=datetime.now())
 
+    def run_fetch_online_art(self, db, null_cover, artist):
+        mbid, url = self.cu.search(artist.name)
+        res = None
+        if mbid is not None and len(mbid) > 0:
+            res = db.get_cover_by_mbid(mbid)
+        if res:
+            artist.art = res
+            self.print_debug('_')
+        else:
+            cover = self.cu.download(url, self.save)
+            if cover is not None:
+                cover.mbid = mbid
+                artist.art = cover
+                self.print_debug('x')
+            else:
+                artist.art = null_cover
+                self.print_debug('-')
+
     def run_fetch_online(self, db, null_cover, album):
         mbid, url = self.cu.search(album.artist.name, album.name)
         res = None
@@ -77,12 +95,16 @@ class CoverThread(Thread):
     def run(self):
         with Context(self.config, expire_on_commit=False) as db:
             albums = db.get_albums_without_cover(self.rescan_albums_without_cover())
+            artists = db.get_artists_without_cover(self.rescan_albums_without_cover())
             null_cover = db.get_null_cover()
             for album in albums:
                 for val in self.config['COVERS_FETCH']:
                     getattr(self, 'run_fetch_%s' % val)(db, null_cover, album)
                     if album.cover != null_cover:
                         break
+                db.session.commit()
+            for artist in artists:
+                self.run_fetch_online_art(db, null_cover, artist)
                 db.session.commit()
         self.update_last_cover_scan()
 

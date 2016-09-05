@@ -48,10 +48,19 @@ class Typed:
                 return obj
         return None
 
+    def getcoverbyartistid(self, artist_id):
+        with self.session_scope() as session:
+            try:
+                obj = session.query(Cover).join(Artist).filter(Artist.id == artist_id).one()
+                session.expunge_all()
+                return obj
+            except NoResultFound:
+                return None
+
     def getcoverbyalbumid(self, album_id):
         with self.session_scope() as session:
             try:
-                obj = session.query(Cover).join(Cover.albums).filter(Album.id == album_id).one()
+                obj = session.query(Cover).join(Album).filter(Album.id == album_id).one()
                 session.expunge_all()
                 return obj
             except NoResultFound:

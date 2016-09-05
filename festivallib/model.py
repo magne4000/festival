@@ -187,6 +187,8 @@ class Artist(Base, TypedInfo):
     name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
     albums = relationship("Album", backref="artist", innerjoin=True)
     tracks = relationship("TrackInfo", backref="artist", innerjoin=True)
+    art_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
+    art = relationship("Cover")
     UniqueConstraint('name', 'type')
 
     @hybrid_method
@@ -215,7 +217,7 @@ class Album(Base, TypedInfo):
     name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
     year = Column(Integer, nullable=True)
     cover_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
-    cover = relationship("Cover", backref="albums")
+    cover = relationship("Cover")
     tracks = relationship("TrackInfo", backref="album", innerjoin=True)
     last_updated = Column(DateTime)
     UniqueConstraint('name', 'type')
@@ -252,6 +254,9 @@ class Cover(Base):
     id = Column(Integer, primary_key=True)
     mbid = Column(String(254), nullable=True)
     path = Column(String(254), nullable=True, unique=True)
+    
+    def __repr__(self):
+        return "<Cover %r %r>" % (self.mbid, self.path)
 
 
 class Genre(Base, TypedInfo):
@@ -354,7 +359,8 @@ class Context:
         self.session.commit()
         self.session.query(Album).filter(~Album.id.in_(self.session.query(distinct(TrackInfo.album_id)))).delete(False)
         self.session.commit()
-        self.session.query(Cover).filter(~Cover.id.in_(self.session.query(distinct(Album.cover_id)))).delete(False)
+        covers_query = self.session.query(distinct(Album.cover_id)).union(self.session.query(distinct(Artist.art_id)))
+        self.session.query(Cover).filter(~Cover.id.in_(covers_query)).delete(False)
         self.session.commit()
         self.session.query(Artist).filter(~Artist.id.in_(self.session.query(distinct(Album.artist_id)))).delete(False)
         self.session.commit()
@@ -365,9 +371,8 @@ class Context:
         if os.path.isdir(thumbs_root):
             for fname in os.listdir(thumbs_root):
                 fpath = os.path.join(thumbs_root, fname)
-                if fpath not in path_covers:
-                    if os.path.isfile(fpath):
-                        os.remove(fpath)
+                if fpath not in path_covers and os.path.isfile(fpath):
+                    os.remove(fpath)
 
     def delete_tracks(self, tracks_path):
         tracks = self.session.query(Track).join(Track.infos).filter(Track.path.in_(tracks_path)).options(
@@ -407,6 +412,13 @@ class Context:
             if cover is not None:
                 yield from self.session.query(Album).filter(Album.cover == cover).all()
         yield from self.session.query(Album).filter(Album.cover_id == None).all()
+
+    def get_artists_without_cover(self, fetch_mbid_0=False):
+        if fetch_mbid_0:
+            cover = self.get_cover_by_mbid(0)
+            if cover is not None:
+                yield from self.session.query(Artist).filter(Artist.art == cover).all()
+        yield from self.session.query(Artist).filter(Artist.art_id == None).all()
 
     def get_album_path(self, album):
         res = self.session.query(Track.path).join(TrackInfo).filter(TrackInfo.album_id == album.id).first()

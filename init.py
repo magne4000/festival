@@ -1,10 +1,13 @@
-import os
-import sys
 import logging
-from festivallib.info import Infos
-from festivallib.data import Data
+import sys
 
-SCHEMA_VERSION = 2
+import os
+
+from festivallib.info import Infos
+from festivallib.model import get_engine
+from migrate import migrate
+
+SCHEMA_VERSION = 3
 
 settings_sample_filepath = os.path.join(os.path.dirname(__file__), 'settings.sample.cfg')
 
@@ -50,18 +53,11 @@ def check(args=None, unattented=False):
             print("\t", "\n\t".join(config_diff), sep='')
             sys.exit(2)
         schema_version = Infos.get('schema_version')
-        if schema_version is not None and schema_version != SCHEMA_VERSION:
-            print("\033[93mModel changed since last update. Database and covers will be deleted.\033[0m")
-            if unattented or not args.yes:
-                resp = input('Continue ? [y/N] ')
-            else:
-                resp = 'y'
-            if resp.lower() == 'y':
-                Data.clear()
-                Infos.update(schema_version=SCHEMA_VERSION)
-            else:
-                print("\033[93mArborting.\033[0m")
-                sys.exit(3)
+        engine = get_engine(c)
+        if engine.has_table('artist') and (schema_version is None or schema_version != SCHEMA_VERSION):
+            print("\033[93mModel changed since last update. Running migration scripts.\033[0m")
+            migrate(schema_version, engine)
+        Infos.update(schema_version=SCHEMA_VERSION)
 
 
 def init(args):

@@ -8,7 +8,7 @@ import re
 re_lm = re.compile(b'lastModified="(\d+?)"')
 
 
-class FestivalTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
+class FestivalSubsonicApiTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
     def setUp(self):
         from app import get_app
         from api.subsonic import subsonic

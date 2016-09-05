@@ -1,0 +1,232 @@
+@keyframes artcontrols {
+  from {
+    transform: scaleX(0.4) scaleY(0.4);
+  }
+  to {
+    transform: scaleX(2) scaleY(2);
+  }
+}
+@keyframes grow {
+  from {
+    transform: scaleX(0) scaleY(0);
+  }
+  to {
+    transform: scaleX(1) scaleY(1);
+  }
+}
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+@keyframes stretchdelay {
+  0%,
+  40%,
+  100% {
+    transform: scaleY(0.5);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+}
+@keyframes playing1 {
+  0% {
+    transform: scaleY(0.2);
+  }
+  50% {
+    transform: scaleY(0.8);
+  }
+  100% {
+    transform: scaleY(0.2);
+  }
+}
+@keyframes playing2 {
+  0% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0.4);
+  }
+}
+/* general */
+button, .wrap-dd-select {
+  transition: background-color 0.1s ease-in-out;
+}
+input[type=text] {
+  transition: border-color 0.3s;
+}
+
+/* player */
+header .player .control {
+  transition: color 0.2s;
+}
+header .player .control .material-icons {
+  transition: text-shadow 0.2s;
+}
+header .slider .progress {
+  transition: width 0.1s ease-in-out;
+}
+
+/* toolbar */
+header .toolbar .search {
+  transition: margin 0.4s ease-in-out;
+}
+header .toolbar .search .filters .checkbox, header .toolbar .search .filters label.checkbox:before, header .toolbar .search .filters label.checkbox:after {
+  transition: all 0.2s ease 0s;
+}
+header .toolbar .search .filters input[type="checkbox"]:checked + label.checkbox:before {
+  transform: none;
+}
+
+/* artists */
+main .container .artists {
+  transition: right 1s ease-in-out 0s;
+}
+main .container .artist {
+  transition: height 1s ease-in-out 0s;
+}
+main .container .art-overlay {
+  transition: background-color 0.2s ease-in-out 0s;
+}
+main .container .art-overlay .controls {
+  transition: transform 0.2s ease-in-out 0s;
+}
+main .container .art-overlay .controls .control:after {
+  transform-origin: center center;
+}
+main .container .art-overlay .controls .control:hover::after {
+  animation: artcontrols 0.4s linear;
+  animation-fill-mode: forwards;
+}
+
+/* albums */
+main .container .albums {
+  transition: transform 1s ease-in-out 0s;
+}
+main .container .albums .album {
+  transition: border 0.3s;
+}
+
+/* queue */
+main .queue {
+  transition: top 0.3s, bottom 0.3s;
+}
+main .queue .handle {
+  transition: background-color 0.3s;
+}
+main .queue .handle i {
+  transition: transform 0.3s;
+}
+main .queue .queue-content {
+  transition: margin-right 0.3s ease-in-out;
+}
+
+/* spinner */
+.spinner {
+  width: 120px;
+  text-align: center;
+  font-size: 10px;
+  height: 100px;
+  margin: 0 auto;
+  position: absolute;
+  top: calc(50% - 50px);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0.4;
+}
+.spinner > div {
+  background-color: #239bd6;
+  height: 100%;
+  width: 16px;
+  margin: 2px;
+  display: inline-block;
+  animation: stretchdelay 1.2s infinite ease-in-out;
+}
+.spinner .rect2 {
+  animation-delay: -1.1s;
+}
+.spinner .rect3 {
+  animation-delay: -1s;
+}
+.spinner .rect4 {
+  animation-delay: -0.9s;
+}
+.spinner .rect5 {
+  animation-delay: -0.8s;
+}
+
+.ui-effects-transfer {
+  border: 1px dotted #666;
+  background: #ddd;
+  opacity: 0.4;
+}
+
+/* audio animation */
+.track .trackno {
+  transition: padding-right 0.3s;
+}
+.track .audioeffect {
+  display: none;
+}
+.track.active .audioeffect {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  padding: 0;
+}
+.track.active .audioeffect li {
+  display: block;
+  width: 20%;
+  height: 100%;
+  background: #239bd6;
+  margin: 0;
+  padding: 0;
+  transform-origin: left bottom;
+  float: left;
+  pointer-events: none;
+  animation-play-state: paused !important;
+}
+.track.playing .audioeffect li {
+  animation-play-state: running !important;
+}
+.track.active .audioeffect li:nth-child(0) {
+  animation: playing1 1s ease infinite;
+}
+.track.active .audioeffect li:nth-child(1) {
+  animation: playing2 0.9s ease infinite 0.1s;
+}
+.track.active .audioeffect li:nth-child(2) {
+  animation: playing1 1.1s ease infinite 0.2s;
+}
+.track.active .audioeffect li:nth-child(3) {
+  animation: playing2 1s ease infinite 0.3s;
+}
+.track.active .audioeffect li:nth-child(4) {
+  animation: playing1 1.1s ease infinite 0.4s;
+}
+.track.active .audioeffect li:nth-child(5) {
+  animation: playing2 0.9s ease infinite 0.5s;
+}
+
+/* loading animation */
+.sp-circle {
+  border: 3px rgba(0, 0, 0, 0.25) solid;
+  border-top: 3px black solid;
+  border-radius: 50%;
+  animation: rotation .6s infinite linear;
+  width: 9px;
+  height: 9px;
+  margin: 0;
+  display: inline-block;
+}

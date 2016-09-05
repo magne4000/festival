@@ -6,10 +6,12 @@
     <link rel="icon" type="image/png" href="static/images/favicon.png">
     <link rel="stylesheet" type="text/css" href="static/stylesheets/normalize.css">
     <link rel="stylesheet" type="text/css" href="static/stylesheets/style.css">
+    <link rel="stylesheet" type="text/css" href="static/stylesheets/animations.css">
     <script type='text/javascript' src='static/js/jquery.min.js'></script>
+    <script type='text/javascript' src='static/js/angular.min.js'></script>
+    <script type='text/javascript' src='static/js/buzz.min.js'></script>
     <script type='text/javascript' src='static/js/jquery.hotkeys.js'></script>
     <script type='text/javascript' src='static/js/jquery-bundle.min.js'></script>
-    <script type='text/javascript' src='static/js/angular.min.js'></script>
     <script type='text/javascript' src='static/js/angular-init.js'></script>
     <script type='text/javascript' src='static/js/ng-infinite-scroll.min.js'></script>
     <script type='text/javascript' src='static/js/angular-lazy-img.js'></script>
@@ -17,7 +19,6 @@
     <script type='text/javascript' src='static/js/angular-directive.js'></script>
     <script type='text/javascript' src='static/js/angular-filter.js'></script>
     <script type='text/javascript' src='static/js/angular-controller.js'></script>
-    <script type='text/javascript' src='static/js/buzz.min.js'></script>
     <title>{[currentTrack.name ? currentTrack.name + " - " + currentTrack.artist_name : "{{config.TITLE}}"]}</title>
   </head>
   <body>
@@ -109,7 +110,7 @@
       </div>
     </header>
     <main class="ng-cloak">
-      <div id="container" ng-controller="ListController" class="container">
+      <div id="container" ng-controller="ListController" class="container" ng-class="{'show-albums': selectedArtist}">
         <div ng-if="loading" class="spinner">
           <div class="rect1"></div>
           <div class="rect2"></div>
@@ -117,84 +118,87 @@
           <div class="rect4"></div>
           <div class="rect5"></div>
         </div>
-        <artists infinite-scroll="pageArtists()" infinite-scroll-distance="1" infinite-scroll-container="'#container'">
+        <artists masonry preserve-order load-images="false" column-width="180" infinite-scroll="pageArtists()" infinite-scroll-distance="1" infinite-scroll-container="'#container'" class="artists">
           <div ng-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
-          <div ng-repeat="artist in artists track by artist.id" class="artist">
+          <div ng-repeat="artist in artists track by artist.id" class="artist masonry-brick">
+            <div class="artist-left">
+              <div class="art-container">
+                <img lazy-img="artistart/{[::artist.id]}" alt="{[::artist.name]}" src="static/images/nocover.png" ng-switch on="artist.loading">
+                <div class="art-overlay" ng-click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">
+                  <div class="controls">
+                    <div title="Play all albums" ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control animate">
+                      <i class="material-icons">play_arrow</i>
+                    </div>
+                    <div title="Add albums to queue" ng-click="loadAlbumsAndTracksAndAdd(artist, false)" class="control animate">
+                      <i class="material-icons">add</i>
+                    </div>
+                    {% if config.SHOW_DOWNLOAD_BUTTONS %}
+                    <div title="Download all albums" ng-click="downloadArtist(artist)" class="control">
+                      <i class="material-icons">file_download</i>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <span class="heading">
+                <h3>{[::artist.name ? artist.name : 'Unknown']}</h3>
+              </span>
+            </div>
+          </div>
+        </artists>
+        <div class="albums">
+          <div ng-repeat="album in selectedArtist.albums track by album.id" class="album">
             <span class="heading">
-              <h3 ng-click="loadAlbumsAndTracks(artist, false) ? true : artist.expanded = !artist.expanded" class="heading-title" ng-switch on="artist.loading">
-                <div class="sp-circle" ng-switch-when="true"></div>
-                <i class="material-icons" ng-switch-default>{[artist.expanded ? 'expand_more' : 'chevron_right']}</i>
-                <span class="heading-text">{[::artist.name ? artist.name : 'Unknown']}</span>
-              </h3>
+              <h4 class="heading-title">
+                {[::album.name]}<span ng-if="::album.year" class="year">({[::album.year]})</span>
+              </h4>
               <span class="controls">
-                <span title="Play all albums" ng-click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control animate">
+                <span title="Play tracks" ng-click="empty();loadTracksAndAdd(selectedArtist, album, true)" class="control animate">
                   <i class="material-icons">play_arrow</i>
                 </span>
-                <span title="Add albums to queue" ng-click="loadAlbumsAndTracksAndAdd(artist, false)" class="control animate">
+                <span title="Add tracks to queue" ng-click="loadTracksAndAdd(selectedArtist, album, false)" class="control animate">
                   <i class="material-icons">add</i>
                 </span>
                 {% if config.SHOW_DOWNLOAD_BUTTONS %}
-                <span title="Download all albums" ng-click="downloadArtist(artist)" class="control">
+                <span title="Download album" ng-click="downloadAlbum(album)" class="control">
                   <i class="material-icons">file_download</i>
                 </span>
                 {% endif %}
               </span>
             </span>
-            <div ng-show="artist.expanded" class="albums">
-              <div ng-repeat="album in artist.albums track by album.id" class="album">
-                <span class="heading">
-                  <h4 class="heading-title">
-                    {[::album.name]}<span ng-if="::album.year" class="year">({[::album.year]})</span>
-                  </h4>
+            <div class="album-container"><img ng-click="toggleTracks(selectedArtist, album)" lazy-img="albumart/{[::album.id]}" alt="{[::album.name]}" src="static/images/nocover.png">
+              <div class="tracks">
+                <div ng-repeat="track in album.tracks track by track.id" ng-class="{active: currentTrack.id == track.id, playing: currentTrack.id == track.id && playing}" class="track">
+                  <span ng-if="::track.trackno" class="trackno">
+                    <ul class="audioeffect">
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                      <li></li>
+                    </ul>
+                    <span>{[::track.trackno]}</span>
+                  </span>
+                  <span title="{[::track.name]}" class="name">{[::track.name]}</span>
                   <span class="controls">
-                    <span title="Play tracks" ng-click="empty();loadTracksAndAdd(artist, album, true)" class="control animate">
-                      <i class="material-icons">play_arrow</i>
+                    <span title="Play" ng-click="playOrPause(track, album.tracks)" class="control animate">
+                      <i class="material-icons">{[currentTrack.id == track.id && playing ? 'pause' : 'play_arrow']}</i>
                     </span>
-                    <span title="Add tracks to queue" ng-click="loadTracksAndAdd(artist, album, false)" class="control animate">
+                    <span title="Add to queue" ng-click="add(track)" class="control animate">
                       <i class="material-icons">add</i>
                     </span>
                     {% if config.SHOW_DOWNLOAD_BUTTONS %}
-                    <span title="Download album" ng-click="downloadAlbum(album)" class="control">
+                    <span title="Download album" ng-click="downloadTrack(track)" class="control">
                       <i class="material-icons">file_download</i>
                     </span>
                     {% endif %}
                   </span>
-                </span>
-                <div class="album-container"><img ng-click="toggleTracks(artist, album)" lazy-img="albumart/{[::album.id]}" alt="{[::album.name]}" src="static/images/nocover.png">
-                  <div class="tracks">
-                    <div ng-repeat="track in album.tracks track by track.id" ng-class="{active: currentTrack.id == track.id, playing: currentTrack.id == track.id && playing}" class="track">
-                      <span ng-if="::track.trackno" class="trackno">
-                        <ul class="audioeffect">
-                          <li></li>
-                          <li></li>
-                          <li></li>
-                          <li></li>
-                          <li></li>
-                        </ul>
-                        <span>{[::track.trackno]}</span>
-                      </span>
-                      <span title="{[::track.name]}" class="name">{[::track.name]}</span>
-                      <span class="controls">
-                        <span title="Play" ng-click="playOrPause(track, album.tracks)" class="control animate">
-                          <i class="material-icons">{[currentTrack.id == track.id && playing ? 'pause' : 'play_arrow']}</i>
-                        </span>
-                        <span title="Add to queue" ng-click="add(track)" class="control animate">
-                          <i class="material-icons">add</i>
-                        </span>
-                        {% if config.SHOW_DOWNLOAD_BUTTONS %}
-                        <span title="Download album" ng-click="downloadTrack(track)" class="control">
-                          <i class="material-icons">file_download</i>
-                        </span>
-                        {% endif %}
-                      </span>
-                      <span class="duration">{[::track.duration ? (track.duration | duration) : '-']}</span>
-                    </div>
-                  </div>
+                  <span class="duration">{[::track.duration ? (track.duration | duration) : '-']}</span>
                 </div>
               </div>
             </div>
           </div>
-        </artists>
+        </div>
       </div>
       <div ng-controller="QueueController" ng-class="{show: show}" class="queue">
         <div ng-click="show = !show" class="handle" title="{[show ? 'Hide playlist' : 'Show playlist']}">

@@ -5,7 +5,6 @@ import logging
 import urllib.parse
 
 import urllib3
-from flask import current_app
 
 logger = logging.getLogger('coverurl')
 
@@ -16,10 +15,7 @@ class CoverURL:
     def __init__(self, api_key):
         self.params = {
             'format': 'json',
-            'method': 'album.getInfo',
-            'api_key': api_key,
-            'artist': '',
-            'album': ''
+            'api_key': api_key
         }
         try:
             import certifi
@@ -28,30 +24,36 @@ class CoverURL:
             self.conn = urllib3.PoolManager(5, timeout=10.)
 
     @staticmethod
-    def _mbid(jsonobj):
+    def _mbid(jsonobj, key):
         try:
-            return jsonobj['album']['mbid']
+            return jsonobj[key]['mbid']
         except KeyError:
             return None
 
     @staticmethod
-    def _large(jsonobj):
+    def _large(jsonobj, key):
         try:
-            for elt in jsonobj['album']['image']:
+            for elt in jsonobj[key]['image']:
                 if elt['size'] == 'large' and elt['#text'] != '':
                     return elt['#text']
         except KeyError:
             return None
 
-    def search(self, artist, album):
-        self.params['artist'] = artist
-        self.params['album'] = album
-        params = urllib.parse.urlencode(self.params)
-        url = CoverURL.SEARCH_URL + params
+    def geturl(self, **kwargs):
+        params = self.params.copy()
+        params.update({key: value for key, value in kwargs.items() if value is not None})
+        return CoverURL.SEARCH_URL + urllib.parse.urlencode(params)
+
+    def search(self, artist, album=None):
+        if album is None:
+            key = 'artist'
+        else:
+            key = 'album'
+        url = self.geturl(method='%s.getInfo' % key, artist=artist, album=album)
         try:
             r = self.conn.request('GET', url)
             ojson = json.loads(r.data.decode('utf-8'))
-            return self._mbid(ojson), self._large(ojson)
+            return self._mbid(ojson, key), self._large(ojson, key)
         except:
             logger.exception('Error while searching album cover')
             return None, None
@@ -69,5 +71,6 @@ class CoverURL:
 
 
 if __name__ == "__main__":
-    cu = CoverURL(current_app.config['LASTFM_API_KEY'])
+    cu = CoverURL('d9ba5638b0b058105af31af8c6a4b252')
     print(cu.search('Dagoba', 'Tales of the Black Dawn'))
+    print(cu.search('Dagoba'))
