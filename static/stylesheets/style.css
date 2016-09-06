@@ -48,7 +48,7 @@
   font-feature-settings: 'liga';
 }
 /* Cloak */
-.ng-cloak {
+[v-cloak] {
   display: none !important;
 }
 /* Defaults */

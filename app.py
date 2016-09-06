@@ -31,4 +31,10 @@ def shape_config(myapp, args):
 
 def get_app(args):
     myapp = Flask(__name__)
+    jinja_options = myapp.jinja_options.copy()
+    jinja_options.update(dict(
+        variable_start_string='{[',
+        variable_end_string=']}'
+    ))
+    myapp.jinja_options = jinja_options
     return shape_config(myapp, args)
