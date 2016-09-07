@@ -193,7 +193,7 @@
                     </span>
                     {% endif %}
                   </span>
-                  <span class="duration">{{track.duration ? (track.duration | duration) : '-'}}</span>
+                  <span class="duration">{{track.duration | duration}}</span>
                 </div>
               </div>
             </div>
@@ -227,7 +227,7 @@
                   <i class="material-icons">clear</i>
                 </span>
               </span>
-              <span class="duration">{{track.duration ? (track.duration | duration) : '-'}}</span>
+              <span class="duration">{{track.duration | duration}}</span>
             </div>
           </div>
           <div class="queue-actions" v-show="tracks.length">

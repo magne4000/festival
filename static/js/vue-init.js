@@ -274,7 +274,7 @@ function Player(playlist) {
             self.data.playing = false;
           }).bind('play', function() {
             this.setVolume(self.methods.volume());
-            notif('Now playing', self.data.festival.currentTrack.name + ', by ' + self.data.festival.currentTrack.artist_name + ', on ' + self.data.festival.currentTrack.album_name);
+            Services.notif('Now playing', self.data.festival.currentTrack.name + ', by ' + self.data.festival.currentTrack.artist_name + ', on ' + self.data.festival.currentTrack.album_name);
           }).bind('playing', function() {
             self.data.playing = true;
           }).bind('error', function(e) {
