@@ -172,6 +172,7 @@ class TrackInfo(Base, TypedInfo):
             'name': self.name,
             'duration': self.track.duration,
             'bitrate': self.track.bitrate,
+            'mimetype': self.track.mimetype,
             'trackno': self.trackno,
             'url': self.track.url()
         }

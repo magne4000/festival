@@ -10,7 +10,7 @@
     <script type='text/javascript' src='static/js/jquery.min.js'></script>
     <script type='text/javascript' src='static/js/vue.js'></script>
     <script type='text/javascript' src='static/js/vue-infinite-scroll.js'></script>
-    <script type='text/javascript' src='static/js/buzz.min.js'></script>
+    <script type='text/javascript' src='static/js/buzz.js'></script>
     <script type='text/javascript' src='static/js/jquery.hotkeys.js'></script>
     <script type='text/javascript' src='static/js/jquery-bundle.min.js'></script>
     <!--<script type='text/javascript' src='static/js/ng-infinite-scroll.min.js'></script>-->
@@ -36,7 +36,7 @@
           <i class="material-icons">skip_previous</i>
         </a>
         <a title="Play" href="#" @click="togglePlayPause()" class="control play">
-          <i class="material-icons">{{playing ? 'pause' : 'play_arrow'}}</i>
+          <i class="material-icons">{{festival.playing ? 'pause' : 'play_arrow'}}</i>
         </a>
         <a title="Next track" href="#" @click="next(true, true)" class="control next">
           <i class="material-icons">skip_next</i>
@@ -55,7 +55,7 @@
           <div class="slider-panel">
             <div class="slider">
               <input type="range" min="0" :max="duration" v-model="progress">
-              <player-progress :progress-value="progress" :duration-value="duration"></player-progress>
+              <player-progress :progress-value="progressValue" :duration-value="duration"></player-progress>
               <player-loading :loading-value="buffer" :duration-value="duration" v-for="buffer in buffered"></player-loading>
             </div>
           </div>
@@ -94,10 +94,10 @@
         <div class="volume leftseparated">
           <div class="slider">
             <input type="range" min="0" max="100" v-model="volume">
-            <player-progress :progress-value="volume" duration-value="100"></player-progress>
+            <player-progress :progress-value="festival.volume" duration-value="100"></player-progress>
           </div>
           <a href="#" @click="toggleVolume()">
-            <i class="material-icons">{{volume >= 35 ? 'volume_up' : (volume == 0 ? 'volume_off' : 'volume_down')}}</i>
+            <i class="material-icons">{{festival.volume >= 35 ? 'volume_up' : (festival.volume == 0 ? 'volume_off' : 'volume_down')}}</i>
           </a>
         </div>
         <div class="select-source">
@@ -123,7 +123,7 @@
           <div v-for="artist in artists" :key="artist.id" class="artist">
             <div class="artist-left">
               <div class="art-container">
-                <img lazy-img="artistart/{{*artist.id}}" :alt="artist.name" src="static/images/nocover.png" ng-switch on="artist.loading">
+                <img v-lazy="'artistart/'+artist.id" :alt="artist.name" src="static/images/nocover.png" ng-switch on="artist.loading">
                 <div class="art-overlay" @click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">
                   <div class="controls">
                     <div title="Play all albums" @click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control animate">
@@ -166,9 +166,9 @@
                 {% endif %}
               </span>
             </span>
-            <div class="album-container"><img @click="toggleTracks(selectedArtist, album)" lazy-img="albumart/{{*album.id}}" :alt="album.name" src="static/images/nocover.png">
+            <div class="album-container"><img @click="toggleTracks(selectedArtist, album)" v-lazy="'albumart/'+album.id" :alt="album.name" src="static/images/nocover.png">
               <div class="tracks">
-                <div v-for="track in album.tracks" :class="{active: festival.currentTrack && festival.currentTrack.id == track.id, playing: festival.currentTrack && festival.currentTrack.id == track.id && playing}" class="track">
+                <div v-for="track in album.tracks" :class="{active: festival.currentTrack && festival.currentTrack.id == track.id, playing: festival.currentTrack && festival.currentTrack.id == track.id && festival.playing}" class="track">
                   <span v-if="track.trackno" class="trackno">
                     <ul class="audioeffect">
                       <li></li>
@@ -182,7 +182,7 @@
                   <span :title="track.name" class="name">{{track.name}}</span>
                   <span class="controls">
                     <span title="Play" @click="playOrPause(track, album.tracks)" class="control animate">
-                      <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && playing ? 'pause' : 'play_arrow'}}</i>
+                      <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && festival.playing ? 'pause' : 'play_arrow'}}</i>
                     </span>
                     <span title="Add to queue" @click="add(track)" class="control animate">
                       <i class="material-icons">add</i>
@@ -207,7 +207,7 @@
         </div>
         <div class="queue-content">
           <div class="tracks">
-            <div v-for="track in tracks" :key="track.id" :class="{active: festival.currentTrack && festival.currentTrack == track, failed: track.failed, playing: festival.currentTrack && festival.currentTrack.id == track.id && playing}" class="track">
+            <div v-for="track in tracks" :key="track.id" :class="{active: festival.currentTrack && festival.currentTrack == track, failed: track.failed, playing: festival.currentTrack && festival.currentTrack.id == track.id && festival.playing}" class="track">
               <span v-if="track.trackno" class="trackno">
                 <ul class="audioeffect">
                   <li></li>
@@ -218,10 +218,10 @@
                 </ul>
                 <span>{{track.trackno}}</span>
               </span>
-              <span title="Track: {{track.name}}&#010;Album: {{track.album_name}}&#010;Artist: {{track.artist_name}}" class="name">{{track.name}}</span>
+              <span :title="'Track: '+track.name+' Album: '+track.album_name+' Artist: '+track.artist_name" class="name">{{track.name}}</span>
               <span class="controls">
                 <span title="Play" @click="playOrPause(track)" class="control">
-                  <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && playing ? 'pause' : 'play_arrow'}}</i>
+                  <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && festival.playing ? 'pause' : 'play_arrow'}}</i>
                 </span>
                 <span title="Remove" @click="remove(track)" class="control">
                   <i class="material-icons">clear</i>
