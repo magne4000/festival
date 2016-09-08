@@ -242,13 +242,12 @@ function Player(playlist) {
             var $this = this;
             var buffered = this.getBuffered();
             var duration = this.getDuration();
-            console.log('progress', buffered, duration)
             if($this.id == self.data.currentSound.id) {
               if(this.waitingbuf && buffered.length > 0) {
                 this.waitingbuf = false;
               }
-              this.duration = duration;
-              this.buffered = buffered;
+              self.data.duration = duration;
+              self.data.buffered = buffered;
             }
             else {
               currentlyPrefetching = $this;

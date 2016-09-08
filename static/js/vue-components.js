@@ -6,18 +6,16 @@ Vue.component('player-progress', {
   watch: {
     'progressValue': {
       handler: function (val, oldVal) {
-        console.log('player-progress progressValue', val)
         if (val !== oldVal) {
-          this.width(val !== oldVal, this.durationValue);
+          this.width(val, this.durationValue);
         }
       },
       immediate: true
     },
     'durationValue': {
       handler: function (val, oldVal) {
-        console.log('player-progress durationValue', val)
         if (val !== oldVal) {
-          this.width(this.progressValue, val !== oldVal);
+          this.width(this.progressValue, val);
         }
       },
       immediate: true
@@ -31,7 +29,7 @@ Vue.component('player-progress', {
           if (newWidth > 100) newWidth = 100;
           this.$el.style.width = newWidth + '%';
         } else {
-            this.$el.style.width = 0;
+          this.$el.style.width = 0;
         }
       } else {
         var $this = this;
@@ -48,17 +46,15 @@ Vue.component('player-loading', {
   template: '<div class="loading"></div>',
   watch: {
     'loadingValue': function (val, oldVal) {
-      console.log('player-loading loadingValue', val, this.durationValue)
       if (val && this.durationValue) {
-        this.width(this.val, this.durationValue);
-        this.left(this.val, this.durationValue);
+        this.width(val, this.durationValue);
+        this.left(val, this.durationValue);
       } else {
         this.$el.style.width = 0;
         this.$el.style.left = 0;
       }
     },
     'durationValue': function (val, oldVal) {
-      console.log('player-loading durationValue', val, this.loadingValue)
       if (val && this.loadingValue) {
         this.width(this.loadingValue, val);
         this.left(this.loadingValue, val);
