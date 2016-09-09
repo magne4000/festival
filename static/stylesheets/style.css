@@ -520,6 +520,10 @@ main .container .heading {
   margin: 5px 0;
   display: flex;
   min-height: 21px;
+  line-height: 21px;
+}
+main .container.show-albums .heading {
+  margin: 5px;
 }
 main .container img, main .container .art-container {
   width: 140px;
@@ -538,11 +542,21 @@ main .container .artists {
   flex-wrap: wrap;
   justify-content: center;
 }
-main .container.show-albums .artists, main .container .artists.show-albums {
+main .container.show-albums .artists {
+  padding-top: 0;
+  width: 200px;
+}
+main .container.show-albums-step1 .artists {
   width: 200px;
 }
 main .container .art-container {
   position: relative;
+}
+main .container.show-albums .art-container, main .container.show-albums img {
+  width: 20px;
+  min-width: 20px;
+  max-width: 20px;
+  max-height: 20px;
 }
 main .container .art-overlay {
   position: absolute;
@@ -566,6 +580,9 @@ main .container .art-overlay .controls {
   background-color: rgba(0, 0, 0, 0.4);
   transform: scaleX(0);
   transform-origin: right;
+}
+main .container.show-albums .art-overlay, main .container.show-albums-step1 .art-overlay {
+  display: none;
 }
 main .container .art-overlay:hover {
   background-color: rgba(0, 0, 0, 0.3);
@@ -598,18 +615,21 @@ main .container .art-overlay .controls .control:hover::after {
 main .container .artist {
   padding-left: 15px;
   padding-right: 15px;
-  white-space: nowrap;
   width: 180px;
   max-width: 180px;
   display: flex;
+}
+main .container .artist.selected {
+  background-color: #ddd;
 }
 main .container .artist-left {
   width: 180px;
   max-width: 180px;
 }
-main .container .artist.open {
-  width: 95%;
-  max-width: initial;
+main .container.show-albums .artist-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 /* Main - album */
 main .container .album > .heading {
@@ -625,7 +645,7 @@ main .container .album > .heading .year {
 }
 main .container .albums {
   position: fixed;
-  top: 96px;
+  top: 82px;
   right: 20px;
   bottom: 0;
   left: 200px;
@@ -636,7 +656,7 @@ main .container .albums {
   transform: scaleX(0);
   transform-origin: center right;
 }
-main .container.show-albums .albums {
+main .container.show-albums .albums, main .container.show-albums-step1 .albums {
   transform: scaleX(1);
 }
 main .container .albums .album {

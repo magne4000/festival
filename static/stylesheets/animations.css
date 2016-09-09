@@ -104,6 +104,9 @@ main .container .art-overlay .controls .control:hover::after {
   animation: artcontrols 0.4s linear;
   animation-fill-mode: forwards;
 }
+main .container img {
+  transition: height 0.2s, width 0.2s;
+}
 
 /* albums */
 main .container .albums {

@@ -110,7 +110,7 @@
       </div>
     </header>
     <main>
-      <div id="container" class="container" :class="{'show-albums': selectedArtist.id}" v-cloak>
+      <div id="container" class="container" v-cloak>
         <div v-if="loading" class="spinner" id="spinner">
           <div class="rect1"></div>
           <div class="rect2"></div>
@@ -120,10 +120,10 @@
         </div>
         <infinite-scroll :infinite-scroll-callback="pageArtists" infinite-scroll-immediate-check="true" infinite-scroll-distance="2">
           <div v-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
-          <div v-for="artist in artists" :key="artist.id" class="artist">
+          <div v-for="artist in artists" :key="artist.id" class="artist" :class="{selected: selectedArtist.id == artist.id}">
             <div class="artist-left">
               <div class="art-container">
-                <img v-lazy="'artistart/'+artist.id" :alt="artist.name" src="static/images/nocover.png" ng-switch on="artist.loading">
+                <img v-lazy="'artistart/'+artist.id" :alt="artist.name" src="static/images/nocover.png" ng-switch on="artist.loading" @click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">
                 <div class="art-overlay" @click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">
                   <div class="controls">
                     <div title="Play all albums" @click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control animate">
@@ -140,7 +140,7 @@
                   </div>
                 </div>
               </div>
-              <span class="heading">
+              <span class="heading" @click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">
                 <h3>{{artist.name ? artist.name : 'Unknown'}}</h3>
               </span>
             </div>

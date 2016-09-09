@@ -102,31 +102,35 @@ var Services = (function() {
       }
     }
     
+    function isElementInViewport (el) {
+      var rect = el.getBoundingClientRect();
+      return (
+        rect.bottom >= 0 &&
+        rect.right >= 0 &&
+        rect.top <= document.documentElement.clientHeight &&
+        rect.left <= document.documentElement.clientWidth 
+      );
+    }
+    
     function flipit(selector, duration, toggleClass, toggleSelector) {
-      var ars = document.querySelectorAll(selector), fg = [];
-      for (var i = 0; i < ars.length; ++i) {
+      var ars = document.querySelectorAll(selector), fg = [], i = 0;
+      for (i = 0; i < ars.length; ++i) {
         fg.push({
           element: ars[i],
-          duration: duration
+          duration: duration,
+          delay: (i/ars.length)*duration
         });
       }
       var flip = new FLIP.group(fg);
       
-      // First position & opacity.
       flip.first();
-      
-      // Apply the 'end' class and snapshot the last position & opacity.
       if (toggleSelector) {
         document.querySelector(toggleSelector).classList.toggle(toggleClass);
         flip.last();
       } else {
         flip.last(toggleClass);
       }
-      
-      // Move and fade the element back to the original position.
       flip.invert();
-      
-      // Play it forwards.
       flip.play();
     }
 
