@@ -533,10 +533,13 @@ main .container .artists {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
-main .container.show-albums .artists {
-  right: 200px;
+main .container.show-albums .artists, main .container .artists.show-albums {
+  width: 200px;
 }
 main .container .art-container {
   position: relative;

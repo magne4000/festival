@@ -107,7 +107,7 @@ main .container .art-overlay .controls .control:hover::after {
 
 /* albums */
 main .container .albums {
-  transition: transform 1s ease-in-out 0s;
+  transition: transform 0.5s ease-in-out 0s;
 }
 main .container .albums .album {
   transition: border 0.3s;

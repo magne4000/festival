@@ -555,6 +555,7 @@ function Container(v_player) {
       loading: false,
       selectedArtist: {}
     },
+    watch: {},
     methods: {}
   };
 
@@ -598,6 +599,10 @@ function Container(v_player) {
   Services.displayMode.setCallback('albumsbyartists', loadAlbumsByArtists);
   Services.displayMode.setCallback('lastalbums', loadLastAlbums);
   Services.displayMode.current('artists', {});
+  
+  self.watch.selectedArtist = function(val, oldVal) {
+    Services.utils.flipit('.artist', 500, 'show-albums', '#container');
+  };
 
   self.methods.pageArtists = function() {
     Services.displayMode.call();
