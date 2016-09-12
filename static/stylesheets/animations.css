@@ -85,9 +85,6 @@ header .toolbar .search .filters input[type="checkbox"]:checked + label.checkbox
 }
 
 /* artists */
-main .container .artists {
-  transition: right 1s ease-in-out 0s;
-}
 main .container .artist {
   transition: height 1s ease-in-out 0s;
 }

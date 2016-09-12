@@ -235,19 +235,19 @@ function Player(playlist) {
             preload: true,
             autoplay: !!autoPlay,
             type: track.mimetype,
-            volume: $loadscope.volume || 100
+            volume: $loadscope.festival.volume || 100
           });
           asound.id = soundId;
           asound.bind('progress', function() {
             var $this = this;
             var buffered = this.getBuffered();
             var duration = this.getDuration();
-            if($this.id == self.data.currentSound.id) {
+            if($this.id == $loadscope.currentSound.id) {
               if(this.waitingbuf && buffered.length > 0) {
                 this.waitingbuf = false;
               }
-              self.data.duration = duration;
-              self.data.buffered = buffered;
+              $loadscope.duration = duration;
+              $loadscope.buffered = buffered;
             }
             else {
               currentlyPrefetching = $this;
@@ -259,25 +259,23 @@ function Player(playlist) {
               }, 0);
             }
           }).bind('timeupdate', function() {
-            self.data.progressValue = this.getTime();
+            $loadscope.progressValue = this.getTime();
           }).bind('loadstart', function() {
-            if(this.id == self.data.currentSound.id) {
-              self.data.waitingbuf = true;
+            if(this.id == $loadscope.currentSound.id) {
+              $loadscope.waitingbuf = true;
             }
           }).bind('ended', function() {
-            self.data.progressValue = 0;
-            self.data.festival.playing = false;
-            self.methods.next(true);
+            $loadscope.progressValue = 0;
+            $loadscope.festival.playing = false;
+            $loadscope.next(true);
           }).bind('abort', function() {
-            self.data.progressValue = 0;
-            self.data.festival.playing = false;
+            $loadscope.progressValue = 0;
+            $loadscope.festival.playing = false;
           }).bind('pause', function() {
-            self.data.festival.playing = false;
-          }).bind('play', function() {
-            this.setVolume(self.data.festival.volume);
-            Services.notif('Now playing', self.data.festival.currentTrack.name + ', by ' + self.data.festival.currentTrack.artist_name + ', on ' + self.data.festival.currentTrack.album_name);
+            $loadscope.festival.playing = false;
           }).bind('playing', function() {
-            self.data.festival.playing = true;
+            $loadscope.festival.playing = true;
+            Services.notif('Now playing', $loadscope.festival.currentTrack.name + ', by ' + $loadscope.festival.currentTrack.artist_name + ', on ' + $loadscope.festival.currentTrack.album_name);
           }).bind('error', function(e) {
             console.log(e, this.sound);
           }).bind('sourceerror', function(e) {
@@ -286,12 +284,12 @@ function Player(playlist) {
           asound.onCompleteLoad = function(bLoadNext) {
             var $this = this;
             currentlyPrefetching = null;
-            if($this.id == self.data.currentSound.id) {
+            if($this.id == $loadscope.currentSound.id) {
               if(track.failed) track.failed = false;
-              self.data.duration = $this.getDuration();
-              self.data.buffered = $this.getBuffered();
+              $loadscope.duration = $this.getDuration();
+              $loadscope.buffered = $this.getBuffered();
               if(bLoadNext) {
-                this._loadNext();
+                $loadscope._loadNext();
               }
             }
           };
@@ -305,9 +303,10 @@ function Player(playlist) {
   };
   
   self.methods.togglePlayPause = function togglePlayPause() {
+    var $this = this;
     Vue.nextTick(function() {
-      if(this.currentSound) {
-        this.currentSound.togglePlay();
+      if($this.currentSound) {
+        $this.currentSound.togglePlay();
       }
     });
   };
@@ -356,20 +355,23 @@ function Player(playlist) {
     }
   };
   
-  $(document).on('keydown', null, 'space', function(e) {
-    e.preventDefault();
-    self.methods.togglePlayPause();
-  });
-  
-  $(document).on('keydown', null, 'left', function(e) {
-    e.preventDefault();
-    self.methods.prev(self.data.festival.playing);
-  });
-  
-  $(document).on('keydown', null, 'right', function(e) {
-    e.preventDefault();
-    self.methods.next(self.data.festival.playing);
-  });
+  self.created = function created() {
+    var $this = this;
+    $(document).on('keydown', null, 'space', function(e) {
+      e.preventDefault();
+      $this.togglePlayPause();
+    });
+    
+    $(document).on('keydown', null, 'left', function(e) {
+      e.preventDefault();
+      $this.prev($this.festival.playing);
+    });
+    
+    $(document).on('keydown', null, 'right', function(e) {
+      e.preventDefault();
+      $this.next($this.festival.playing);
+    });
+  };
   
   return self;
 }
@@ -602,11 +604,9 @@ function Container(v_player) {
   
   self.watch.selectedArtist = function(val, oldVal) {
     if (!oldVal.id && val.id) {
-      // showing
-      Services.utils.flipit('.artist', 500, 'show-albums', '#container', 'ar_' + val.id);
+      Services.utils.hideApplyShow('#container', 'show-albums', 500, 'ar_' + val.id);
     } else if (oldVal.id && !val.id) {
-      // hiding
-      Services.utils.flipit('.artist', 500, 'show-albums', '#container', 'ar_' + oldVal.id);
+      Services.utils.hideApplyShow('#container', 'show-albums', 500, 'ar_' + oldVal.id);
     }
   };
 
@@ -715,6 +715,7 @@ function Container(v_player) {
   
   self.methods.add = v_player.add.bind(v_player);
   self.methods.playOrPause = v_player.playOrPause.bind(v_player);
+  self.methods.empty = v_player.empty.bind(v_player);
   
   return self;
 }

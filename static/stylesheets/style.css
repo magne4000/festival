@@ -547,9 +547,6 @@ main .container.show-albums .artists {
   padding-top: 0;
   width: 200px;
 }
-main .container.show-albums-step1 .artists {
-  width: 200px;
-}
 main .container .art-container {
   position: relative;
 }
@@ -582,7 +579,7 @@ main .container .art-overlay .controls {
   transform: scaleX(0);
   transform-origin: right;
 }
-main .container.show-albums .art-overlay, main .container.show-albums-step1 .art-overlay {
+main .container.show-albums .art-overlay {
   display: none;
 }
 main .container .art-overlay:hover {
@@ -631,6 +628,10 @@ main .container.show-albums .artist-left {
   display: flex;
   flex-direction: row;
   align-items: center;
+  cursor: default;
+}
+main .container.show-albums .artist:hover {
+  background-color: #e5e5e5;
 }
 /* Main - album */
 main .container .album > .heading {
@@ -657,7 +658,7 @@ main .container .albums {
   transform: scaleX(0);
   transform-origin: center right;
 }
-main .container.show-albums .albums, main .container.show-albums-step1 .albums {
+main .container.show-albums .albums {
   transform: scaleX(1);
 }
 main .container .albums .album {

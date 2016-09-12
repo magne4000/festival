@@ -118,7 +118,7 @@
           <div class="rect4"></div>
           <div class="rect5"></div>
         </div>
-        <infinite-scroll :infinite-scroll-callback="pageArtists" infinite-scroll-immediate-check="true" infinite-scroll-distance="2">
+        <infinite-scroll :infinite-scroll-callback="pageArtists" :infinite-scroll-immediate-check="true" :infinite-scroll-distance="400">
           <div v-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
           <div v-for="artist in artists" :key="artist.id" class="artist" :class="{selected: selectedArtist.id == artist.id}">
             <a :name="'ar_'+artist.id"></a>
@@ -237,7 +237,6 @@
         </div>
       </div>
     </main>
-    <script type='text/javascript' src='static/js/flip.min.js'></script>
     <script type='text/javascript' src='static/js/services.js'></script>
     <script type='text/javascript' src='static/js/vue-components.js'></script>
     <script type='text/javascript' src='static/js/vue-init.js'></script>

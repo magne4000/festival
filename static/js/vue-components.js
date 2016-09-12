@@ -79,7 +79,23 @@ Vue.component('player-loading', {
 
 Vue.component('infinite-scroll', {
   template: '<div class="artists"><slot></slot></div>',
-  props: ['infiniteScrollDisabled', 'infiniteScrollDistance', 'infiniteScrollImmediateCheck', 'infiniteScrollCallback'],
+  props: {
+    infiniteScrollDisabled: {
+      type: Boolean,
+      default: false
+    },
+    infiniteScrollDistance: {
+      type: Number,
+      default: 0
+    },
+    infiniteScrollImmediateCheck: {
+      type: Boolean,
+      default: false
+    },
+    infiniteScrollCallback: {
+      type: Function
+    }
+  },
   watch: {
     'infiniteScrollDisabled': function (val, oldVal) {
       if (!val && this.infiniteScrollImmediateCheck) {
