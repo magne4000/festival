@@ -110,7 +110,16 @@ main .container .albums {
   transition: transform 0.5s ease-in-out 0s;
 }
 main .container .albums .album {
-  transition: border 0.3s;
+  transition: border 0.3s, opacity 0.5s, transform 0.5s;
+}
+main .container .albums .album.v-enter {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+main .container .albums .album.v-leave-active {
+  position: absolute;
+  opacity: 0;
+  transform: translateX(30px);
 }
 
 /* queue */

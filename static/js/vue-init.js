@@ -717,6 +717,15 @@ function Container(v_player) {
   self.methods.playOrPause = v_player.playOrPause.bind(v_player);
   self.methods.empty = v_player.empty.bind(v_player);
   
+  self.created = function created() {
+    var $this = this;
+    
+    $(document).on('keydown', null, 'esc', function(e) {
+      e.preventDefault();
+      $this.selectedArtist = {};
+    });
+  };
+  
   return self;
 }
 

@@ -147,7 +147,7 @@
             </div>
           </div>
         </infinite-scroll>
-        <div class="albums">
+        <div class="albums" is="transition-group">
           <div v-for="album in selectedArtist.albums" :key="album.id" class="album">
             <span class="heading">
               <h4 class="heading-title">
