@@ -524,6 +524,7 @@ main .container .heading {
 }
 main .container.show-albums .heading {
   margin: 5px;
+  font-size: 12px;
 }
 main .container img, main .container .art-container {
   width: 140px;
@@ -552,7 +553,7 @@ main .container.show-albums-step1 .artists {
 main .container .art-container {
   position: relative;
 }
-main .container.show-albums .art-container, main .container.show-albums img {
+main .container.show-albums .art-container, main .container.show-albums .art-container img {
   width: 20px;
   min-width: 20px;
   max-width: 20px;

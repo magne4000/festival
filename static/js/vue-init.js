@@ -603,10 +603,10 @@ function Container(v_player) {
   self.watch.selectedArtist = function(val, oldVal) {
     if (!oldVal.id && val.id) {
       // showing
-      Services.utils.flipit('.artist', 600, 'show-albums', '#container');
+      Services.utils.flipit('.artist', 500, 'show-albums', '#container', 'ar_' + val.id);
     } else if (oldVal.id && !val.id) {
       // hiding
-      Services.utils.flipit('.artist', 600, 'show-albums', '#container');
+      Services.utils.flipit('.artist', 500, 'show-albums', '#container', 'ar_' + oldVal.id);
     }
   };
 

@@ -121,6 +121,7 @@
         <infinite-scroll :infinite-scroll-callback="pageArtists" infinite-scroll-immediate-check="true" infinite-scroll-distance="2">
           <div v-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
           <div v-for="artist in artists" :key="artist.id" class="artist" :class="{selected: selectedArtist.id == artist.id}">
+            <a :name="'ar_'+artist.id"></a>
             <div class="artist-left">
               <div class="art-container">
                 <img v-lazy="'artistart/'+artist.id" :alt="artist.name" src="static/images/nocover.png" ng-switch on="artist.loading" @click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">

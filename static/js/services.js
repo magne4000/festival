@@ -108,27 +108,50 @@ var Services = (function() {
         rect.bottom >= 0 &&
         rect.right >= 0 &&
         rect.top <= document.documentElement.clientHeight &&
-        rect.left <= document.documentElement.clientWidth 
+        rect.left <= document.documentElement.clientWidth
       );
     }
     
-    function flipit(selector, duration, toggleClass, toggleSelector) {
-      var ars = document.querySelectorAll(selector), fg = [], i = 0;
+    function scrollToAnchor (anchor) {
+      window.location.hash = "";
+      window.location.hash = "#" + anchor;
+      window.location.hash = "";
+    }
+    
+    function flipit(selector, duration, toggleClass, toggleSelector, anchor) {
+      var arsbeforeclean = document.querySelectorAll(selector), fg = [], i = 0, ars = [], firstVisible = false;
+      var maxH = (document.documentElement.clientHeight/200), maxW = (document.documentElement.clientWidth/200);
+      var maxEl = maxH * maxW;
+      for (i = 0; i < arsbeforeclean.length; ++i) {
+        // TODO store first visible (X)
+        // position viewport correctly so that X is on first row
+        // select Y before and Z after (Z - Y = maxEl)
+        // animate only those
+        if (firstVisible) {
+          ars.push(arsbeforeclean[i]);
+          if (ars.length >= maxEl) break;
+        } else if (isElementInViewport(arsbeforeclean[i])) {
+          firstVisible = true;
+          ars.push(arsbeforeclean[i]);
+        }
+      }
       for (i = 0; i < ars.length; ++i) {
         fg.push({
           element: ars[i],
           duration: duration,
-          delay: (i/ars.length)*duration
+          delay: (duration/ars.length)*i
         });
       }
       var flip = new FLIP.group(fg);
-      
       flip.first();
       if (toggleSelector) {
         document.querySelector(toggleSelector).classList.toggle(toggleClass);
         flip.last();
       } else {
         flip.last(toggleClass);
+      }
+      if (anchor) {
+        scrollToAnchor(anchor);
       }
       flip.invert();
       flip.play();
