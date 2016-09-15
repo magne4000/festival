@@ -548,6 +548,7 @@ main .container .artists {
   flex-wrap: wrap;
   justify-content: center;
   align-items: baseline;
+  align-content: flex-start;
 }
 main .container.show-albums .artists {
   padding-top: 0;
@@ -625,19 +626,23 @@ main .container .artist {
   height: 200px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: space-around;
 }
 main .container .artist>.heading {
   flex: 1;
+  text-align: center;
 }
 main .container .artist.selected {
   background-color: #ddd;
 }
 main .container.show-albums .artist {
   flex-direction: row;
-  align-items: center;
   cursor: default;
   height: auto;
+}
+main .container.show-albums .artist>.heading {
+  text-align: left;
 }
 main .container.show-albums .artist:hover {
   background-color: #e5e5e5;
