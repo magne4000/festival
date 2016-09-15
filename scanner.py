@@ -192,7 +192,8 @@ class Scanner(Thread):
 
     @coroutine
     def add_track(self):
-        with Context(self.config, True) as db:
+        with Context(self.config, True) as db, db.session.no_autoflush:
+            count = 0
             try:
                 while True:
                     mfile, mtime, = (yield)
@@ -206,6 +207,11 @@ class Scanner(Thread):
                             tags['folder'] = tags_from_folders
                     try:
                         _ = db.add_track_full(mfile, mtime, tags, aninfo)
+                        count += 1
+                        if count % 100 == 0:
+                            db.session.commit()
+                            sys.stdout.write('|')
+                            sys.stdout.flush()
                     except Exception:
                         db.session.rollback()
                         logger.exception('Error in scanner.add_track: %s\nTags: %s', mfile, tags)

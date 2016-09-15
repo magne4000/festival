@@ -191,7 +191,7 @@ class Typed:
                                     order_by=(Artist.name, Album.year.desc(), TrackInfo.trackno, TrackInfo.name)):
         with self.session_scope() as session:
             query = session.query(Artist).join(Artist.albums).join(Album.tracks).join(TrackInfo.track).options(
-                contains_eager(Artist.albums, Album.tracks))
+                contains_eager(Artist.albums, Album.tracks, TrackInfo.track))
             if ffilter is not None:
                 query = ffilter(query)
             query = limitoffset(query.order_by(*order_by), skip, limit)
@@ -226,7 +226,6 @@ class Typed:
             if len(filters) > 0:
                 query = query.filter(or_(*filters))
             return query
-
         return self.listtracksbyalbumsbyartists(ffilter, skip, limit)
 
 

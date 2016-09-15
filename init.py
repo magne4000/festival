@@ -4,10 +4,10 @@ import sys
 import os
 
 from festivallib.info import Infos
-from festivallib.model import get_engine
-from migrate import migrate
+from festivallib.data import Data
+from festivallib.model import get_engine, drop_all, create_all
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 settings_sample_filepath = os.path.join(os.path.dirname(__file__), 'settings.sample.cfg')
 
@@ -55,8 +55,13 @@ def check(args=None, unattented=False):
         schema_version = Infos.get('schema_version')
         engine = get_engine(c)
         if engine.has_table('artist') and (schema_version is None or schema_version != SCHEMA_VERSION):
-            print("\033[93mModel changed since last update. Running migration scripts.\033[0m")
-            migrate(schema_version, engine)
+            print("\033[93mModel changed since last update. Database and data will be erased.\033[0m")
+            drop_all(c)
+            print("\033[93mDatabase DROP OK.\033[0m")
+            Data.clear()
+            print("\033[93mData CLEAR OK.\033[0m")
+            create_all(c)
+            print("\033[93mDatabase CREATION OK.\033[0m")
         Infos.update(schema_version=SCHEMA_VERSION)
 
 

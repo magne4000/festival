@@ -1,4 +1,5 @@
 /* global $ */
+/* global Url */
 /* global FLIP */
 
 var Services = (function() {
@@ -119,7 +120,7 @@ var Services = (function() {
         })
         .animate({opacity: 1}, stepDuration);
     }
-
+    
     return {
       hideApplyShow: hideApplyShow,
       extend: extend
@@ -437,11 +438,18 @@ var Services = (function() {
     };
   }
   
+  var HUrl = Url;
+  
+  HUrl.prototype.commit = function() {
+    window.history.pushState({}, '', this);
+  };
+  
   return {
     ajax: Ajax(),
     displayMode: DisplayMode(),
     playlist: Playlist(),
     notif: Notif(),
-    utils: Utils()
+    utils: Utils(),
+    Url: HUrl
   };
 })();

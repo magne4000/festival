@@ -121,7 +121,7 @@
         <infinite-scroll :infinite-scroll-callback="pageArtists" :infinite-scroll-immediate-check="true" :infinite-scroll-distance="400">
           <div v-show="!loading && artists.length == 0" class="noresult">No result matching the search criteria.</div>
           <div v-for="artist in artists" :key="artist.id" class="artist" :class="{selected: selectedArtist.id == artist.id}" @click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">
-            <a :name="'ar_'+artist.id"></a>
+            <a :name="'ar_'+artist.id" class="anchor"></a>
             <div class="art-container">
               <img v-lazy="'artistart/'+artist.id" :alt="artist.name" src="static/images/nocover.png" ng-switch on="artist.loading">
               <div class="art-overlay">
@@ -235,6 +235,7 @@
         </div>
       </div>
     </main>
+    <script type='text/javascript' src='static/js/url.min.js'></script>
     <script type='text/javascript' src='static/js/services.js'></script>
     <script type='text/javascript' src='static/js/vue-components.js'></script>
     <script type='text/javascript' src='static/js/vue-init.js'></script>

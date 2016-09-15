@@ -377,10 +377,6 @@ function Player(playlist) {
 }
 
 function Toolbar(v_container) {
-  function areFiltersEqual(a, b) {
-    if (typeof b === 'undefined' || typeof a === 'undefined') return false;
-    return a.artists === b.artists && a.albums === b.albums && a.tracks === b.tracks;
-  }
   var self = {
     data: {
       value: "",
@@ -428,13 +424,13 @@ function Toolbar(v_container) {
 
   self.watch.checkboxFilter = {
     handler: function(newValue, oldValue) {
-      if (!areFiltersEqual(newValue, oldValue)) {
-        $location.search('sar', newValue.artists);
-        $location.search('sal', newValue.albums);
-        $location.search('str', newValue.tracks);
-        clearTimeout(promise);
-        promise = setTimeout(this.searchnow, 700);
-      }
+      clearTimeout(promise);
+      var u = new Services.Url();
+      u.query.sar = newValue.artists;
+      u.query.sal = newValue.albums;
+      u.query.str = newValue.tracks;
+      u.commit();
+      promise = setTimeout(this.searchnow.bind(this), 700);
     },
     deep: true
   };
@@ -485,66 +481,86 @@ function Toolbar(v_container) {
       this.volume = 0;
     }
   };
+  
+  self.methods.applyusualstate = function() {
+    v_container.artists = [];
+    if (this.value.length > 0) {
+      Services.displayMode.current('search', this.value);
+    } else {
+      Services.displayMode.current('artists', {});
+    }
+    this.displaymode = 'search';
+  };
 
   self.methods.searchnow = function() {
-      v_container.artists = [];
-      if (this.value.length > 0) {
-          Services.displayMode.current('search', this.value);
-      } else {
-          Services.displayMode.current('artists', {});
-      }
-      this.displaymode = 'search';
-      if (this.value === '') {
-          $location.search('s', null);
-      } else {
-          $location.search('s', this.value);
-      }
-      $location.search('la', null);
-      Services.displayMode.call();
+    var u = new Services.Url();
+    this.applyusualstate();
+    if (this.value === '') {
+      delete u.query.s;
+    } else {
+      u.query.s = this.value;
+    }
+    delete u.query.la;
+    u.commit();
+    Services.displayMode.call();
+  };
+  
+  self.methods.applylastalbumsstate = function() {
+    v_container.artists = [];
+    Services.displayMode.current('lastalbums', {});
+    this.displaymode = 'lastalbums';
+    this.value = "";
   };
 
   self.methods.lastalbums = function() {
-      v_container.artists = [];
-      Services.displayMode.current('lastalbums', {});
-      this.displaymode = 'lastalbums';
-      this.value = "";
-      $location.search('la', 'true');
-      $location.search('s', null);
-      $location.search('sar', null);
-      $location.search('sal', null);
-      $location.search('str', null);
-      Services.displayMode.call();
+    this.applylastalbumsstate();
+    var u = new Services.Url();
+    u.query.la = true;
+    delete u.query.s;
+    delete u.query.sar;
+    delete u.query.sal;
+    delete u.query.str;
+    u.commit();
+    Services.displayMode.call();
   };
-/*
-  var unbind = $scope.$on('$locationChangeSuccess', function() {
-      unbind();
-      var triggersearchnow = true;
-      var params = $location.search();
-      if (typeof params.sar !== "undefined") {
-          params.sar = (params.sar === true);
-          if (this.checkboxFilter.artists !== params.sar) triggersearchnow = false;
-          this.checkboxFilter.artists = params.sar;
-      }
-      if (typeof params.sal !== "undefined") {
-          params.sal = (params.sal === true);
-          if (this.checkboxFilter.albums !== params.sal) triggersearchnow = false;
-          this.checkboxFilter.albums = params.sal;
-      }
-      if (typeof params.str !== "undefined") {
-          params.str = (params.str === true);
-          if (this.checkboxFilter.tracks !== params.str) triggersearchnow = false;
-          this.checkboxFilter.tracks = params.str;
-      }
-      if (typeof params.s !== "undefined") {
-          this.value = params.s;
-      } else if (typeof params.la !== "undefined") {
-          this.lastalbums();
-          triggersearchnow = false;
-      }
-      if (triggersearchnow) {
-        this.searchnow();
-      }
-  });*/
+  
+  self.methods.applystatefromurl = function applystatefromurl() {
+    var u = new Services.Url(), shouldtriggersearch = false;
+    if (typeof u.query.sar !== "undefined") {
+      u.query.sar = (u.query.sar === "true");
+      if (this.checkboxFilter.artists !== u.query.sar) shouldtriggersearch = true;
+      this.checkboxFilter.artists = u.query.sar;
+    }
+    if (typeof u.query.sal !== "undefined") {
+      u.query.sal = (u.query.sal === "true");
+      if (this.checkboxFilter.albums !== u.query.sal) shouldtriggersearch = true;
+      this.checkboxFilter.albums = u.query.sal;
+    }
+    if (typeof u.query.str !== "undefined") {
+      u.query.str = (u.query.str === "true");
+      if (this.checkboxFilter.tracks !== u.query.str) shouldtriggersearch = true;
+      this.checkboxFilter.tracks = u.query.str;
+    }
+    if (typeof u.query.s !== "undefined") {
+      this.value = u.query.s;
+      this.applyusualstate();
+    } else if (typeof u.query.la !== "undefined") {
+      this.applylastalbumsstate();
+      shouldtriggersearch = true;
+    }
+    return shouldtriggersearch;
+  };
+  
+  self.methods.triggerfromurl = function triggerfromurl() {
+    if (this.applystatefromurl()) {
+      this.searchnow();
+    }
+  };
+  
+  self.created = function created() {
+    this.applystatefromurl();
+    window.onpopstate = this.triggerfromurl.bind(this);
+  };
   
   return self;
 }
@@ -611,7 +627,9 @@ function Container(v_player) {
   };
 
   self.methods.pageArtists = function() {
-    Services.displayMode.call();
+    // Here nextTick allow all other events like 'create' on components
+    // to be fired before
+    Vue.nextTick(Services.displayMode.call.bind(Services.displayMode));
   };
 
   self.methods.loadAlbums = function(artist, params) {
@@ -626,10 +644,7 @@ function Container(v_player) {
     };
     Services.ajax.albumsbyartists(filter, params).done(function(data, status) {
       if (data.data.length > 0) {
-        //artist.expanded = true;
         artist.albums = data.data[0].albums;
-      } else {
-        //artist.expanded = false;
       }
     });
   };

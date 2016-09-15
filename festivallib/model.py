@@ -6,7 +6,7 @@ from datetime import datetime
 
 from flask import current_app
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, distinct, event, UniqueConstraint, \
-    create_engine
+    create_engine, Unicode
 from sqlalchemy import types
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_method
@@ -35,25 +35,16 @@ def _fk_pragma_on_connect(dbapi_con, con_record):
     dbapi_con.execute('PRAGMA journal_mode = WAL')
 
 
-class UnicodeSurrogateEscape(types.TypeDecorator):
-    """Prefixes Unicode values with "PREFIX:" on the way in and
-    strips it off on the way out.
-    """
+class CoerceUTF8(types.TypeDecorator):
+    """Safely coerce Python bytestrings to Unicode
+    before passing off to the database."""
 
-    impl = types.String
+    impl = Unicode
 
     def process_bind_param(self, value, dialect):
-        if isinstance(value, str):
-            return value.encode('utf-8', errors="surrogateescape")
-        return value
-
-    def process_result_value(self, value, dialect):
         if isinstance(value, bytes):
-            return value.decode('utf-8', errors="surrogateescape")
+            value = value.decode('utf-8', 'replace')
         return value
-
-    def copy(self):
-        return UnicodeSurrogateEscape(self.impl.length)
 
 
 class TypedQuery(Query):
@@ -102,7 +93,7 @@ class Track(Base):
     __tablename__ = "track"
 
     id = Column(Integer, primary_key=True)
-    path = Column(UnicodeSurrogateEscape(500), nullable=False, unique=True)
+    path = Column(CoerceUTF8(500), nullable=False, unique=True)
     duration = Column(Float, nullable=True)
     bitrate = Column(String(10), nullable=True)
     last_updated = Column(DateTime)
@@ -150,7 +141,7 @@ class TrackInfo(Base, TypedInfo):
     __tablename__ = "trackinfo"
 
     id = Column(Integer, primary_key=True)
-    name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
+    name = Column(CoerceUTF8(254), nullable=False, index=True)
     track_id = Column(Integer, ForeignKey("track.id"), nullable=False)
     track = relationship("Track", backref='infos', lazy='joined')
     album_id = Column(Integer, ForeignKey("album.id"), nullable=False)
@@ -185,7 +176,7 @@ class Artist(Base, TypedInfo):
     __tablename__ = "artist"
 
     id = Column(Integer, primary_key=True)
-    name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
+    name = Column(CoerceUTF8(254), nullable=False, index=True)
     albums = relationship("Album", backref="artist", innerjoin=True)
     tracks = relationship("TrackInfo", backref="artist", innerjoin=True)
     art_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
@@ -215,7 +206,7 @@ class Album(Base, TypedInfo):
 
     id = Column(Integer, primary_key=True)
     artist_id = Column(Integer, ForeignKey("artist.id"), nullable=False)
-    name = Column(UnicodeSurrogateEscape(254), nullable=False, index=True)
+    name = Column(CoerceUTF8(254), nullable=False, index=True)
     year = Column(Integer, nullable=True)
     cover_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
     cover = relationship("Cover")
@@ -264,7 +255,7 @@ class Genre(Base, TypedInfo):
     __tablename__ = "genre"
 
     id = Column(Integer, primary_key=True)
-    name = Column(UnicodeSurrogateEscape(254), nullable=False, unique=True)
+    name = Column(CoerceUTF8(254), nullable=False, unique=True)
     tracks = relationship("TrackInfo", backref="genre")
     UniqueConstraint('name', 'type')
 
@@ -495,6 +486,20 @@ def get_engine(config=None):
     return engine
 
 
+def create_all(config=None):
+    if config is None:
+        config = current_app.config
+    localengine = get_engine(config)
+    Base.metadata.create_all(bind=localengine)
+
+
+def drop_all(config=None):
+    if config is None:
+        config = current_app.config
+    localengine = get_engine(config)
+    Base.metadata.drop_all(bind=localengine)
+
+
 def get_session(config=None):
     global Session
     if Session is None:
@@ -505,5 +510,5 @@ def get_session(config=None):
             event.listen(localengine, 'connect', _fk_pragma_on_connect)
         mimetypes.init()
         Session = sessionmaker(bind=localengine)
-        Base.metadata.create_all(bind=localengine)
+        create_all(config)
     return Session
