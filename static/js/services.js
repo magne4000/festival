@@ -279,130 +279,153 @@ var Services = (function() {
   }
   
   function Playlist() {
-    var head = null;
-    var tail = null;
-    var promise = null;
+    this.head = null;
+    this.tail = null;
+    this.promise = null;
+    this.listeners = {};
+  }
   
-    function emitChange() {
-      clearTimeout(promise);
-      promise = setTimeout(function() {
-        $.event.trigger('tracks');
-      }, 100);
+  Playlist.prototype.emitChange = function() {
+    var $this = this;
+    clearTimeout(this.promise);
+    this.promise = setTimeout(function() {
+      $this.dispatchEvent(new Event('update'));
+    }, 100);
+  };
+  
+  Playlist.prototype.listeners = null;
+  Playlist.prototype.addEventListener = function(type, callback) {
+    if(!(type in this.listeners)) {
+      this.listeners[type] = [];
     }
+    this.listeners[type].push(callback);
+  };
   
-    function getHead() {
-      return head;
+  Playlist.prototype.removeEventListener = function(type, callback) {
+    if(!(type in this.listeners)) {
+      return;
     }
-  
-    function getTail() {
-      return tail;
-    }
-  
-    function empty() {
-      head = null;
-      tail = null;
-      emitChange();
-    }
-  
-    function add(track) {
-      track = JSON.parse(JSON.stringify(track));
-      track.prev = null; // init
-      track.next = null; // init
-      if(head === null) {
-        head = track;
+    var stack = this.listeners[type];
+    for(var i = 0, l = stack.length; i < l; i++) {
+      if(stack[i] === callback){
+        stack.splice(i, 1);
+        return this.removeEventListener(type, callback);
       }
-      if(tail !== null) {
-        track.prev = tail;
-        tail.next = track;
-      }
-      tail = track;
-      emitChange();
-      return track;
     }
+  };
   
-    function move(track, after) {
-      var oldHead = head;
-      if(track.prev !== null) {
-        track.prev.next = track.next;
+  Playlist.prototype.dispatchEvent = function(event) {
+    if(!(event.type in this.listeners)) {
+      return;
+    }
+    var stack = this.listeners[event.type];
+    event.target = this;
+    for(var i = 0, l = stack.length; i < l; i++) {
+        stack[i].call(this, event);
+    }
+  };
+  
+  Playlist.prototype.getHead = function() {
+    return this.head;
+  };
+  
+  Playlist.prototype.getTail = function() {
+    return this.tail;
+  };
+  
+  Playlist.prototype.empty = function() {
+    this.head = null;
+    this.tail = null;
+    this.emitChange();
+  };
+  
+  Playlist.prototype.add = function(track) {
+    track = JSON.parse(JSON.stringify(track));
+    track.prev = null; // init
+    track.next = null; // init
+    if(this.head === null) {
+      this.head = track;
+    }
+    if(this.tail !== null) {
+      track.prev = this.tail;
+      this.tail.next = track;
+    }
+    this.tail = track;
+    this.emitChange();
+    return track;
+  };
+  
+  Playlist.prototype.move = function(track, after) {
+    var oldHead = this.head;
+    if(track.prev !== null) {
+      track.prev.next = track.next;
+    }
+    else {
+      this.head = track.next;
+    }
+    if(track.next !== null) {
+      track.next.prev = track.prev;
+    }
+    if(after) {
+      track.prev = after;
+      track.next = after.next;
+      if(after.next !== null) {
+        after.next.prev = track;
       }
       else {
-        head = track.next;
+        this.tail = track;
       }
-      if(track.next !== null) {
-        track.next.prev = track.prev;
-      }
-      if(after) {
-        track.prev = after;
-        track.next = after.next;
-        if(after.next !== null) {
-          after.next.prev = track;
-        }
-        else {
-          tail = track;
-        }
-        after.next = track;
-      }
-      else {
-        oldHead.prev = track;
-        track.prev = null;
-        track.next = oldHead;
-        head = track;
-      }
-      emitChange();
+      after.next = track;
     }
-  
-    function remove(track) {
-      if(track.next !== null) {
-        track.next.prev = track.prev;
-      }
-      else {
-        tail = track.prev;
-      }
-      if(track.prev !== null) {
-        track.prev.next = track.next;
-      }
-      else {
-        head = track.next;
-      }
-      emitChange();
+    else {
+      oldHead.prev = track;
+      track.prev = null;
+      track.next = oldHead;
+      this.head = track;
     }
+    this.emitChange();
+  };
   
-    function get(ind) {
-      ind = parseInt(ind, 10);
-      if(ind < 0) ind = 0;
-      if(ind === 0) return head;
-      var count = 1,
-        track = head;
-      while(track.next !== null && count <= ind) {
+  Playlist.prototype.remove = function(track) {
+    if(track.next !== null) {
+      track.next.prev = track.prev;
+    }
+    else {
+      this.tail = track.prev;
+    }
+    if(track.prev !== null) {
+      track.prev.next = track.next;
+    }
+    else {
+      this.head = track.next;
+    }
+    this.emitChange();
+  };
+  
+  Playlist.prototype.get = function(ind) {
+    ind = parseInt(ind, 10);
+    if(ind < 0) ind = 0;
+    if(ind === 0) return this.head;
+    var count = 1,
+      track = this.head;
+    while(track.next !== null && count <= ind) {
+      count += 1;
+      track = track.next;
+    }
+    return track;
+  };
+  
+  Playlist.prototype.size = function() {
+    if(this.head === null) return 0;
+    else {
+      var count = 1, track = this.head;
+      while(track.next !== null) {
         count += 1;
         track = track.next;
       }
-      return track;
+      return count;
     }
-  
-    function size() {
-      if(head === null) return 0;
-      else {
-        var count = 1,
-          track = head;
-        while(track.next !== null) {
-          count += 1;
-          track = track.next;
-        }
-        return count;
-      }
-    }
-    return {
-      getHead: getHead,
-      getTail: getTail,
-      empty: empty,
-      add: add,
-      move: move,
-      remove: remove,
-      size: size,
-      get: get
-    };
-  }
+  };
   
   function Notif() {
     var granted = false;
@@ -447,7 +470,7 @@ var Services = (function() {
   return {
     ajax: Ajax(),
     displayMode: DisplayMode(),
-    playlist: Playlist(),
+    playlist: new Playlist(),
     notif: Notif(),
     utils: Utils(),
     Url: HUrl

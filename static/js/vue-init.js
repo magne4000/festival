@@ -761,29 +761,41 @@ function Container(v_player) {
   return self;
 }
 
-function Queue() {
+function Queue(playlist, v_player) {
   var self = {
     data: {
+      festival: festival,
       tracks: [],
       show: false
+    },
+    methods: {}
+  };
+  
+  self.methods.updateTracksOnNextTick = function() {
+    Vue.nextTick(this.updateTracks.bind(this));
+  };
+  
+  self.methods.updateTracks = function() {
+    var head = playlist.getHead(), tracks = [];
+    if (head) {
+      var track = head;
+      tracks.push(track);
+      while (track.next && track.next !== head) {
+        tracks.push(track.next);
+        track = track.next;
+      }
     }
-  }
-
-  function computeTracks() {
-      $scope.$apply(function(){
-          var track = $tracks.getHead();
-          $scope.tracks = [];
-          if (track) {
-              $scope.tracks.push(track);
-              while (track.next) {
-                  $scope.tracks.push(track.next);
-                  track = track.next;
-              }
-          }
-      });
-  }
-
-  //TODO $rootScope.$on('tracks', computeTracks);
+    this.tracks = tracks;
+  };
+  
+  self.created = function created() {
+    playlist.addEventListener('update', this.updateTracksOnNextTick);
+  };
+  
+  self.methods.empty = playlist.empty.bind(playlist);
+  self.methods.playOrPause = v_player.playOrPause.bind(v_player);
+  self.methods.remove = playlist.remove.bind(playlist);
+  
   return self;
 }
 
@@ -823,7 +835,7 @@ toolbar.el = '#toolbar';
 var v_toolbar = new Vue(toolbar);
 
 // queue
-var queue = Queue();
+var queue = Queue(Services.playlist, v_player);
 queue.el = '#queue';
 queue.filters = filters;
 var v_queue = new Vue(queue);
