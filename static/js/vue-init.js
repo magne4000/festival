@@ -558,8 +558,16 @@ function Toolbar(v_container) {
   };
   
   self.created = function created() {
+    var $this = this, oldpathname = window.location.pathname, oldsearch = window.location.search;
     this.applystatefromurl();
-    window.onpopstate = this.triggerfromurl.bind(this);
+
+    window.onpopstate = function(e) {
+      if (oldpathname != window.location.pathname || oldsearch != window.location.search) {
+        $this.triggerfromurl();
+        oldpathname = window.location.pathname;
+        oldsearch = window.location.search;
+      }
+    };
   };
   
   return self;
