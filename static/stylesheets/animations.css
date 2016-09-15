@@ -1,3 +1,16 @@
+@keyframes pulsate {
+    0% {
+      transform: scale(.1);
+      opacity: 0.0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.2);
+      opacity: 0;
+    }
+}
 @keyframes artcontrols {
   from {
     transform: scaleX(0.4) scaleY(0.4);
@@ -19,17 +32,7 @@
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(359deg);
-  }
-}
-@keyframes stretchdelay {
-  0%,
-  40%,
-  100% {
-    transform: scaleY(0.5);
-  }
-  20% {
-    transform: scaleY(1);
+    transform: rotate(360deg);
   }
 }
 @keyframes playing1 {
@@ -98,7 +101,7 @@ main .container .art-overlay .controls .control:after {
   transform-origin: center center;
 }
 main .container .art-overlay .controls .control:hover::after {
-  animation: artcontrols 0.4s linear;
+  animation: artcontrols 0.3s linear;
   animation-fill-mode: forwards;
 }
 main .container img {
@@ -134,47 +137,6 @@ main .queue .handle i {
 }
 main .queue .queue-content {
   transition: margin-right 0.3s ease-in-out;
-}
-
-/* spinner */
-.spinner {
-  width: 120px;
-  text-align: center;
-  font-size: 10px;
-  height: 100px;
-  margin: 0 auto;
-  position: absolute;
-  top: calc(50% - 50px);
-  bottom: 0;
-  left: 0;
-  right: 0;
-  opacity: 0.4;
-}
-.spinner > div {
-  background-color: #239bd6;
-  height: 100%;
-  width: 16px;
-  margin: 2px;
-  display: inline-block;
-  animation: stretchdelay 1.2s infinite ease-in-out;
-}
-.spinner .rect2 {
-  animation-delay: -1.1s;
-}
-.spinner .rect3 {
-  animation-delay: -1s;
-}
-.spinner .rect4 {
-  animation-delay: -0.9s;
-}
-.spinner .rect5 {
-  animation-delay: -0.8s;
-}
-
-.ui-effects-transfer {
-  border: 1px dotted #666;
-  background: #ddd;
-  opacity: 0.4;
 }
 
 /* audio animation */
@@ -238,4 +200,22 @@ main .queue .queue-content {
   height: 9px;
   margin: 0;
   display: inline-block;
+}
+
+/* loading animations */
+.signal {
+    border: 5px solid #333;
+    border-radius: 30px;
+    height: 30px;
+    left: 50%;
+    margin: -15px 0 0 -15px;
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    width: 30px;
+    animation: pulsate 1s ease-out;
+    animation-iteration-count: infinite;
+}
+.signal.v-leave, .signal.v-leave-active {
+  display: none;
 }
