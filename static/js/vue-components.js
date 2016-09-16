@@ -10,11 +10,12 @@ Vue.component('dropdown', {
   template: '<div class="dropdown">'+
               '<button @click="toggle" class="dropdown-button">source: {{active}}</button>'+
               '<div class="dropdown-content">'+
-                '<a href="#" @click="select(item)" v-for="item in items">{{item}}</a>'+
+                '<a href="#" @click="select(item, $event)" v-for="item in items">{{item}}</a>'+
               '</div>'+
             '</div>',
   methods: {
-    select: function (item) {
+    select: function (item, $event) {
+      $event.preventDefault();
       this.active = item;
       this.$emit('select', item);
       this.hide();
@@ -27,12 +28,21 @@ Vue.component('dropdown', {
         el.style.display = 'none';
       }
     },
-    hide: function () {
+    hide: function (e) {
+      if (e && (e.target === this.$el || e.target.parentElement === this.$el)) {
+        return;
+      }
       this.$el.querySelector('.dropdown-content').style.display = 'none';
     }
   },
-  created: function () {
+  beforeMount: function () {
     this.active = this.default;
+  },
+  mounted: function () {
+    document.querySelector('body').addEventListener('click', this.hide);
+  },
+  beforeDestroy: function () {
+    document.querySelector('body').removeEventListener('click', this.hide);
   }
 });
 
