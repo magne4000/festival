@@ -1,5 +1,41 @@
 /* global Vue */
 
+Vue.component('dropdown', {
+  data: function() {
+    return {
+      active: null
+    };
+  },
+  props: ['items', 'default'],
+  template: '<div class="dropdown">'+
+              '<button @click="toggle" class="dropdown-button">source: {{active}}</button>'+
+              '<div class="dropdown-content">'+
+                '<a href="#" @click="select(item)" v-for="item in items">{{item}}</a>'+
+              '</div>'+
+            '</div>',
+  methods: {
+    select: function (item) {
+      this.active = item;
+      this.$emit('select', item);
+      this.hide();
+    },
+    toggle: function () {
+      var el = this.$el.querySelector('.dropdown-content');
+      if (window.getComputedStyle(el).display === 'none') {
+        el.style.display = 'block';
+      } else {
+        el.style.display = 'none';
+      }
+    },
+    hide: function () {
+      this.$el.querySelector('.dropdown-content').style.display = 'none';
+    }
+  },
+  created: function () {
+    this.active = this.default;
+  }
+});
+
 Vue.component('player-progress', {
   props: ['progressValue', 'durationValue'],
   template: '<div class="progress"></div>',

@@ -101,11 +101,7 @@
           </a>
         </div>
         <div class="select-source">
-          <div dropdown-select="types"
-              dropdown-model="type"
-              dropdown-onchange="typechanged(selected)"
-              dropdown-default-value="{[config.DEFAULT_TAGS_SOURCE]}">
-          </div>
+          <dropdown :items="types" default="{[config.DEFAULT_TAGS_SOURCE]}" @select="typechanged"></dropdown>
         </div>
       </div>
     </header>

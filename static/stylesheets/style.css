@@ -117,77 +117,34 @@ input[type=text]:focus {
   border-bottom: 2px rgba(255, 255, 255, 0.6);
 }
 /* Dropdown */
-/** Dropdown select **/
-.wrap-dd-select {
-  position: relative;
-  min-width: 100px;
-  margin: 0 auto;
-  padding: 0 35px 0 8px;
-  user-select:none;
-  cursor: pointer;
-  outline: none;
-  font-weight: bold;
-}
-.wrap-dd-select.disabled {
-  cursor: default;
-  color: #5B6A7D;
-}
-.wrap-dd-select:after {
-  content: "";
-  width: 0;
-  height: 0;
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  margin-top: -3px;
-  border-width: 6px 6px 0 6px;
-  border-style: solid;
-  border-color: white transparent;
-}
-.wrap-dd-select.disabled:after {
+.dropdown-button {
+  color: white;
+  padding: 8px;
   border: none;
-}
-.wrap-dd-select .selected {
-  position: relative;
-  top: 8px;
-}
-.wrap-dd-select .dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  background: white;
-  padding: 0;
-  margin: 0;
-  border-radius: inherit;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
-  font-weight: normal;
-  list-style: none;
-  visibility: hidden;
-  max-height: 300px;
-  overflow-y: auto;
-}
-.wrap-dd-select .dropdown li {
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-}
-.wrap-dd-select .dropdown li a {
-  display: block;
-  padding: 10px;
-  text-decoration: none;
-  color: #121212;
   cursor: pointer;
 }
-.wrap-dd-select .dropdown li i {
-  float: right;
-  color: inherit;
+.dropdown-button:hover, .dropdown-button:focus {
+  background-color: #ebebeb;
 }
-.wrap-dd-select .dropdown li:hover a {
-  background: #ebebeb;
+.dropdown {
+  position: relative;
+  display: inline-block;
 }
-.wrap-dd-select.active .dropdown {
-  visibility: visible;
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 3;
 }
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+.dropdown-content a:hover {background-color: #f1f1f1}
 /* noscript */
 noscript > div {
   height: 100%;

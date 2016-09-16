@@ -380,17 +380,8 @@ function Toolbar(v_container) {
   var self = {
     data: {
       value: "",
-      type: {text: 'Tags', value: 'tags'},
-      types: [
-        {
-          text: 'Tags',
-          value: 'tags'
-        },
-        {
-          text: 'Folder',
-          value: 'folder'
-        }
-      ],
+      type: 'tags',
+      types: ['tags', 'folder'],
       checkboxFilter: {
         artists: true,
         albums: true,
@@ -408,16 +399,16 @@ function Toolbar(v_container) {
   var lastvolume = 100;
 
   function search(term, params, next) {
-      v_container.loading = true;
-      params.flat = false;
-      Services.ajax.search(term, self.data.checkboxFilter, params).done(function(data, status) {
-          v_container.loading = false;
-          next((data.data.length > 0));
-          Services.utils.extend(v_container.artists, data.data);
-      }).fail(function(){
-          v_container.loading = false;
-          next(false);
-      });
+    v_container.loading = true;
+    params.flat = false;
+    Services.ajax.search(term, self.data.checkboxFilter, params).done(function(data, status) {
+      v_container.loading = false;
+      next((data.data.length > 0));
+      Services.utils.extend(v_container.artists, data.data);
+    }).fail(function(){
+      v_container.loading = false;
+      next(false);
+    });
   }
 
   Services.displayMode.setCallback('search', search);
@@ -436,21 +427,22 @@ function Toolbar(v_container) {
   };
 
   self.methods.typechanged = function(type) {
-      Services.displayMode.type(type.value);
-      clearTimeout(promise);
-      promise = setTimeout(function() {
-          v_container.artists = [];
-          Services.displayMode.clean();
-          Services.displayMode.call();
-      }, 400);
+    this.type = type;
+    Services.displayMode.type(type);
+    clearTimeout(promise);
+    promise = setTimeout(function() {
+      v_container.artists = [];
+      Services.displayMode.clean();
+      Services.displayMode.call();
+    }, 400);
   };
 
   self.methods.search = function() {
-      if (lastValue !== this.value) {
-          lastValue = this.value;
-          clearTimeout(promise);
-          promise = setTimeout(this.searchnow, 400);
-      }
+    if (lastValue !== this.value) {
+      lastValue = this.value;
+      clearTimeout(promise);
+      promise = setTimeout(this.searchnow, 400);
+    }
   };
   
   self.computed.volume = {
