@@ -6,14 +6,22 @@ from init import init, check
 
 def handle_args():
     parser = argparse.ArgumentParser(description='Festival')
-    parser.add_argument('--with-scanner', action='store_true', help='Start the scanner process with the webserver')
     parser.add_argument('-c', '--config', help='Path to configuration file. Default to local settings.cfg file')
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
     parser.add_argument('-y', '--yes', action='store_true', help='Assume "yes" as answer to all prompts')
-    parser.add_argument('--host', default='0.0.0.0', help='On which host to run webserver')
-    parser.add_argument('-p', '--port', default=5000, help='On which port to run webserver', type=int)
-    parser.add_argument('--check', action='store_true', help='Check Festival integrity')
-    parser.add_argument('--test-regex', action='store_true', help='Test SCANNER_FOLDER_PATTERNS option')
+    subparsers = parser.add_subparsers(dest='action')
+    subparsers.required = True
+    # check
+    parser_check = subparsers.add_parser('check', help='Check Festival integrity')
+    # test-regex
+    parser_test_regex = subparsers.add_parser('test-regex', help='Test SCANNER_FOLDER_PATTERNS option')
+    # start
+    parser_start = subparsers.add_parser('start', help='Start embedded webserver')
+    parser_start.add_argument('--host', default='0.0.0.0', help='On which host to run webserver')
+    parser_start.add_argument('-p', '--port', default=5000, help='On which port to run webserver', type=int)
+    parser_start.add_argument('--with-scanner', action='store_true', help='Start the scanner process with the webserver')
+    # start-scanner
+    parser_start_scanner = subparsers.add_parser('start-scanner', help='Start scanner process (standalone)')
     return parser.parse_args()
 
 
@@ -23,17 +31,23 @@ def simple_main(unattented=False):
     return init(args), args
 
 
+def start_scanner(myapp, args):
+    from scanner import Scanner
+    Scanner(myapp.config, debug=args.debug).start()
+
+
 def main():
     myapp, args = simple_main()
-    if args.test_regex:
+    if args.action == 'test-regex':
         from scanner import ScannerTestRegex
-        ScannerTestRegex(myapp.config['SCANNER_PATH']).start()
-    elif not args.check:
+        ScannerTestRegex(myapp.config).start()
+    elif args.action == 'start':
         if args.with_scanner:
-            from scanner import Scanner
-            Scanner(myapp.config, debug=args.debug).start()
+            start_scanner(myapp, args)
         myapp.run(host=args.host, port=args.port, debug=args.debug, use_reloader=args.debug and not args.with_scanner)
-    else:
+    elif args.action == 'start-scanner':
+        start_scanner(myapp, args)
+    elif args.action == 'check':
         print('OK')
 
 if __name__ == "__main__":

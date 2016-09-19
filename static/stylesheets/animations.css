@@ -127,16 +127,13 @@ main .container .albums .album.v-leave-active {
 
 /* queue */
 main .queue {
-  transition: top 0.3s, bottom 0.3s;
+  transition: top 0.3s, bottom 0.3s, transform 0.3s ease-in-out;
 }
 main .queue .handle {
   transition: background-color 0.3s;
 }
 main .queue .handle i {
   transition: transform 0.3s;
-}
-main .queue .queue-content {
-  transition: margin-right 0.3s ease-in-out;
 }
 
 /* audio animation */

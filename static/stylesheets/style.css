@@ -664,11 +664,13 @@ main .queue {
   top: 0;
   bottom: 0;
   min-width: 20px;
+  transform: translateX(300px);
 }
 main .queue.show {
   box-shadow: -5px 0 10px rgba(100, 100, 100, 0.6);
   top: 2px;
   bottom: 2px;
+  transform: translateX(0);
 }
 main .queue .handle {
   width: 20px;
@@ -696,21 +698,17 @@ main .queue .queue-content {
   float: left;
   height: 100%;
   width: 300px;
-  margin-right: -300px;
   background-color: whitesmoke;
   border-top: 1px solid #888888;
   border-bottom: 1px solid #888888;
   box-sizing: border-box;
 }
 main .queue .tracks {
-  display: inline-block;
+  display: block;
   flex: 1;
   line-height: 17px;
   overflow: auto;
   box-sizing: inherit;
-}
-main .queue.show .queue-content {
-  margin-right: 0;
 }
 main .queue .queue-content .queue-actions {
   border-top: 1px solid #888888;
