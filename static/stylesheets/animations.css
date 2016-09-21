@@ -76,6 +76,11 @@ header .slider .progress {
   transition: width 0.1s ease-in-out;
 }
 
+/* controls */
+.inline-controls .control {
+  transition: color 0.2s, background-color 0.2s;
+}
+
 /* toolbar */
 header .toolbar .search {
   transition: margin 0.4s ease-in-out;
@@ -127,7 +132,7 @@ main .container .albums .album.v-leave-active {
 
 /* queue */
 main .queue {
-  transition: top 0.3s, bottom 0.3s, transform 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 main .queue .handle {
   transition: background-color 0.3s;

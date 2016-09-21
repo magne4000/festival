@@ -142,7 +142,7 @@
               <h4 class="heading-title">
                 {{album.name}}<span v-if="album.year" class="year">({{album.year}})</span>
               </h4>
-              <span class="controls">
+              <span class="controls inline-controls">
                 <span title="Play tracks" @click="empty();loadTracksAndAdd(selectedArtist, album, true)" class="control animate">
                   <i class="material-icons">play_arrow</i>
                 </span>
@@ -156,7 +156,7 @@
                 {% endif %}
               </span>
             </span>
-            <div class="album-container"><img @click="toggleTracks(selectedArtist, album)" v-lazy="'albumart/'+album.id" :alt="album.name" src="static/images/nocover.png">
+            <div class="album-container"><img v-lazy="'albumart/'+album.id" :alt="album.name" src="static/images/nocover.png">
               <div class="tracks">
                 <div v-for="track in album.tracks" :class="{active: festival.currentTrack && festival.currentTrack.id == track.id, playing: festival.currentTrack && festival.currentTrack.id == track.id && festival.playing}" class="track">
                   <span v-if="track.trackno" class="trackno">
@@ -170,7 +170,7 @@
                     <span>{{track.trackno}}</span>
                   </span>
                   <span :title="track.name" class="name">{{track.name}}</span>
-                  <span class="controls">
+                  <span class="controls inline-controls">
                     <span title="Play" @click="playOrPause(track, album.tracks)" class="control animate">
                       <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && festival.playing ? 'pause' : 'play_arrow'}}</i>
                     </span>
@@ -209,7 +209,7 @@
                 <span>{{track.trackno}}</span>
               </span>
               <span :title="'Track: '+track.name+' Album: '+track.album_name+' Artist: '+track.artist_name" class="name">{{track.name}}</span>
-              <span class="controls">
+              <span class="controls inline-controls">
                 <span title="Play" @click="playOrPause(track)" class="control">
                   <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && festival.playing ? 'pause' : 'play_arrow'}}</i>
                 </span>

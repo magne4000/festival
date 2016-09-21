@@ -94,7 +94,7 @@ button:active, button.active {
   background: #239bd6 !important;
 }
 button.tab {
-  height: 33px;
+  height: 100%;
 }
 button.tab .material-icons {
   font-size: 1.3em;
@@ -118,7 +118,7 @@ input[type=text]:focus {
 }
 /* Dropdown */
 .dropdown-button {
-  padding: 8px;
+  height: 100%;
 }
 .dropdown {
   position: relative;
@@ -130,7 +130,7 @@ input[type=text]:focus {
   background-color: #f9f9f9;
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 3;
+  z-index: 15;
 }
 .dropdown-content a {
   color: #121212;
@@ -176,7 +176,7 @@ header .player .control {
   height: 38px;
   width: 48px;
   text-align: center;
-  padding-top: 10px;
+  padding-top: 7px;
   text-decoration: none;
 }
 header .player .control .material-icons {
@@ -236,7 +236,7 @@ header .slider {
   height: 14px;
   position: relative;
   background: none repeat scroll 0 0 #F2F1F1;
-  margin: 3px;
+  margin: 2px;
   box-shadow: 0 0 2px #D5D4D4 inset;
 }
 header .slider .loading {
@@ -268,9 +268,9 @@ header .slider input {
 }
 /* Toolbar */
 header .toolbar {
-  height: 33px;
+  height: 32px;
   box-sizing: border-box;
-  padding: 2px 5px 0 5px;
+  padding: 0 5px;
   background-color: #555555;
   border-color: #121212;
 }
@@ -358,10 +358,9 @@ header .toolbar .search .filters .off:hover {
   opacity: 0.8;
 }
 header .toolbar .leftseparated {
-  padding-top: 4px;
-  padding-left: 6px;
   border-left: 1px solid #999;
-  height: 24px;
+  height: 100%;
+  padding: 0 7px;
 }
 header .toolbar .search, header .toolbar .special-actions {
   float: left;
@@ -370,29 +369,25 @@ header .toolbar .special-actions {
   margin-right: 1px;
   position: relative;
   width: auto;
-}
-header .toolbar .special-actions button {
-  margin: -2px 0 2px 0;
+  height: 100%;
 }
 header .toolbar .volume {
   float: right;
-  padding-top: 4px;
-  padding-left: 6px;
   display: flex;
+  align-items: center;
+  justify-content: center;
 }
 header .toolbar .volume .slider {
   width: 100px;
 }
 header .toolbar .volume .material-icons {
-  padding: 0 3px 0 0;
   width: 18px;
   font-size: 1.5em;
 }
 header .toolbar .select-source {
   float: right;
   display: flex;
-  height: 33px;
-  margin: -2px 0 2px 0;
+  height: 100%;
   padding-right: 6px;
 }
 #search {
@@ -424,49 +419,27 @@ main .container .noresult {
   align-content: stretch;
   font-size: 1.5em;
 }
-/*
-.controls .control {
-  color: rgba(0, 0, 0, 0.7);
-  transition: box-shadow 0.25s, color 0.25s, background-color 0.25s;
-  width: 1em;
-  min-width: 1em;
-  max-width: 1em;
-  height: 1em;
-  min-height: 1em;
-  max-height: 1em;
-  display: inline-flex;
+.inline-controls {
   cursor: pointer;
-  align-items: center;
-  border-radius: 50%;
+  min-width: 42px;
+  max-width: 63px;
 }
-.controls .control:hover {
-  color: whitesmoke;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-.controls .control:active {
-  background-color: rgba(0, 0, 0, 0.8);
-}
-main .container .heading > .controls {
-  opacity: 0;
-  visibility: hidden;
-  margin-left: 5px;
-  display: inline-block;
-  transition: opacity 0.3s;
-}
-main .container .heading:hover > .controls {
-  opacity: 1;
-  visibility: visible;
-}
-main .container .heading > .controls .control:hover {
-  box-shadow: 0 0 10px -3px black;
-}*/
-.track .controls {
-  cursor: pointer;
-  min-width: 48px;
-  max-width: 72px;
-}
-.track .controls .control {
+.inline-controls .control {
   flex: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+}
+.inline-controls .control:hover {
+  color: #239bd6;
+  background-color: #C9E2EE;
+}
+.inline-controls .control:active {
+  color: #1f8bc0;
+  background-color: #b6d8e8;
 }
 /* Main - artist and album */
 main .container .heading {
@@ -477,7 +450,6 @@ main .container .heading {
 }
 main .container.show-albums .heading {
   margin: 5px;
-  font-size: 12px;
   flex: 1;
 }
 main .container img, main .container .art-container {
@@ -596,6 +568,7 @@ main .container.show-albums .artist {
 }
 main .container.show-albums .artist>.heading {
   text-align: left;
+  font-size: 12px;
 }
 main .container.show-albums .artist:hover {
   background-color: #e5e5e5;
@@ -604,6 +577,9 @@ main .container.show-albums .artist:hover {
 main .container .album > .heading {
   max-width: 400px;
   white-space: normal;
+}
+main .container .album > .heading > .heading-title {
+  margin-right: 5px;
 }
 main .container .album > .heading .year {
   font-weight: normal;
@@ -665,11 +641,10 @@ main .queue {
   bottom: 0;
   min-width: 20px;
   transform: translateX(300px);
+  z-index: 10;
 }
 main .queue.show {
   box-shadow: -5px 0 10px rgba(100, 100, 100, 0.6);
-  top: 2px;
-  bottom: 2px;
   transform: translateX(0);
 }
 main .queue .handle {

@@ -31,13 +31,13 @@ If you want to use MySQL instead of SQLite, you can also install `python3-mysql.
 ### Update
 ```bash
 git pull
-python3 festival.py --check
+python3 festival.py check
 ```
 
 ### Configuration
 You can configure the app automatically on first launch:
 ```bash
-python3 festival.py --check
+python3 festival.py check
 ```
 It'll create the `settings.cfg` file and prompt for mandatory values.
 
@@ -56,17 +56,17 @@ It is also recommended to check all other parameters.
 #### First startup
 If `SCANNER_FOLDER_PATTERNS` is activated in configuration (it is the default behavior), it is recommended to test the patterns with the following command:
 ```bash
-python3 festival.py --test-regex
+python3 festival.py test-regex
 ```
 #### Standalone
 You can launch Festival in standalone mode. Just launch the following command to do so:
 ```bash
-python3 festival.py --with-scanner
+python3 festival.py start --with-scanner
 ```
 Now, the webserver is running (by default on port 5000), and the scanner also runs in background.
 
 #### Web Server
-In order to run behind a web server, Festival needs to be launched through uWSGI
+In order to run behind a web server, Festival can be launched through uWSGI
 ```bash
 sudo apt-get install uwsgi uwsgi-plugin-python3
 ```
@@ -104,17 +104,17 @@ location /festival {
 ```
 
 #### Startup scripts
-##### Upstart
-```bash
-sudo cp scripts/festival.upstart.conf /etc/init/festival.conf
-```
-Then edit `/etc/init/festival.conf` and replace values between `{}`.
-
 ##### Systemd
 ```bash
 sudo cp scripts/festival.systemd.conf /etc/systemd/system/festival.service
 ```
 Then edit `/etc/systemd/system/festival.service` and replace values between `{}`.
+
+##### Upstart
+```bash
+sudo cp scripts/festival.upstart.conf /etc/init/festival.conf
+```
+Then edit `/etc/init/festival.conf` and replace values between `{}`.
 
 ### subsonic
 Subsonic client apps can be plugged to Festival. You just need to add it like any other server to your app.

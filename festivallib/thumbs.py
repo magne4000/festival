@@ -20,7 +20,7 @@ class Thumb(Data):
             data = io.BytesIO(fd.data) if hasattr(fd, 'data') else fd
             img = Image.open(data)
             img.thumbnail((140, 140))
-            img.save(save_to, "JPEG")
+            img.save(save_to, "JPEG", quality=80, optimize=True, progressive=True)
             return save_to
         except IOError:
             logger.exception('Cannot create thumbnail')
