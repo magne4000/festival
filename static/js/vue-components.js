@@ -410,14 +410,12 @@ if (!Array.prototype.find) {
     var hasIt = Listeners.find(function(item) {
       return item.el === el;
     });
-    
     if(hasIt) {
       return Vue.nextTick(function() {
         setTimeout(function() {
           lazyLoadHandler();
         }, 0);
-      }
-      );
+      });
     }
     
     var parentEl = null;
@@ -425,7 +423,6 @@ if (!Array.prototype.find) {
     if(binding.modifiers) {
       parentEl = window.document.getElementById(Object.keys(binding.modifiers)[0]);
     }
-    
     Vue.nextTick(function() {
       Listeners.push({
         bindType: binding.arg,
@@ -443,9 +440,9 @@ if (!Array.prototype.find) {
   };
   
   Vue.directive('lazy', {
-    mount: addListener,
+    inserted: addListener,
     update: addListener,
     componentUpdated: lazyLoadHandler,
-    destroy: componentWillUnmount
+    unbind: componentWillUnmount
   });
 })();
