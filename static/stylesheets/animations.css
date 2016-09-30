@@ -87,13 +87,10 @@ header .slider .progress {
 
 /* toolbar */
 header .toolbar .search {
-  transition: margin 0.4s ease-in-out;
+  transition: margin-left 0.4s ease-in-out;
 }
 header .toolbar .search .filters .checkbox, header .toolbar .search .filters label.checkbox:before, header .toolbar .search .filters label.checkbox:after {
   transition: all 0.2s ease 0s;
-}
-header .toolbar .search .filters input[type="checkbox"]:checked + label.checkbox:before {
-  transform: none;
 }
 
 /* artists */

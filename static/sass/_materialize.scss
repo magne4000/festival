@@ -72,6 +72,7 @@ label.checkbox:before {
   transform: scale(0.1);
 }
 input[type="checkbox"]:checked + label.checkbox:before {
+  transform: none;
   background-color: currentcolor;
   opacity: 1;
 }

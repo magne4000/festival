@@ -9,3 +9,11 @@ $inline-control-height: 21px;
 $art-width: 140px;
 $art-width-mini: 20px;
 $queue-width-max: 300px;
+
+@mixin fill-absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

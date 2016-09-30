@@ -100,15 +100,13 @@ header .player {
 
     &:hover {
       color: #239bd6;
-
-      .material-icons {
-        text-shadow: 0 0 3px #239bd6;
-      }
     }
 
     &.active, &:active {
       color: #1c7baa;
-
+    }
+    
+    &:hover, &.active, &:active {
       .material-icons {
         text-shadow: 0 0 3px #239bd6;
       }
@@ -220,7 +218,6 @@ header .toolbar {
     }
 
     &.hide {
-      // todo change to translateX
       margin-left: -500px;
     }
 
@@ -335,12 +332,8 @@ main .container .noresult {
   height: $inline-control-height;
 
   &:after {
+    @include fill-absolute;
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     border-radius: 50%;
     background-color: #C9E2EE;
     transform: scale(0);
@@ -392,8 +385,8 @@ main .container {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
     bottom: 0;
+    width: 100%;
     overflow: auto;
     display: flex;
     flex-wrap: wrap;
@@ -458,12 +451,8 @@ main .container {
           overflow: hidden;
 
           &:after {
+            @include fill-absolute;
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
             border-radius: 50%;
           }
 
@@ -597,8 +586,8 @@ main .container {
 /* Queue */
 main .queue {
   position: absolute;
-  right: 0;
   top: 0;
+  right: 0;
   bottom: 0;
   min-width: 20px;
   transform: translateX(300px);
