@@ -652,15 +652,15 @@ header .player {
 header .toolbar {
   height: 34px;
   box-sizing: border-box;
-  padding: 0 5px;
   background-color: #555555;
   border-color: #121212; }
-  header .toolbar .search,
-  header .toolbar .volume {
+  header .toolbar .search, header .toolbar .volume {
     display: inline-block; }
   header .toolbar .search {
     margin-right: 10px;
-    width: 485px; }
+    width: 500px;
+    height: 32px;
+    padding-top: 2px; }
     header .toolbar .search .material-icons {
       font-size: 1.3em;
       float: left;
@@ -679,8 +679,8 @@ header .toolbar {
         cursor: pointer; }
       header .toolbar .search .filters .off {
         opacity: 0.5; }
-      header .toolbar .search .filters .off:hover {
-        opacity: 0.8; }
+        header .toolbar .search .filters .off:hover {
+          opacity: 0.8; }
   header .toolbar .volume {
     float: right;
     display: flex;

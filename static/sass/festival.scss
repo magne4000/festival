@@ -198,18 +198,18 @@ header .player {
 header .toolbar {
   height: $toolbar-height;
   box-sizing: border-box;
-  padding: 0 5px;
   background-color: #555555;
   border-color: #121212;
 
-  .search,
-  .volume {
+  .search, .volume {
     display: inline-block;
   }
 
   .search {
     margin-right: 10px;
-    width: 485px;
+    width: 500px;
+    height: $toolbar-height - 2;
+    padding-top: 2px;
 
     .material-icons {
       font-size: 1.3em;
@@ -240,10 +240,10 @@ header .toolbar {
 
       .off {
         opacity: 0.5;
-      }
-
-      .off:hover {
-        opacity: 0.8;
+        
+        &:hover {
+          opacity: 0.8;
+        }
       }
     }
   }

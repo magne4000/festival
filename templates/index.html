@@ -72,16 +72,24 @@
             <label for="search" @click="searchnow()">
               <i class="material-icons">search</i>
             </label>
-            <input id="search" type="text" placeholder="Search" v-model="value" @keyup="search()"><span class="filters"><span>in</span><span :class="{off: !checkboxFilter.artists}">
+            <input id="search" type="text" placeholder="Search" v-model="value" @keyup="search()">
+            <span class="filters"><span>in</span>
+              <span :class="{off: !checkboxFilter.artists}">
                 <input id="sfartists" type="checkbox" v-model="checkboxFilter.artists">
                 <label for="sfartists" class="checkbox"></label>
-                <label for="sfartists">Artists</label></span><span :class="{off: !checkboxFilter.albums}">
+                <label for="sfartists">Artists</label>
+              </span>
+              <span :class="{off: !checkboxFilter.albums}">
                 <input id="sfalbums" type="checkbox" v-model="checkboxFilter.albums">
                 <label for="sfalbums" class="checkbox"></label>
-                <label for="sfalbums">Albums</label></span><span :class="{off: !checkboxFilter.tracks}">
+                <label for="sfalbums">Albums</label>
+              </span>
+              <span :class="{off: !checkboxFilter.tracks}">
                 <input id="sftracks" type="checkbox" v-model="checkboxFilter.tracks">
                 <label for="sftracks" class="checkbox"></label>
-                <label for="sftracks">Tracks</label></span></span>
+                <label for="sftracks">Tracks</label>
+              </span>
+            </span>
           </form>
         </div>
         <div class="special-actions" v-show="displaymode != 'search'">
