@@ -2,6 +2,7 @@ import json
 import mimetypes
 import os
 import zipfile
+import zipstream
 from warnings import warn
 from zlib import adler32
 
@@ -11,7 +12,6 @@ from flask import Blueprint, jsonify, Response, render_template, json, abort, re
 from festivallib.model import Album, TrackInfo, Artist
 from festivallib.request import typed_fct
 from festivallib.thumbs import Thumb
-from libs import zipstream
 
 routes = Blueprint('routes', __name__, template_folder='templates')
 
