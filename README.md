@@ -24,7 +24,7 @@ pip3 install -r requirements.txt
 ### Dependencies (ubuntu 16.04)
 Install Flask, SQLAlchemy and other python3 dependencies
 ```bash
-sudo apt-get install python3-flask python3-sqlalchemy python3-pil python3-urllib3 python3-mutagen
+sudo apt-get install python3-flask python3-sqlalchemy python3-pil python3-urllib3 python3-mutagen python3-libsass
 ```
 If you want to use MySQL instead of SQLite, you can also install `python3-mysql.connector`, and configure `SQLALCHEMY_DATABASE_URI` in `settings.cfg` file.
 

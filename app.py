@@ -29,6 +29,13 @@ def shape_config(myapp, args):
     return myapp
 
 
+def attach_sass_manifest(myapp):
+    from sassutils.wsgi import SassMiddleware
+    myapp.wsgi_app = SassMiddleware(myapp.wsgi_app, {
+        'festival': ('static/sass', 'static/stylesheets', '/static/stylesheets')
+    })
+
+
 def get_app(args):
     myapp = Flask(__name__)
     jinja_options = myapp.jinja_options.copy()
@@ -37,4 +44,7 @@ def get_app(args):
         variable_end_string=']}'
     ))
     myapp.jinja_options = jinja_options
-    return shape_config(myapp, args)
+    myapp = shape_config(myapp, args)
+    if myapp.config['DEBUG']:
+        attach_sass_manifest(myapp)
+    return myapp

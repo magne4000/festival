@@ -1,0 +1,61 @@
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: local('Material Icons'),
+       local('MaterialIcons-Regular'),
+       url(../fonts/MaterialIcons-Regular.woff2) format('woff2'),
+       url(../fonts/MaterialIcons-Regular.woff) format('woff'),
+       url(../fonts/MaterialIcons-Regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url("../fonts/OpenSans/Regular/OpenSans-Regular.eot?v=1.1.0");
+  src: local('Open Sans'),
+       local('OpenSans'),
+       url("../fonts/OpenSans/Regular/OpenSans-Regular.eot?#iefix&v=1.1.0") format("embedded-opentype"),
+       url("../fonts/OpenSans/Regular/OpenSans-Regular.woff2?v=1.1.0") format("woff2"),
+       url("../fonts/OpenSans/Regular/OpenSans-Regular.woff?v=1.1.0") format("woff"),
+       url("../fonts/OpenSans/Regular/OpenSans-Regular.ttf?v=1.1.0") format("truetype"),
+       url("../fonts/OpenSans/Regular/OpenSans-Regular.svg?v=1.1.0#Regular") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url("../fonts/OpenSans/Bold/OpenSans-Bold.eot?v=1.1.0");
+  src: local('Open Sans Bold'),
+       local('OpenSans-Bold'),
+       url("../fonts/OpenSans/Bold/OpenSans-Bold.eot?#iefix&v=1.1.0") format("embedded-opentype"),
+       url("../fonts/OpenSans/Bold/OpenSans-Bold.woff2?v=1.1.0") format("woff2"),
+       url("../fonts/OpenSans/Bold/OpenSans-Bold.woff?v=1.1.0") format("woff"),
+       url("../fonts/OpenSans/Bold/OpenSans-Bold.ttf?v=1.1.0") format("truetype"),
+       url("../fonts/OpenSans/Bold/OpenSans-Bold.svg?v=1.1.0#Bold") format("svg");
+  font-weight: bold;
+  font-style: normal;
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: inherit;  /* Preferred icon size */
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  z-index: 1;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}

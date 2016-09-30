@@ -58,7 +58,7 @@
   }
 }
 /* general */
-button, .wrap-dd-select {
+button {
   transition: background-color 0.1s ease-in-out;
 }
 input[type=text] {
@@ -78,7 +78,11 @@ header .slider .progress {
 
 /* controls */
 .inline-controls .control {
-  transition: color 0.2s, background-color 0.2s;
+  transition: color 0.2s;
+}
+.inline-controls .control:after {
+  transform-origin: center center;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 /* toolbar */

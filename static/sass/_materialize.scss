@@ -1,0 +1,96 @@
+button {
+  padding: 4px 6px;
+  font-size: 14px;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: whitesmoke;
+}
+button {
+  text-transform: uppercase;
+}
+button:not([disabled]):hover {
+  background-color: rgba(0, 0, 0, 0.26);
+}
+button[disabled] {
+  color : rgba(0, 0, 0, 0.26);
+  background-color: transparent;
+}
+button:active, button.active {
+  background: #239bd6 !important;
+}
+button.tab {
+  height: 100%;
+}
+button.tab .material-icons {
+  font-size: 1.3em;
+  float: left;
+  padding: 0 3px;
+}
+input[type=text] {
+  padding: 0.3125em;
+  border: none;
+  border-bottom: 1px solid #2196f3;
+  background-color: inherit;
+  color: inherit;
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: 400;
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+input[type=text]:focus {
+  padding-bottom: 0.25em;
+  border-bottom: 2px rgba(255, 255, 255, 0.6);
+}
+.checkbox {
+  border-radius: 0.1em;
+  border: 0.15em solid #999;
+  cursor: pointer;
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+  margin-left: 6px;
+  margin-top: 0;
+  visibility: visible;
+  background: none repeat scroll 0 0 transparent;
+  position: relative;
+  box-shadow: 0 0 0 transparent;
+  color: #239bd6;
+}
+label.checkbox:before {
+  content: "";
+  margin-left: -0.15em;
+  margin-top: -0.15em;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% + 0.3em);
+  height: calc(100% + 0.3em);
+  border-radius: 0.1em;
+  transform: scale(0.1);
+}
+input[type="checkbox"]:checked + label.checkbox:before {
+  background-color: currentcolor;
+  opacity: 1;
+}
+label.checkbox:after {
+  content: " ";
+  border-style: solid;
+  border-width: 0 0 0.15em 0.15em;
+  border-color: transparent;
+  cursor: pointer;
+  height: 0.4em;
+  left: 50%;
+  margin-left: -0.4em;
+  margin-top: -0.4em;
+  position: absolute;
+  top: 50%;
+  width: 0.7em;
+  transform: rotate(-45deg);
+  color: #4CAF50;
+}
+input[type="checkbox"]:checked + label.checkbox:after {
+  border-color: rgba(255, 255, 255, 0.87);
+}
