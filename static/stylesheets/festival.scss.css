@@ -574,101 +574,80 @@ header .player {
   display: flex;
   background-color: #222222;
   border-color: #121212; }
+  header .player .control {
+    display: flex;
+    height: 48px;
+    width: 48px;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none; }
+    header .player .control .material-icons {
+      font-size: 2em; }
+    header .player .control:hover {
+      color: #239bd6; }
+      header .player .control:hover .material-icons {
+        text-shadow: 0 0 3px #239bd6; }
+    header .player .control.active, header .player .control:active {
+      color: #1c7baa; }
+      header .player .control.active .material-icons, header .player .control:active .material-icons {
+        text-shadow: 0 0 3px #239bd6; }
+  header .player .control.loop > span {
+    font-weight: 800; }
+  header .player .panel {
+    height: 48px;
+    flex: 1; }
+    header .player .panel > .info-panel {
+      width: 100%;
+      height: 20px;
+      display: flex; }
+      header .player .panel > .info-panel .name {
+        flex: 1;
+        text-align: center;
+        padding: 2px 0; }
+      header .player .panel > .info-panel .album, header .player .panel > .info-panel .artist {
+        font-size: 0.8em;
+        color: #aaa; }
+        header .player .panel > .info-panel .album:before, header .player .panel > .info-panel .artist:before {
+          content: " - "; }
+      header .player .panel > .info-panel .elapsed-time, header .player .panel > .info-panel .total-time {
+        padding: 2px 4px; }
+      header .player .panel > .info-panel .title.waiting:before {
+        content: "loading";
+        display: inline-block;
+        opacity: 0.5;
+        margin-right: 5px; }
 
-header .player .control {
-  display: flex;
-  height: 48px;
-  width: 48px;
-  justify-content: center;
-  align-items: center;
-  text-decoration: none; }
-
-header .player .control .material-icons {
-  font-size: 2em; }
-
-header .player .control:hover {
-  color: #239bd6; }
-
-header .player .control:hover .material-icons {
-  text-shadow: 0 0 3px #239bd6; }
-
-header .player .control.loop > span {
-  font-weight: 800; }
-
-header .player .control.active,
-header .player .control:active {
-  color: #1c7baa; }
-
-header .player .control.active .material-icons,
-header .player .control:active .material-icons {
-  text-shadow: 0 0 3px #239bd6; }
-
-header .player .panel {
-  height: 48px;
-  flex: 1; }
-
-header .player .panel > .info-panel {
-  width: 100%;
-  height: 20px;
-  display: flex; }
-
-header .player .panel > .info-panel .name {
-  flex: 1;
-  text-align: center;
-  padding: 2px 0; }
-
-header .player .panel > .info-panel .name .album,
-header .player .panel > .info-panel .name .artist {
-  font-size: 0.8em;
-  color: #aaa; }
-
-header .player .panel > .info-panel .name .album:before,
-header .player .panel > .info-panel .name .artist:before {
-  content: " - "; }
-
-header .player .panel > .info-panel .elapsed-time,
-header .player .panel > .info-panel .total-time {
-  padding: 2px 4px; }
-
-header .player .panel > .info-panel .title.waiting:before {
-  content: "loading";
-  display: inline-block;
-  opacity: 0.5;
-  margin-right: 5px; }
-
-header .slider {
+/* Sliders */
+.slider {
   height: 14px;
   position: relative;
   background: none repeat scroll 0 0 #F2F1F1;
   margin: 2px;
   box-shadow: 0 0 2px #D5D4D4 inset; }
-
-header .slider .loading {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 14px;
-  background-color: #ccc;
-  z-index: 0; }
-
-header .slider .progress {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 14px;
-  background-color: #239bd6;
-  z-index: 1; }
-
-header .slider input {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 14px;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 2; }
+  .slider .loading {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 14px;
+    background-color: #ccc;
+    z-index: 0; }
+  .slider .progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 14px;
+    background-color: #239bd6;
+    z-index: 1; }
+  .slider input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 14px;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2; }
 
 /* Toolbar */
 header .toolbar {
