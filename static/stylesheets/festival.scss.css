@@ -401,7 +401,6 @@ textarea {
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
-  z-index: 1;
   /* Support for all WebKit browsers. */
   -webkit-font-smoothing: antialiased;
   /* Support for Safari and Chrome. */
@@ -912,17 +911,19 @@ main .container {
   main .container.show-albums .artists {
     padding-top: 0;
     width: 200px; }
+    main .container.show-albums .artists .signal {
+      left: 100px; }
   main .container.show-albums .artist {
     flex-direction: row;
     cursor: default;
     height: auto; }
     main .container.show-albums .artist:hover {
       background-color: #e5e5e5; }
-  main .container.show-albums .artist > .heading {
-    text-align: left;
-    font-size: 0.85em; }
-  main .container.show-albums .artist .anchor {
-    align-self: baseline; }
+    main .container.show-albums .artist > .heading {
+      text-align: left;
+      font-size: 0.85em; }
+    main .container.show-albums .artist .anchor {
+      align-self: baseline; }
   main .container.show-albums .art-overlay {
     display: none; }
   main .container.show-albums .albums {

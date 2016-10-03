@@ -399,14 +399,14 @@ function Toolbar(v_container) {
   var lastvolume = 100;
 
   function search(term, params, next) {
-    v_container.loading = true;
+    v_container.loading.artists = true;
     params.flat = false;
     Services.ajax.search(term, self.data.checkboxFilter, params).done(function(data, status) {
-      v_container.loading = false;
+      v_container.loading.artists = false;
       next((data.data.length > 0));
       Services.utils.extend(v_container.artists, data.data);
     }).fail(function(){
-      v_container.loading = false;
+      v_container.loading.artists = false;
       next(false);
     });
   }
@@ -570,7 +570,10 @@ function Container(v_player) {
     data: {
       festival: festival,
       artists: [],
-      loading: false,
+      loading: {
+        artists: false,
+        albums: false
+      },
       selectedArtist: {}
     },
     watch: {},
@@ -600,29 +603,29 @@ function Container(v_player) {
     }
   };
   
-  self.methods.loadX = function(fct, filter, params, next) {
+  self.methods.loadX = function(fct, filter, params, loadingkey, next) {
     var $this = this;
-    this.loading = true;
+    this.loading[loadingkey] = true;
     fct(filter, params).done(function(data, status) {
-      $this.loading = false;
+      $this.loading[loadingkey] = false;
       next((data.data.length > 0));
       Services.utils.extend($this.artists, data.data);
     }).fail(function(){
-      $this.loading = false;
+      $this.loading[loadingkey] = false;
       next(false);
     });
   };
   
   self.methods.loadArtists = function loadArtists(filter, params, next) {
-    this.loadX(Services.ajax.artists, filter, params, next);
+    this.loadX(Services.ajax.artists, filter, params, 'artists', next);
   };
 
   self.methods.loadAlbumsByArtists = function loadAlbumsByArtists(filter, params, next) {
-    this.loadX(Services.ajax.albumsbyartists, filter, params, next);
+    this.loadX(Services.ajax.albumsbyartists, filter, params, 'albums', next);
   };
 
   self.methods.loadLastAlbums = function loadLastAlbums(filter, params, next) {
-    this.loadX(Services.ajax.lastalbums, filter, params, next);
+    this.loadX(Services.ajax.lastalbums, filter, params, 'artists', next);
   };
 
   self.methods.pageArtists = function() {
@@ -664,13 +667,13 @@ function Container(v_player) {
         type: Services.displayMode.type()
       };
       var $this = this;
-      this.loading = true;
+      this.loading.albums = true;
       Services.ajax.tracks(filter, params).done(function(data, status) {
-        $this.loading = false;
+        $this.loading.albums = false;
         artist.albums = data.data[0].albums;
         if (typeof callback === "function") callback(artist);
       }).fail(function(){
-        $this.loading = false;
+        $this.loading.albums = false;
       });
     } else if (typeof callback === "function") {
       setTimeout(function() {
@@ -704,13 +707,13 @@ function Container(v_player) {
         type: Services.displayMode.type()
       };
       var $this = this;
-      this.loading = true;
+      this.loading.albums = true;
       Services.ajax.tracks(filter, params).done(function(data, status) {
         album.tracks = data.data;
-        $this.loading = false;
+        $this.loading.albums = false;
         if (typeof callback === "function") callback(artist, album);
       }).fail(function(){
-        $this.loading = false;
+        $this.loading.albums = false;
       });
     }
   };

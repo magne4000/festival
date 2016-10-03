@@ -551,7 +551,11 @@ main .container {
 
     .artists {
       padding-top: 0;
-      width: 200px;
+      width: $artists-width;
+      
+      .signal {
+        left: $artists-width / 2;
+      }
     }
 
     .artist {
@@ -562,15 +566,15 @@ main .container {
       &:hover {
         background-color: #e5e5e5;
       }
-    }
-
-    .artist>.heading {
-      text-align: left;
-      font-size: 0.85em;
-    }
-
-    .artist .anchor {
-      align-self: baseline;
+      
+      > .heading {
+        text-align: left;
+        font-size: 0.85em;
+      }
+      
+      .anchor {
+        align-self: baseline;
+      }
     }
 
     .art-overlay {

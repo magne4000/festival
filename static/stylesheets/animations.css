@@ -207,17 +207,18 @@ main .queue .handle i {
 
 /* loading animations */
 .signal {
-    border: 5px solid #333;
-    border-radius: 30px;
-    height: 30px;
-    left: 50%;
-    margin: -15px 0 0 -15px;
-    opacity: 0;
-    position: absolute;
-    top: 50%;
-    width: 30px;
-    animation: pulsate 1s ease-out;
-    animation-iteration-count: infinite;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  position: fixed;
+  border: 5px solid #333;
+  border-radius: 30px;
+  animation: pulsate 1s ease-out;
+  animation-iteration-count: infinite;
+  z-index: 20;
+  transform: translate(-50%, -50%);
+  opacity: 0;
 }
 .signal.v-leave, .signal.v-leave-active {
   display: none;
