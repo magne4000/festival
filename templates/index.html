@@ -203,7 +203,7 @@
                 </ul>
                 <span>{{track.trackno}}</span>
               </span>
-              <span :title="'Track: '+track.name+' Album: '+track.album_name+' Artist: '+track.artist_name" class="name">{{track.name}}</span>
+              <span :title="tracktitle(track)" class="name">{{track.name}}</span>
               <span class="controls inline-controls">
                 <span title="Play" @click="playOrPause(track)" class="control">
                   <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && festival.playing ? 'pause' : 'play_arrow'}}</i>

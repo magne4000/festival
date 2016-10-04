@@ -783,6 +783,10 @@ function Queue(playlist, v_player) {
     this.tracks = tracks;
   };
   
+  self.methods.tracktitle = function(track) {
+    return 'Track: ' + track.name + '\nAlbum: ' + track.album_name + '\nArtist: ' + track.artist_name;
+  };
+  
   self.created = function created() {
     playlist.addEventListener('update', this.updateTracksOnNextTick);
   };

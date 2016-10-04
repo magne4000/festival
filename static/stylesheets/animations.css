@@ -193,18 +193,6 @@ main .queue .handle i {
   animation: playing2 0.9s ease infinite 0.5s;
 }
 
-/* loading animation */
-.sp-circle {
-  border: 3px rgba(0, 0, 0, 0.25) solid;
-  border-top: 3px black solid;
-  border-radius: 50%;
-  animation: rotation .6s infinite linear;
-  width: 9px;
-  height: 9px;
-  margin: 0;
-  display: inline-block;
-}
-
 /* loading animations */
 .signal {
   top: 50%;
