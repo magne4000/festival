@@ -1,6 +1,5 @@
 /* global $ */
-/* global Url */
-/* global FLIP */
+/* global Grapnel */
 
 var Services = (function() {
   
@@ -103,10 +102,11 @@ var Services = (function() {
       }
     }
 
-    function scrollToAnchor(anchor) {
-      window.location.hash = "";
-      window.location.hash = "#" + anchor;
-      window.location.hash = "";
+    function scrollToAnchor(anchorname) {
+      var anchor = document.querySelector('a[name='+anchorname+']');
+      if (anchor) {
+        document.querySelector('.artists').scrollTop = anchor.offsetTop;
+      }
     }
     
     function hideApplyShow(selector, toggleClass, duration, anchor) {
@@ -461,10 +461,63 @@ var Services = (function() {
     };
   }
   
-  var HUrl = Url;
+  function Router() {
+    this.router = new Grapnel();
+  }
   
-  HUrl.prototype.commit = function() {
-    window.history.pushState({}, '', this);
+  Router.prototype._parseFilters = function(filters) {
+    var pfilters = parseInt(filters, 10), ret = {
+      artists: true,  // 0x01
+      albums: true,   // 0x02
+      tracks: true    // 0x04
+    };
+    if (!isNaN(pfilters) && pfilters >= 0 && pfilters <= 7) {
+      ret.artists = (pfilters & 0x01) > 0;
+      ret.albums = (pfilters & 0x02) > 0;
+      ret.tracks = (pfilters & 0x04) > 0;
+    }
+    return ret;
+  };
+  
+  Router.prototype._encodeFilters = function(filters) {
+    var ret = 0x00;
+    if (filters.artists) ret = ret | 0x01;
+    if (filters.albums) ret = ret | 0x02;
+    if (filters.tracks) ret = ret | 0x04;
+    return ret;
+  };
+  
+  Router.prototype.navigateSearch = function(term, filters) {
+    var s = 'search/';
+    if (term) s += term;
+    if (filters) {
+      var f = this._encodeFilters(filters);
+      if (f > 0 && f < 7) {
+        s += '/filters/' + f;
+      }
+    }
+    this.router.navigate(s);
+  };
+  
+  Router.prototype.navigateLastAlbums = function() {
+    this.router.navigate('lastalbums');
+  };
+  
+  Router.prototype.setSearchCallback = function(cb) {
+    var self = this;
+    this.router.get(/search\/(\w*)(?:\/filters\/([1234567])?)?/i, function(req){
+      cb(req.params[0], self._parseFilters(req.params[1]));
+    });
+  };
+  
+  Router.prototype.setLastAlbumsCallback = function(cb) {
+    this.router.get('lastalbums', function(req){
+      cb();
+    });
+  };
+  
+  Router.prototype.ready = Router.prototype.go = function() {
+    this.router.trigger('navigate');
   };
   
   return {
@@ -473,6 +526,6 @@ var Services = (function() {
     playlist: new Playlist(),
     notif: Notif(),
     utils: Utils(),
-    Url: HUrl
+    router: new Router()
   };
 })();

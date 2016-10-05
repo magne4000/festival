@@ -19,13 +19,13 @@
     </noscript>
     <header>
       <div v-cloak class="player" id="player">
-        <a title="Previous track" href="#" @click="prev(true)" class="control prev">
+        <a title="Previous track" href="javascript:void(0)" @click="prev(true)" class="control prev">
           <i class="material-icons">skip_previous</i>
         </a>
-        <a title="Play" href="#" @click="togglePlayPause()" class="control play">
+        <a title="Play" href="javascript:void(0)" @click="togglePlayPause()" class="control play">
           <i class="material-icons">{{festival.playing ? 'pause' : 'play_arrow'}}</i>
         </a>
-        <a title="Next track" href="#" @click="next(true, true)" class="control next">
+        <a title="Next track" href="javascript:void(0)" @click="next(true, true)" class="control next">
           <i class="material-icons">skip_next</i>
         </a>
         <div class="panel">
@@ -47,10 +47,10 @@
             </div>
           </div>
         </div>
-        <a :title="showind(loop, 'Loop (currently off)', 'Loop (currently on)', 'Loop current track')" href="#" @click="circleLoop()" :class="{active: loop > 0}" class="control loop">
+        <a :title="showind(loop, 'Loop (currently off)', 'Loop (currently on)', 'Loop current track')" href="javascript:void(0)" @click="circleLoop()" :class="{active: loop > 0}" class="control loop">
           <i class="material-icons">{{loop == 2 ? 'repeat_one' : 'repeat'}}</i>
         </a>
-        <a :title="shuffle?'Shuffle (currently on)':'Shuffle (currently off)'" href="#" @click="toggleShuffle()" :class="{active: shuffle}" class="control shuffle">
+        <a :title="shuffle?'Shuffle (currently on)':'Shuffle (currently off)'" href="javascript:void(0)" @click="toggleShuffle()" :class="{active: shuffle}" class="control shuffle">
           <i class="material-icons">shuffle</i>
         </a>
       </div>
@@ -91,7 +91,7 @@
             <input type="range" min="0" max="100" v-model="volume">
             <player-progress :progress-value="festival.volume" duration-value="100"></player-progress>
           </div>
-          <a href="#" @click="toggleVolume()">
+          <a href="javascript:void(0)" @click="toggleVolume()">
             <i class="material-icons">{{festival.volume >= 35 ? 'volume_up' : (festival.volume == 0 ? 'volume_off' : 'volume_down')}}</i>
           </a>
         </div>
@@ -224,6 +224,7 @@
     <script type='text/javascript' src='static/js/jquery.min.js'></script>
     <script type='text/javascript' src='static/js/vue.js'></script>
     <script type='text/javascript' src='static/js/buzz.js'></script>
+    <script type='text/javascript' src='static/js/grapnel.min.js'></script>
     <script type='text/javascript' src='static/js/jquery.hotkeys.js'></script>
     <script type='text/javascript' src='static/js/jquery-bundle.min.js'></script>
     <script type='text/javascript' src='static/js/url.min.js'></script>

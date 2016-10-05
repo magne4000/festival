@@ -416,11 +416,6 @@ function Toolbar(v_container) {
   self.watch.checkboxFilter = {
     handler: function(newValue, oldValue) {
       clearTimeout(promise);
-      var u = new Services.Url();
-      u.query.sar = newValue.artists;
-      u.query.sal = newValue.albums;
-      u.query.str = newValue.tracks;
-      u.commit();
       promise = setTimeout(this.searchnow.bind(this), 700);
     },
     deep: true
@@ -485,16 +480,7 @@ function Toolbar(v_container) {
   };
 
   self.methods.searchnow = function() {
-    var u = new Services.Url();
-    this.applyusualstate();
-    if (this.value === '') {
-      delete u.query.s;
-    } else {
-      u.query.s = this.value;
-    }
-    delete u.query.la;
-    u.commit();
-    Services.displayMode.call();
+    Services.router.navigateSearch(this.value, this.checkboxFilter);
   };
   
   self.methods.applylastalbumsstate = function() {
@@ -505,61 +491,50 @@ function Toolbar(v_container) {
   };
 
   self.methods.lastalbums = function() {
-    this.applylastalbumsstate();
-    var u = new Services.Url();
-    u.query.la = true;
-    delete u.query.s;
-    delete u.query.sar;
-    delete u.query.sal;
-    delete u.query.str;
-    u.commit();
-    Services.displayMode.call();
+    Services.router.navigateLastAlbums();
   };
-  
-  self.methods.applystatefromurl = function applystatefromurl() {
-    var u = new Services.Url(), shouldtriggersearch = false;
-    if (typeof u.query.sar !== "undefined") {
-      u.query.sar = (u.query.sar === "true");
-      if (this.checkboxFilter.artists !== u.query.sar) shouldtriggersearch = true;
-      this.checkboxFilter.artists = u.query.sar;
-    }
-    if (typeof u.query.sal !== "undefined") {
-      u.query.sal = (u.query.sal === "true");
-      if (this.checkboxFilter.albums !== u.query.sal) shouldtriggersearch = true;
-      this.checkboxFilter.albums = u.query.sal;
-    }
-    if (typeof u.query.str !== "undefined") {
-      u.query.str = (u.query.str === "true");
-      if (this.checkboxFilter.tracks !== u.query.str) shouldtriggersearch = true;
-      this.checkboxFilter.tracks = u.query.str;
-    }
-    if (typeof u.query.s !== "undefined") {
-      this.value = u.query.s;
-      this.applyusualstate();
-    } else if (typeof u.query.la !== "undefined") {
-      this.applylastalbumsstate();
-      shouldtriggersearch = true;
-    }
-    return shouldtriggersearch;
-  };
-  
-  self.methods.triggerfromurl = function triggerfromurl() {
-    if (this.applystatefromurl()) {
-      this.searchnow();
-    }
-  };
-  
-  self.created = function created() {
-    var $this = this, oldpathname = window.location.pathname, oldsearch = window.location.search;
-    this.applystatefromurl();
 
-    window.onpopstate = function(e) {
-      if (oldpathname != window.location.pathname || oldsearch != window.location.search) {
-        $this.triggerfromurl();
-        oldpathname = window.location.pathname;
-        oldsearch = window.location.search;
-      }
+  self.created = function created() {
+    var $this = this, oldsearch = '', oldfilters = {
+      artists: true,
+      albums: true,
+      tracks: true
     };
+
+    Services.router.setSearchCallback(function(term, filters){
+      var refresh = false;
+      if (term !== oldsearch) {
+        oldsearch = term ? term : '';
+        $this.value = oldsearch;
+        refresh = true;
+      }
+      if (oldfilters.artists !== filters.artists) {
+        oldfilters.artists = filters.artists;
+        $this.checkboxFilter.artists = oldfilters.artists;
+        refresh = true;
+      }
+      if (oldfilters.albums !== filters.albums) {
+        oldfilters.albums = filters.albums;
+        $this.checkboxFilter.albums = oldfilters.albums;
+        refresh = true;
+      }
+      if (oldfilters.tracks !== filters.tracks) {
+        oldfilters.tracks = filters.tracks;
+        $this.checkboxFilter.tracks = oldfilters.tracks;
+        refresh = true;
+      }
+      if (refresh) {
+        $this.applyusualstate();
+        Services.displayMode.call();
+      }
+    });
+    
+    Services.router.setLastAlbumsCallback(function(){
+      $this.applylastalbumsstate();
+      Services.displayMode.call();
+    });
+    
+    Services.router.ready();
   };
   
   return self;
