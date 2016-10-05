@@ -101,28 +101,32 @@ var Services = (function() {
         }
       }
     }
+    
+    function scrollToArtist(id) {
+      scrollToAnchor('ar_' + id);
+    }
 
     function scrollToAnchor(anchorname) {
+      if (!anchorname) return;
       var anchor = document.querySelector('a[name='+anchorname+']');
       if (anchor) {
         document.querySelector('.artists').scrollTop = anchor.offsetTop;
       }
     }
     
-    function hideApplyShow(selector, toggleClass, duration, anchor) {
+    function hideApplyShow(selector, toggleClass, duration, cb) {
       var stepDuration = duration/2;
       var el = $(selector);
       el.animate({opacity: 0}, stepDuration, function() {
           el.toggleClass(toggleClass);
-          if (anchor) {
-            scrollToAnchor(anchor);
-          }
+          if (typeof cb === 'function') cb();
         })
         .animate({opacity: 1}, stepDuration);
     }
     
     return {
       hideApplyShow: hideApplyShow,
+      scrollToArtist: scrollToArtist,
       extend: extend
     };
   }
@@ -184,19 +188,23 @@ var Services = (function() {
     var modes = {
       artists: {
         limit: 50,
-        callback: function(){}
+        callback: function(){},
+        precallback: function(){}
       },
       albumsbyartists: {
         limit: 20,
-        callback: function(){}
+        callback: function(){},
+        precallback: function(){}
       },
       lastalbums: {
         limit: 100,
-        callback: function(){}
+        callback: function(){},
+        precallback: function(){}
       },
       search: {
         limit: 100,
-        callback: function(){}
+        callback: function(){},
+        precallback: function(){}
       }
     };
     var _skip = 0;
@@ -245,13 +253,30 @@ var Services = (function() {
         modes[mode].callback = cb;
       }
     }
+    
+    function setPrecallback(mode, cb) {
+      if (mode && modes[mode]) {
+        modes[mode].precallback = cb;
+      }
+    }
   
     function clean() {
       _moreToLoad = true;
       skip(0);
     }
+    
+    function cleanAndCall(_mode, onFinishCallback) {
+      if (typeof _mode === 'function') {
+        onFinishCallback = _mode;
+      } else if (typeof _mode === 'string') {
+        _current = _mode;
+      }
+      clean();
+      modes[_current].precallback();
+      call(onFinishCallback);
+    }
   
-    function call() {
+    function call(onFinishCallback) {
       if (!_loading && _moreToLoad) {
         _loading = true;
         var params = {
@@ -263,6 +288,9 @@ var Services = (function() {
           _loading = false;
           _moreToLoad = moreToLoad;
           incSkip();
+          if (typeof onFinishCallback === 'function') {
+            onFinishCallback();
+          }
         });
       }
     }
@@ -272,9 +300,11 @@ var Services = (function() {
       skip: skip,
       current: current,
       setCallback: setCallback,
+      setPrecallback: setPrecallback,
       call: call,
       type: type,
-      clean: clean
+      clean: clean,
+      cleanAndCall: cleanAndCall
     };
   }
   
@@ -463,6 +493,17 @@ var Services = (function() {
   
   function Router() {
     this.router = new Grapnel();
+    this.next = {
+      artistId: null
+    };
+    this.current = {
+      artistId: null
+    };
+    this.last = {
+      name: null,
+      params: {}
+    };
+    this.artistSelectedCallback = function(){};
   }
   
   Router.prototype._parseFilters = function(filters) {
@@ -487,33 +528,97 @@ var Services = (function() {
     return ret;
   };
   
+  Router.prototype._parseArtistId = function(id) {
+    id = parseInt(id, 10);
+    if (!isNaN(id)) {
+      return id;
+    }
+    return null;
+  };
+  
+  Router.prototype.selectArtist = function(id) {
+    this.next.artistId = id ? id : null;
+    this.navigate();
+  };
+  
+  Router.prototype.navigate = function(path) {
+    if (!path) {
+      path = this.router.path();
+      if (this.current.artistId) {
+        path = path.substring(0, path.lastIndexOf(':'));
+      }
+    }
+    if (this.next.artistId) {
+      path += ':' + this.next.artistId;
+      this.current.artistId = this.next.artistId;
+    }
+    this.router.navigate(path);
+  };
+  
   Router.prototype.navigateSearch = function(term, filters) {
     var s = 'search/';
-    if (term) s += term;
+    if (term) s += encodeURIComponent(term);
     if (filters) {
       var f = this._encodeFilters(filters);
       if (f > 0 && f < 7) {
         s += '/filters/' + f;
       }
     }
-    this.router.navigate(s);
+    this.next.artistId = null;
+    this.navigate(s);
   };
   
   Router.prototype.navigateLastAlbums = function() {
-    this.router.navigate('lastalbums');
+    this.next.artistId = null;
+    this.navigate('lastalbums');
   };
   
   Router.prototype.setSearchCallback = function(cb) {
     var self = this;
-    this.router.get(/search\/(\w*)(?:\/filters\/([1234567])?)?/i, function(req){
-      cb(req.params[0], self._parseFilters(req.params[1]));
+    this.router.get(/search\/(\w*)(?:\/filters\/([1234567])?)?(?::(\d+))?/i, function(req){
+      self.setCurrentArtistId(self._parseArtistId(req.params[2]));
+      var filters = self._parseFilters(req.params[1]);
+      if (self._updateLast('search', {search: req.params[0], filters: filters})) {
+        cb(decodeURIComponent(req.params[0]), filters);
+      }
     });
   };
   
   Router.prototype.setLastAlbumsCallback = function(cb) {
-    this.router.get('lastalbums', function(req){
-      cb();
+    var self = this;
+    this.router.get(/lastalbums(?::(\d+))?/i, function(req){
+      self.setCurrentArtistId(self._parseArtistId(req.params[0]));
+      if (self._updateLast('lastalbums', {})) {
+        cb();
+      }
     });
+  };
+  
+  Router.prototype.setCurrentArtistId = function(id) {
+    if (this.current.artistId !== id) {
+      this.current.artistId = id;
+      this.artistSelectedCallback(id);
+    }
+  };
+  
+  Router.prototype._updateLast = function(name, params) {
+    var self = this;
+    function update() {
+      self.last.name = name;
+      self.last.params = params;
+    }
+    
+    if (this.last.name !== name) {
+      update();
+      return true;
+    }
+    for (var x in params) {
+      if (params[x] !== this.last.params[x]) {
+        update();
+        return true;
+      }
+    }
+    return false;
   };
   
   Router.prototype.ready = Router.prototype.go = function() {

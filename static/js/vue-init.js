@@ -426,9 +426,7 @@ function Toolbar(v_container) {
     Services.displayMode.type(type);
     clearTimeout(promise);
     promise = setTimeout(function() {
-      v_container.artists = [];
-      Services.displayMode.clean();
-      Services.displayMode.call();
+      Services.displayMode.cleanAndCall();
     }, 400);
   };
 
@@ -500,6 +498,11 @@ function Toolbar(v_container) {
       albums: true,
       tracks: true
     };
+    Services.displayMode.setPrecallback('search', this.applyusualstate.bind(this));
+    Services.displayMode.setPrecallback('lastalbums', this.applylastalbumsstate.bind(this));
+    Services.router.artistSelectedCallback = function(artistid) {
+      v_container.selectArtist(artistid);
+    };
 
     Services.router.setSearchCallback(function(term, filters){
       var refresh = false;
@@ -524,14 +527,12 @@ function Toolbar(v_container) {
         refresh = true;
       }
       if (refresh) {
-        $this.applyusualstate();
-        Services.displayMode.call();
+        Services.displayMode.cleanAndCall('search');
       }
     });
     
     Services.router.setLastAlbumsCallback(function(){
-      $this.applylastalbumsstate();
-      Services.displayMode.call();
+      Services.displayMode.cleanAndCall('lastalbums');
     });
     
     Services.router.ready();
@@ -570,10 +571,14 @@ function Container(v_player) {
   
   self.watch.selectedArtist = function(val, oldVal) {
     if (val !== oldVal) {
-      if (!oldVal.id && val.id) {
-        Services.utils.hideApplyShow('#container', 'show-albums', 500, 'ar_' + val.id);
-      } else if (oldVal.id && !val.id) {
-        Services.utils.hideApplyShow('#container', 'show-albums', 500, 'ar_' + oldVal.id);
+      if ((!oldVal.id && val.id) || (oldVal.id && !val.id)) {
+        Services.utils.hideApplyShow('#container', 'show-albums', 500, function() {
+          Services.router.selectArtist(val.id);
+          Services.utils.scrollToArtist(val.id || oldVal.id);
+        });
+      } else {
+        Services.router.selectArtist(val.id);
+        Services.utils.scrollToArtist(val.id || oldVal.id);
       }
     }
   };
@@ -589,6 +594,23 @@ function Container(v_player) {
       $this.loading[loadingkey] = false;
       next(false);
     });
+  };
+  
+  self.methods.selectArtist = function(id) {
+    if (this.selectedArtist.id === id) return;
+    var found = false;
+    if (typeof id === 'number') {
+      for (var i=0; !found && i<this.artists.length; i++) {
+        if (this.artists[i].id === id) {
+          this.selectedArtist = this.artists[i];
+          found = true;
+        }
+      }
+    }
+    
+    if (!found) {
+      this.selectedArtist = {};
+    }
   };
   
   self.methods.loadArtists = function loadArtists(filter, params, next) {
