@@ -579,7 +579,7 @@ var Services = (function() {
       self.setCurrentArtistId(self._parseArtistId(req.params[2]));
       var filters = self._parseFilters(req.params[1]);
       if (self._updateLast('search', {search: req.params[0], filters: filters})) {
-        cb(decodeURIComponent(req.params[0]), filters);
+        cb(req.params[0] ? decodeURIComponent(req.params[0]) : null, filters);
       }
     });
   };
