@@ -516,11 +516,9 @@ function Toolbar(v_container) {
 
     Services.router.on('artistselected', function(artistid) {
       if (!cleanAndCallInProgress) {
-        console.log('s direct');
         v_container.selectArtist(artistid);
       } else {
         Services.displayMode.once('after', function() {
-          console.log('s postponed');
           v_container.selectArtist(artistid);
         });
       }
