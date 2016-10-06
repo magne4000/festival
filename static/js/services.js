@@ -2,6 +2,56 @@
 /* global Grapnel */
 
 var Services = (function() {
+  function eventify(_class) {
+    _class.prototype.listeners = {};
+    
+    _class.prototype.addEventListener = function(event, callback) {
+      if(!(event in this.listeners)) {
+        this.listeners[event] = [];
+      }
+      this.listeners[event].push(callback);
+    };
+    _class.prototype.on = _class.prototype.addEventListener;
+    
+    _class.prototype.removeEventListener = function(event, callback) {
+      if(!(event in this.listeners)) {
+        return;
+      }
+      if (!callback) {
+        this.listeners[event] = [];
+      }
+      var stack = this.listeners[event];
+      for(var i = 0, l = stack.length; i < l; i++) {
+        if(stack[i] === callback){
+          stack.splice(i, 1);
+          return this.removeEventListener(event, callback);
+        }
+      }
+    };
+    _class.prototype.off = _class.prototype.removeEventListener;
+    
+    _class.prototype.dispatchEvent = function(event) {
+      if(!(event in this.listeners)) {
+        return;
+      }
+      var stack = this.listeners[event], args = [].slice.call(arguments, 1);
+      for(var i = 0, l = stack.length; i < l; i++) {
+          stack[i].apply(this, args);
+      }
+    };
+    _class.prototype.emit = _class.prototype.dispatchEvent;
+    
+    _class.prototype.once = function(event, callback) {
+      function on() {
+        this.off(event, on);
+        callback.apply(this, arguments);
+      }
+    
+      on.fn = callback;
+      this.on(event, on);
+      return this;
+    };
+  }
   
   function Utils() {
 
@@ -185,7 +235,7 @@ var Services = (function() {
   }
   
   function DisplayMode() {
-    var modes = {
+    this.modes = {
       artists: {
         limit: 50,
         callback: function(){},
@@ -207,152 +257,101 @@ var Services = (function() {
         precallback: function(){}
       }
     };
-    var _skip = 0;
-    var _current = 'artists';
-    var _loading = false;
-    var _moreToLoad = true;
-    var _param = {};
-    var _type = 'tags';
-  
-    function limit(val) {
-      if (val && modes[val]) {
-        modes[_current].limit = val;
-      }
-      return modes[_current].limit;
-    }
-  
-    function type(val) {
-      if (typeof val !== "undefined") {
-        _type = val;
-      }
-      return _type;
-    }
-  
-    function incSkip() {
-      _skip += limit();
-    }
-  
-    function skip(val) {
-      if (typeof val !== "undefined") {
-        _skip = val;
-      }
-      return _skip;
-    }
-  
-    function current(val, param) {
-      if (val && modes[val]) {
-        _current = val;
-        if (typeof param !== "undefined") _param = param;
-        clean();
-      }
-      return _current;
-    }
-  
-    function setCallback(mode, cb) {
-      if (mode && modes[mode]) {
-        modes[mode].callback = cb;
-      }
-    }
-    
-    function setPrecallback(mode, cb) {
-      if (mode && modes[mode]) {
-        modes[mode].precallback = cb;
-      }
-    }
-  
-    function clean() {
-      _moreToLoad = true;
-      skip(0);
-    }
-    
-    function cleanAndCall(_mode, onFinishCallback) {
-      if (typeof _mode === 'function') {
-        onFinishCallback = _mode;
-      } else if (typeof _mode === 'string') {
-        _current = _mode;
-      }
-      clean();
-      modes[_current].precallback();
-      call(onFinishCallback);
-    }
-  
-    function call(onFinishCallback) {
-      if (!_loading && _moreToLoad) {
-        _loading = true;
-        var params = {
-          skip: _skip,
-          limit: limit(),
-          type: _type
-        };
-        modes[_current].callback(_param, params, function(moreToLoad){
-          _loading = false;
-          _moreToLoad = moreToLoad;
-          incSkip();
-          if (typeof onFinishCallback === 'function') {
-            onFinishCallback();
-          }
-        });
-      }
-    }
-  
-    return {
-      limit: limit,
-      skip: skip,
-      current: current,
-      setCallback: setCallback,
-      setPrecallback: setPrecallback,
-      call: call,
-      type: type,
-      clean: clean,
-      cleanAndCall: cleanAndCall
-    };
+    this._skip = 0;
+    this._current = 'artists';
+    this._loading = false;
+    this._moreToLoad = true;
+    this._param = {};
+    this._type = 'tags';
   }
+  eventify(DisplayMode);
+  
+  DisplayMode.prototype.limit = function(val) {
+    if (val && this.modes[val]) {
+      this.modes[this._current].limit = val;
+    }
+    return this.modes[this._current].limit;
+  };
+
+  DisplayMode.prototype.type = function(val) {
+    if (typeof val !== "undefined") {
+      this._type = val;
+    }
+    return this._type;
+  };
+
+  DisplayMode.prototype.incSkip = function() {
+    this._skip += this.limit();
+    return this;
+  };
+
+  DisplayMode.prototype.skip = function(val) {
+    if (typeof val !== "undefined") {
+      this._skip = val;
+    }
+    return this._skip;
+  };
+
+  DisplayMode.prototype.current = function(val, param) {
+    if (val && this.modes[val]) {
+      this._current = val;
+      if (typeof param !== "undefined") this._param = param;
+      this.clean();
+    }
+    return this._current;
+  };
+
+  DisplayMode.prototype.clean = function() {
+    this._moreToLoad = true;
+    this.skip(0);
+    return this;
+  };
+  
+  DisplayMode.prototype.cleanAndCall = function(mode) {
+    if (typeof mode === 'string') {
+      this._current = mode;
+    }
+    this.clean();
+    this.call();
+    return this;
+  };
+
+  DisplayMode.prototype.call = function() {
+    if (!this._loading && this._moreToLoad) {
+      var params = {
+        skip: this._skip,
+        limit: this.limit(),
+        type: this._type
+      }, current = this._current, self = this;
+      
+      var next = function(moreToLoad) {
+        self._loading = false;
+        self._moreToLoad = moreToLoad;
+        self.incSkip();
+        self.emit('after', current);
+        self.emit(current + '.after');
+      };
+      this.emit('before', current);
+      this.emit(this._current + '.before');
+      this._loading = true;
+      this.emit(current, this._param, params, next);
+    }
+    return this;
+  };
   
   function Playlist() {
     this.head = null;
     this.tail = null;
     this.promise = null;
-    this.listeners = {};
   }
+  eventify(Playlist);
   
   Playlist.prototype.emitChange = function() {
     var $this = this;
     clearTimeout(this.promise);
     this.promise = setTimeout(function() {
-      $this.dispatchEvent(new Event('update'));
+      $this.dispatchEvent('update');
     }, 100);
-  };
-  
-  Playlist.prototype.listeners = null;
-  Playlist.prototype.addEventListener = function(type, callback) {
-    if(!(type in this.listeners)) {
-      this.listeners[type] = [];
-    }
-    this.listeners[type].push(callback);
-  };
-  
-  Playlist.prototype.removeEventListener = function(type, callback) {
-    if(!(type in this.listeners)) {
-      return;
-    }
-    var stack = this.listeners[type];
-    for(var i = 0, l = stack.length; i < l; i++) {
-      if(stack[i] === callback){
-        stack.splice(i, 1);
-        return this.removeEventListener(type, callback);
-      }
-    }
-  };
-  
-  Playlist.prototype.dispatchEvent = function(event) {
-    if(!(event.type in this.listeners)) {
-      return;
-    }
-    var stack = this.listeners[event.type];
-    event.target = this;
-    for(var i = 0, l = stack.length; i < l; i++) {
-        stack[i].call(this, event);
-    }
   };
   
   Playlist.prototype.getHead = function() {
@@ -505,6 +504,7 @@ var Services = (function() {
     };
     this.artistSelectedCallback = function(){};
   }
+  eventify(Router);
   
   Router.prototype._parseFilters = function(filters) {
     var pfilters = parseInt(filters, 10), ret = {
@@ -573,31 +573,32 @@ var Services = (function() {
     this.navigate('lastalbums');
   };
   
-  Router.prototype.setSearchCallback = function(cb) {
+  Router.prototype.init = function() {
     var self = this;
     this.router.get(/search\/(\w*)(?:\/filters\/([1234567])?)?(?::(\d+))?/i, function(req){
-      self.setCurrentArtistId(self._parseArtistId(req.params[2]));
       var filters = self._parseFilters(req.params[1]);
       if (self._updateLast('search', {search: req.params[0], filters: filters})) {
-        cb(req.params[0] ? decodeURIComponent(req.params[0]) : null, filters);
+        self.emit('search', req.params[0] ? decodeURIComponent(req.params[0]) : null, filters);
       }
+      self.setCurrentArtistId(self._parseArtistId(req.params[2]));
     });
-  };
-  
-  Router.prototype.setLastAlbumsCallback = function(cb) {
-    var self = this;
+    
     this.router.get(/lastalbums(?::(\d+))?/i, function(req){
-      self.setCurrentArtistId(self._parseArtistId(req.params[0]));
       if (self._updateLast('lastalbums', {})) {
-        cb();
+        self.emit('lastalbums');
       }
+      self.setCurrentArtistId(self._parseArtistId(req.params[0]));
     });
+    
+    this.router.trigger('navigate');
+    
+    return this;
   };
   
   Router.prototype.setCurrentArtistId = function(id) {
     if (this.current.artistId !== id) {
       this.current.artistId = id;
-      this.artistSelectedCallback(id);
+      this.emit('artistselected', id);
     }
   };
   
@@ -621,13 +622,9 @@ var Services = (function() {
     return false;
   };
   
-  Router.prototype.ready = Router.prototype.go = function() {
-    this.router.trigger('navigate');
-  };
-  
   return {
     ajax: Ajax(),
-    displayMode: DisplayMode(),
+    displayMode: new DisplayMode(),
     playlist: new Playlist(),
     notif: Notif(),
     utils: Utils(),

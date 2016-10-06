@@ -403,15 +403,15 @@ function Toolbar(v_container) {
     params.flat = false;
     Services.ajax.search(term, self.data.checkboxFilter, params).done(function(data, status) {
       v_container.loading.artists = false;
-      next((data.data.length > 0));
       Services.utils.extend(v_container.artists, data.data);
+      next((data.data.length > 0));
     }).fail(function(){
       v_container.loading.artists = false;
       next(false);
     });
   }
 
-  Services.displayMode.setCallback('search', search);
+  Services.displayMode.on('search', search);
 
   self.watch.checkboxFilter = {
     handler: function(newValue, oldValue) {
@@ -497,14 +497,35 @@ function Toolbar(v_container) {
       artists: true,
       albums: true,
       tracks: true
-    };
-    Services.displayMode.setPrecallback('search', this.applyusualstate.bind(this));
-    Services.displayMode.setPrecallback('lastalbums', this.applylastalbumsstate.bind(this));
-    Services.router.artistSelectedCallback = function(artistid) {
-      v_container.selectArtist(artistid);
-    };
+    }, cleanAndCallInProgress = false;
 
-    Services.router.setSearchCallback(function(term, filters){
+    Services.displayMode.on('search.before', function() {
+      cleanAndCallInProgress = true;
+      $this.applyusualstate();
+    });
+    Services.displayMode.on('lastalbums.before', function() {
+      cleanAndCallInProgress = true;
+      $this.applylastalbumsstate();
+    });
+    Services.displayMode.on('search.after', function() {
+      cleanAndCallInProgress = false;
+    });
+    Services.displayMode.on('lastalbums.after', function() {
+      cleanAndCallInProgress = false;
+    });
+
+    Services.router.on('artistselected', function(artistid) {
+      if (!cleanAndCallInProgress) {
+        console.log('s direct');
+        v_container.selectArtist(artistid);
+      } else {
+        Services.displayMode.once('after', function() {
+          console.log('s postponed');
+          v_container.selectArtist(artistid);
+        });
+      }
+    });
+    Services.router.on('search', function(term, filters) {
       var refresh = false;
       if (term !== oldsearch) {
         oldsearch = term ? term : '';
@@ -530,12 +551,10 @@ function Toolbar(v_container) {
         Services.displayMode.cleanAndCall('search');
       }
     });
-    
-    Services.router.setLastAlbumsCallback(function(){
+    Services.router.on('lastalbums', function() {
       Services.displayMode.cleanAndCall('lastalbums');
     });
-    
-    Services.router.ready();
+    Services.router.init();
   };
   
   return self;
@@ -740,9 +759,9 @@ function Container(v_player) {
   self.created = function created() {
     var $this = this;
     
-    Services.displayMode.setCallback('artists', this.loadArtists.bind(this));
-    Services.displayMode.setCallback('albumsbyartists', this.loadAlbumsByArtists.bind(this));
-    Services.displayMode.setCallback('lastalbums', this.loadLastAlbums.bind(this));
+    Services.displayMode.on('artists', this.loadArtists.bind(this));
+    Services.displayMode.on('albumsbyartists', this.loadAlbumsByArtists.bind(this));
+    Services.displayMode.on('lastalbums', this.loadLastAlbums.bind(this));
     
     $(document).on('keydown', null, 'esc', function(e) {
       e.preventDefault();
