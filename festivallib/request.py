@@ -217,14 +217,15 @@ class Typed:
     def search(self, term, artists=True, albums=True, tracks=True, skip=None, limit=None):
         def ffilter(query):
             filters = []
-            if artists:
-                filters.append(Artist.name.contains(term))
-            if albums:
-                filters.append(Album.name.contains(term))
-            if tracks:
-                filters.append(TrackInfo.name.contains(term))
-            if len(filters) > 0:
-                query = query.filter(or_(*filters))
+            if term:
+                if artists:
+                    filters.append(Artist.name.contains(term))
+                if albums:
+                    filters.append(Album.name.contains(term))
+                if tracks:
+                    filters.append(TrackInfo.name.contains(term))
+                if len(filters) > 0:
+                    query = query.filter(or_(*filters))
             return query
         return self.listtracksbyalbumsbyartists(ffilter, skip, limit)
 
