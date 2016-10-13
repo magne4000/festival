@@ -578,7 +578,7 @@ function Container(v_player) {
   self.watch.artists = function(val, oldVal) {
     if (val !== oldVal && (val.length > 0 || oldVal.length > 0)) {
       var $this = this;
-      if (this.artists.indexOf(this.selectedArtist) === -1) {
+      if (this.artists.length > 0 && this.artists.indexOf(this.selectedArtist) === -1) {
         Vue.nextTick(function() {
           $this.selectedArtist = {};
         });
