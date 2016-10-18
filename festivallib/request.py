@@ -207,27 +207,25 @@ class Typed:
             return qall
 
     def searchartists(self, term, skip=None, limit=None):
-        ffilter = lambda query: query.filter(Artist.name.contains(term))
+        if isinstance(term, str):
+            ffilter = lambda query: query.filter(Artist.name.contains(term))
+        else:
+            ffilter = lambda query: query
         return self.listartists(ffilter, skip, limit)
 
     def searchalbums(self, term, skip=None, limit=None):
-        ffilter = lambda query: query.filter(Album.name.contains(term))
+        if isinstance(term, str):
+            ffilter = lambda query: query.filter(Album.name.contains(term))
+        else:
+            ffilter = lambda query: query
         return self.listalbums(ffilter, skip, limit)
 
-    def search(self, term, artists=True, albums=True, tracks=True, skip=None, limit=None):
-        def ffilter(query):
-            filters = []
-            if term:
-                if artists:
-                    filters.append(Artist.name.contains(term))
-                if albums:
-                    filters.append(Album.name.contains(term))
-                if tracks:
-                    filters.append(TrackInfo.name.contains(term))
-                if len(filters) > 0:
-                    query = query.filter(or_(*filters))
-            return query
-        return self.listtracksbyalbumsbyartists(ffilter, skip, limit)
+    def searchtracks(self, term, skip=None, limit=None):
+        if isinstance(term, str):
+            ffilter = lambda query: query.filter(TrackInfo.name.contains(term))
+        else:
+            ffilter = lambda query: query
+        return self.listtracks(ffilter, skip, limit)
 
 
 def typed_fct(func):

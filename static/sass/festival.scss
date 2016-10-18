@@ -299,15 +299,20 @@ main {
 }
 main .container {
   position: absolute;
-  overflow: hidden;
   line-height: $line-height;
   top: 0;
   left: 0;
   right: 20px;
   bottom: 0;
-}
-main .container .noresult {
-  margin: 10px;
+  overflow: hidden;
+  
+  &.search-container {
+    overflow: auto;
+  }
+  
+  .noresult {
+    margin: 10px;
+  }
 }
 
 /* Controls */
@@ -380,12 +385,15 @@ main .container {
   }
 
   /* artists */
-  .artists {
+  &:not(.search-container) .artists {
     padding-top: 40px;
     position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
+  }
+  
+  .artists {
     width: 100%;
     overflow: auto;
     display: flex;
@@ -469,17 +477,20 @@ main .container {
   }
 
   /* albums */
-  .albums {
+  &:not(.search-container) .albums {
     position: absolute;
     top: 0;
+    left: 200px;
     right: 20px;
     bottom: 0;
-    left: 200px;
+    transform: scaleX(0);
+  }
+  
+  .albums {
     display: flex;
     flex-wrap: wrap;
     background-color: #ddd;
     align-items: stretch;
-    transform: scaleX(0);
     transform-origin: right center;
     overflow: auto;
 

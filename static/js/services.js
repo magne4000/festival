@@ -1,5 +1,5 @@
 /* global $ */
-/* global Grapnel */
+/* global VueRouter */
 
 var Services = (function() {
   function eventify(_class) {
@@ -164,18 +164,22 @@ var Services = (function() {
       }
     }
     
-    function hideApplyShow(selector, toggleClass, duration, cb) {
+    function animateAlbumsPanel(hideOrShow, selector, toggleClass, duration, cb) {
       var stepDuration = duration/2;
       var el = $(selector);
       el.animate({opacity: 0}, stepDuration, function() {
-          el.toggleClass(toggleClass);
+          if (hideOrShow === 'hide') {
+            el.removeClass(toggleClass);
+          } else {
+            el.addClass(toggleClass);
+          }
           if (typeof cb === 'function') cb();
         })
         .animate({opacity: 1}, stepDuration);
     }
     
     return {
-      hideApplyShow: hideApplyShow,
+      animateAlbumsPanel: animateAlbumsPanel,
       scrollToArtist: scrollToArtist,
       extend: extend
     };
@@ -220,7 +224,6 @@ var Services = (function() {
     function search(term, filter, params) {
       params = filterFactory(filter, params);
       params.term = term;
-      params.flat = !!params.flat;
       return $.get('ajax/list/search', params);
     }
   
@@ -237,24 +240,16 @@ var Services = (function() {
   function DisplayMode() {
     this.modes = {
       artists: {
-        limit: 50,
-        callback: function(){},
-        precallback: function(){}
+        limit: 50
       },
       albumsbyartists: {
-        limit: 20,
-        callback: function(){},
-        precallback: function(){}
+        limit: 20
       },
       lastalbums: {
-        limit: 100,
-        callback: function(){},
-        precallback: function(){}
+        limit: 300
       },
       search: {
-        limit: 100,
-        callback: function(){},
-        precallback: function(){}
+        limit: 10
       }
     };
     this._skip = 0;
@@ -291,11 +286,19 @@ var Services = (function() {
     }
     return this._skip;
   };
+  
+  DisplayMode.prototype.param = function(param) {
+    if (typeof param !== "undefined") {
+      this._param = param;
+    }
+    return this._param;
+  };
 
   DisplayMode.prototype.current = function(val, param) {
-    if (val && this.modes[val]) {
+    if (val && this.modes[val] && this._current !== val) {
       this._current = val;
-      if (typeof param !== "undefined") this._param = param;
+      this.emit('modechanged', val);
+      this.param(param);
       this.clean();
     }
     return this._current;
@@ -305,18 +308,10 @@ var Services = (function() {
     this._moreToLoad = true;
     this.skip(0);
     return this;
-  };
-  
-  DisplayMode.prototype.cleanAndCall = function(mode) {
-    if (typeof mode === 'string') {
-      this._current = mode;
-    }
-    this.clean();
-    this.call();
-    return this;
-  };
+  };;
 
-  DisplayMode.prototype.call = function() {
+  DisplayMode.prototype.call = function(clean) {
+    if (clean) this.clean();
     if (!this._loading && this._moreToLoad) {
       var params = {
         skip: this._skip,
@@ -331,10 +326,10 @@ var Services = (function() {
         self.emit('after', current);
         self.emit(current + '.after');
       };
-      this.emit('before', current);
-      this.emit(this._current + '.before');
+      this.emit('before', current, !!clean);
+      this.emit(current + '.before', !!clean);
       this._loading = true;
-      this.emit(current, this._param, params, next);
+      this.emit(current, !!clean, this._param, params, next);
     }
     return this;
   };
@@ -490,23 +485,10 @@ var Services = (function() {
     };
   }
   
-  function Router() {
-    this.router = new Grapnel();
-    this.next = {
-      artistId: null
-    };
-    this.current = {
-      artistId: null
-    };
-    this.last = {
-      name: null,
-      params: {}
-    };
-    this.artistSelectedCallback = function(){};
-  }
+  function Router() {}
   eventify(Router);
   
-  Router.prototype._parseFilters = function(filters) {
+  Router.prototype.decodeFilters = function(filters) {
     var pfilters = parseInt(filters, 10), ret = {
       artists: true,  // 0x01
       albums: true,   // 0x02
@@ -520,7 +502,7 @@ var Services = (function() {
     return ret;
   };
   
-  Router.prototype._encodeFilters = function(filters) {
+  Router.prototype.encodeFilters = function(filters) {
     var ret = 0x00;
     if (filters.artists) ret = ret | 0x01;
     if (filters.albums) ret = ret | 0x02;
@@ -528,7 +510,7 @@ var Services = (function() {
     return ret;
   };
   
-  Router.prototype._parseArtistId = function(id) {
+  Router.prototype.parseArtistId = function(id) {
     id = parseInt(id, 10);
     if (!isNaN(id)) {
       return id;
@@ -536,90 +518,49 @@ var Services = (function() {
     return null;
   };
   
-  Router.prototype.selectArtist = function(id) {
-    this.next.artistId = id ? id : null;
-    this.navigate();
-  };
-  
-  Router.prototype.navigate = function(path) {
-    if (!path) {
-      path = this.router.path();
-      if (this.current.artistId) {
-        path = path.substring(0, path.lastIndexOf(':'));
-      }
-    }
-    if (this.next.artistId) {
-      path += ':' + this.next.artistId;
-      this.current.artistId = this.next.artistId;
-    }
-    this.router.navigate(path);
-  };
-  
   Router.prototype.navigateSearch = function(term, filters) {
-    var s = 'search/';
-    if (term) s += encodeURIComponent(term);
+    var dict = {
+      name: 'search',
+      params: {
+        term: term
+      }
+    };
     if (filters) {
-      var f = this._encodeFilters(filters);
+      var f = this.encodeFilters(filters);
       if (f > 0 && f < 7) {
-        s += '/filters/' + f;
+        dict.params.filters = f;
+        dict.name = 'searchf';
       }
     }
-    this.next.artistId = null;
-    this.navigate(s);
+    this.router.push(dict);
   };
   
   Router.prototype.navigateLastAlbums = function() {
-    this.next.artistId = null;
-    this.navigate('lastalbums');
+    this.router.push({name: 'lastalbums'});
+  };
+  
+  Router.prototype.navigateHome = function() {
+    this.router.push({name: 'home'});
+  };
+  
+  Router.prototype.selectArtist = function(id) {
+    this.router.push({query: {s: id}});
   };
   
   Router.prototype.init = function() {
-    var self = this;
-    this.router.get(/search\/(\w*)(?:\/filters\/([1234567])?)?(?::(\d+))?/i, function(req){
-      var filters = self._parseFilters(req.params[1]);
-      if (self._updateLast('search', {search: req.params[0], filters: filters})) {
-        self.emit('search', req.params[0] ? decodeURIComponent(req.params[0]) : null, filters);
-      }
-      self.setCurrentArtistId(self._parseArtistId(req.params[2]));
-    });
     
-    this.router.get(/lastalbums(?::(\d+))?/i, function(req){
-      if (self._updateLast('lastalbums', {})) {
-        self.emit('lastalbums');
-      }
-      self.setCurrentArtistId(self._parseArtistId(req.params[0]));
-    });
+    var routes = [
+      { path: '/search/:term/filters/:filters', name: 'searchf', meta: { displayMode: 'search' }, component: ContainerSearchComponent },
+      { path: '/search/:term', name: 'search', meta: { displayMode: 'search' }, component: ContainerSearchComponent },
+      { path: '/lastalbums', name: 'lastalbums', meta: { displayMode: 'lastalbums' }, component: ContainerComponent },
+      { path: '/', name: 'home', meta: { displayMode: 'artists' }, component: ContainerComponent }
+    ];
     
-    this.router.trigger('navigate');
+    this.router = new VueRouter({
+      routes: routes
+    });
     
     return this;
-  };
-  
-  Router.prototype.setCurrentArtistId = function(id) {
-    if (this.current.artistId !== id) {
-      this.current.artistId = id;
-      this.emit('artistselected', id);
-    }
-  };
-  
-  Router.prototype._updateLast = function(name, params) {
-    var self = this;
-    function update() {
-      self.last.name = name;
-      self.last.params = params;
-    }
-    
-    if (this.last.name !== name) {
-      update();
-      return true;
-    }
-    for (var x in params) {
-      if (params[x] !== this.last.params[x]) {
-        update();
-        return true;
-      }
-    }
-    return false;
   };
   
   return {
@@ -628,6 +569,6 @@ var Services = (function() {
     playlist: new Playlist(),
     notif: Notif(),
     utils: Utils(),
-    router: new Router()
+    Router: new Router()
   };
 })();

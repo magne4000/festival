@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="static/images/favicon.png">
     <link rel="stylesheet" type="text/css" href="static/stylesheets/festival.scss.css">
     <link rel="stylesheet" type="text/css" href="static/stylesheets/animations.css">
-    <title>{{festival.currentTrack ? festival.currentTrack.name + " - " + festival.currentTrack.artist_name : "{[config.TITLE]}"}}</title>
+    <title>{{shared.currentTrack ? shared.currentTrack.name + " - " + shared.currentTrack.artist_name : "{[config.TITLE]}"}}</title>
   </head>
   <body>
     <noscript>
@@ -23,7 +23,7 @@
           <i class="material-icons">skip_previous</i>
         </a>
         <a title="Play" href="javascript:void(0)" @click="togglePlayPause()" class="control play">
-          <i class="material-icons">{{festival.playing ? 'pause' : 'play_arrow'}}</i>
+          <i class="material-icons">{{shared.playing ? 'pause' : 'play_arrow'}}</i>
         </a>
         <a title="Next track" href="javascript:void(0)" @click="next(true, true)" class="control next">
           <i class="material-icons">skip_next</i>
@@ -31,12 +31,12 @@
         <div class="panel">
           <div class="info-panel">
             <span class="elapsed-time">{{progress | duration}}</span>
-            <span v-if="festival.currentTrack" class="name">
-              <span class="title" :class="{waiting: waitingbuf}">{{festival.currentTrack.name}}</span>
-              <span class="artist">{{festival.currentTrack.artist_name}}</span>
-              <span class="album">{{festival.currentTrack.album_name}}</span>
+            <span v-if="shared.currentTrack" class="name">
+              <span class="title" :class="{waiting: waitingbuf}">{{shared.currentTrack.name}}</span>
+              <span class="artist">{{shared.currentTrack.artist_name}}</span>
+              <span class="album">{{shared.currentTrack.album_name}}</span>
             </span>
-            <span v-if="!festival.currentTrack" class="name">Waiting for a track</span>
+            <span v-if="!shared.currentTrack" class="name">Waiting for a track</span>
             <span class="total-time">{{duration | duration}}</span>
           </div>
           <div class="slider-panel">
@@ -55,7 +55,7 @@
         </a>
       </div>
       <div v-cloak class="toolbar" id="toolbar">
-        <div class="search" :class="{hide: displaymode != 'search'}">
+        <div class="search" :class="{hide: toolbarstate != 'search'}">
           <form @submit.prevent="searchnow()">
             <label for="search" @click="searchnow()">
               <i class="material-icons">search</i>
@@ -80,19 +80,22 @@
             </span>
           </form>
         </div>
-        <div class="special-actions" v-show="displaymode != 'search'">
-          <button class="tab" title="Search" @click="displaymode = 'search'"><i class="material-icons">search</i> search</button>
+        <div class="special-actions">
+          <button class="tab" :class="{active: toolbarstate == 'artists'}" title="Home" @click="home()">Home</button>
+        </div>
+        <div class="special-actions" v-show="toolbarstate != 'search'">
+          <button class="tab" title="Search" @click="toolbarstate = 'search'"><i class="material-icons">search</i> search</button>
         </div>
         <div class="special-actions">
-          <button class="tab" :class="{active: displaymode == 'lastalbums'}" title="Show last added albums" @click="lastalbums()"><i class="material-icons">sort</i> last albums</button>
+          <button class="tab" :class="{active: toolbarstate == 'lastalbums'}" title="Show last added albums" @click="lastalbums()"><i class="material-icons">sort</i> last albums</button>
         </div>
         <div class="volume leftseparated">
           <div class="slider">
             <input type="range" min="0" max="100" v-model="volume">
-            <player-progress :progress-value="festival.volume" duration-value="100"></player-progress>
+            <player-progress :progress-value="shared.volume" duration-value="100"></player-progress>
           </div>
           <a href="javascript:void(0)" @click="toggleVolume()">
-            <i class="material-icons">{{festival.volume >= 35 ? 'volume_up' : (festival.volume == 0 ? 'volume_off' : 'volume_down')}}</i>
+            <i class="material-icons">{{shared.volume >= 35 ? 'volume_up' : (shared.volume == 0 ? 'volume_off' : 'volume_down')}}</i>
           </a>
         </div>
         <div class="select-source">
@@ -102,89 +105,55 @@
     </header>
     <main>
       <div id="container" class="container" v-cloak>
-        <infinite-scroll :infinite-scroll-callback="pageArtists" :infinite-scroll-immediate-check="true" :infinite-scroll-distance="400">
-          <div v-show="loading.artists" class="signal"></div>
-          <div v-show="!loading.artists && artists.length == 0" class="noresult">No result matching the search criteria.</div>
-          <div v-for="artist in artists" :key="artist.id" class="artist" :class="{selected: selectedArtist.id == artist.id}" @click="toggleArtistSelection(artist); loadAlbumsAndTracks(artist, false)">
-            <a :name="'ar_'+artist.id" class="anchor"></a>
-            <div class="art-container">
-              <img v-lazy="'artistart/'+artist.id" :alt="artist.name" src="static/images/nocover.png">
-              <div class="art-overlay">
-                <div class="controls">
-                  <div title="Play all albums" @click="empty();loadAlbumsAndTracksAndAdd(artist, true)" class="control animate">
-                    <i class="material-icons">play_arrow</i>
-                  </div>
-                  <div title="Add albums to queue" @click="loadAlbumsAndTracksAndAdd(artist, false)" class="control animate">
-                    <i class="material-icons">add</i>
-                  </div>
-                  {% if config.SHOW_DOWNLOAD_BUTTONS %}
-                  <div title="Download all albums" @click="downloadArtist(artist)" class="control">
-                    <i class="material-icons">file_download</i>
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-            <span class="heading">
-              <h3>{{artist.name ? artist.name : 'Unknown'}}</h3>
-            </span>
-          </div>
-        </infinite-scroll>
-        <div class="albums" is="transition-group">
-          <div v-show="loading.albums" key="loading" class="signal"></div>
-          <div v-for="album in selectedArtist.albums" :key="album.id" class="album">
-            <span class="heading">
-              <h4 class="heading-title">
-                {{album.name}}<span v-if="album.year" class="year">({{album.year}})</span>
-              </h4>
-              <span class="controls inline-controls">
-                <span title="Play tracks" @click="empty();loadTracksAndAdd(selectedArtist, album, true)" class="control animate">
-                  <i class="material-icons">play_arrow</i>
-                </span>
-                <span title="Add tracks to queue" @click="loadTracksAndAdd(selectedArtist, album, false)" class="control animate">
-                  <i class="material-icons">add</i>
-                </span>
-                {% if config.SHOW_DOWNLOAD_BUTTONS %}
-                <span title="Download album" @click="downloadAlbum(album)" class="control">
-                  <i class="material-icons">file_download</i>
-                </span>
-                {% endif %}
-              </span>
-            </span>
-            <div class="album-container"><img v-lazy="'albumart/'+album.id" :alt="album.name" src="static/images/nocover.png">
-              <div class="tracks">
-                <div v-for="track in album.tracks" :class="{active: festival.currentTrack && festival.currentTrack.id == track.id, playing: festival.currentTrack && festival.currentTrack.id == track.id && festival.playing}" class="track">
-                  <span v-if="track.trackno" class="trackno">
-                    <ul class="audioeffect">
-                      <li></li>
-                      <li></li>
-                      <li></li>
-                      <li></li>
-                      <li></li>
-                    </ul>
-                    <span>{{track.trackno}}</span>
-                  </span>
-                  <span :title="track.name" class="name">{{track.name}}</span>
-                  <span class="controls inline-controls">
-                    <span title="Play" @click="playOrPause(track, album.tracks)" class="control animate">
-                      <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && festival.playing ? 'pause' : 'play_arrow'}}</i>
-                    </span>
-                    <span title="Add to queue" @click="add(track)" class="control animate">
-                      <i class="material-icons">add</i>
-                    </span>
-                    {% if config.SHOW_DOWNLOAD_BUTTONS %}
-                    <span title="Download album" @click="downloadTrack(track)" class="control">
-                      <i class="material-icons">file_download</i>
-                    </span>
-                    {% endif %}
-                  </span>
-                  <span class="duration">{{track.duration | duration}}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <router-view></router-view>
       </div>
+        <!--<div class="albums-search" v-if="displayMode == 'search'">-->
+        <!--  <div v-for="album in albums" :key="album.id" class="album">-->
+        <!--    <span class="heading">-->
+        <!--      <span class="controls inline-controls">-->
+        <!--        <span title="Play tracks" @click="empty();loadTracksAndAdd(selectedArtist, album, true)" class="control animate">-->
+        <!--          <i class="material-icons">play_arrow</i>-->
+        <!--        </span>-->
+        <!--        <span title="Add tracks to queue" @click="loadTracksAndAdd(selectedArtist, album, false)" class="control animate">-->
+        <!--          <i class="material-icons">add</i>-->
+        <!--        </span>-->
+        <!--        {% if config.SHOW_DOWNLOAD_BUTTONS %}-->
+        <!--        <span title="Download album" @click="downloadAlbum(album)" class="control">-->
+        <!--          <i class="material-icons">file_download</i>-->
+        <!--        </span>-->
+        <!--        {% endif %}-->
+        <!--      </span>-->
+        <!--      <h4 class="heading-title">-->
+        <!--        {{album.name}}<span v-if="album.year" class="year">({{album.year}})</span>-->
+        <!--      </h4>-->
+        <!--    </span>-->
+        <!--    <div class="album-container">-->
+        <!--      <img v-lazy="'albumart/'+album.id" :alt="album.name" src="static/images/nocover.png">-->
+        <!--    </div>-->
+        <!--  </div>-->
+        <!--</div>-->
+        <!--<div class="tracks">-->
+        <!--  <div v-for="track in tracks" :key="track.id" class="track">-->
+        <!--    <span :title="track.name" class="name">{{track.name}}</span>-->
+        <!--    <span :title="track.artist_name" class="name">{{track.artist_name}}</span>-->
+        <!--    <span :title="track.album_name" class="name">{{track.album_name}}</span>-->
+        <!--    <span class="controls inline-controls">-->
+        <!--      <span title="Play" @click="playOrPause(track, album.tracks)" class="control animate">-->
+        <!--        <i class="material-icons">{{shared.currentTrack && shared.currentTrack.id == track.id && shared.playing ? 'pause' : 'play_arrow'}}</i>-->
+        <!--      </span>-->
+        <!--      <span title="Add to queue" @click="add(track)" class="control animate">-->
+        <!--        <i class="material-icons">add</i>-->
+        <!--      </span>-->
+        <!--      {% if config.SHOW_DOWNLOAD_BUTTONS %}-->
+        <!--      <span title="Download album" @click="downloadTrack(track)" class="control">-->
+        <!--        <i class="material-icons">file_download</i>-->
+        <!--      </span>-->
+        <!--      {% endif %}-->
+        <!--    </span>-->
+        <!--    <span class="duration">{{track.duration | duration}}</span>-->
+        <!--  </div>-->
+        <!--</div>-->
+      <!--</div>-->
       <div :class="{show: show}" class="queue" id="queue">
         <div @click="show = !show" class="handle" :title="show ? 'Hide playlist' : 'Show playlist'">
           <span class="vertical-playlist-text"> PLAYLIST </span>
@@ -192,28 +161,7 @@
         </div>
         <div class="queue-content">
           <div class="tracks">
-            <div v-for="track in tracks" :key="track.id" :class="{active: festival.currentTrack && festival.currentTrack == track, failed: track.failed, playing: festival.currentTrack && festival.currentTrack.id == track.id && festival.playing}" class="track">
-              <span v-if="track.trackno" class="trackno">
-                <ul class="audioeffect">
-                  <li></li>
-                  <li></li>
-                  <li></li>
-                  <li></li>
-                  <li></li>
-                </ul>
-                <span>{{track.trackno}}</span>
-              </span>
-              <span :title="tracktitle(track)" class="name">{{track.name}}</span>
-              <span class="controls inline-controls">
-                <span title="Play" @click="playOrPause(track)" class="control">
-                  <i class="material-icons">{{festival.currentTrack && festival.currentTrack.id == track.id && festival.playing ? 'pause' : 'play_arrow'}}</i>
-                </span>
-                <span title="Remove" @click="remove(track)" class="control">
-                  <i class="material-icons">clear</i>
-                </span>
-              </span>
-              <span class="duration">{{track.duration | duration}}</span>
-            </div>
+            <f-track v-for="track in tracks" :track="track" :key="track.id"></f-track>
           </div>
           <div class="queue-actions" v-show="tracks.length">
             <button type="button" @click="empty()">Clear playlist</button>
@@ -223,11 +171,12 @@
     </main>
     <script type='text/javascript' src='static/js/jquery.min.js'></script>
     <script type='text/javascript' src='static/js/vue.js'></script>
+    <script type='text/javascript' src='static/js/vue-router.js'></script>
     <script type='text/javascript' src='static/js/buzz.js'></script>
-    <script type='text/javascript' src='static/js/grapnel.min.js'></script>
     <script type='text/javascript' src='static/js/jquery.hotkeys.js'></script>
     <script type='text/javascript' src='static/js/services.js'></script>
     <script type='text/javascript' src='static/js/vue-components.js'></script>
     <script type='text/javascript' src='static/js/vue-init.js'></script>
+    <script type='text/javascript' src='static/js/vue-view-components.js'></script>
   </body>
 </html>

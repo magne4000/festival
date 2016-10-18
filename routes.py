@@ -228,10 +228,21 @@ def albumsbyartists(typed):
 @typed_fct
 def search_(typed):
     filters = request.args.get('filters', type=json.loads)
-    filters['skip'] = request.args.get('skip', 0, type=int)
-    filters['limit'] = request.args.get('limit', 100, type=int)
+    skip = request.args.get('skip', 0, type=int)
+    limit = request.args.get('limit', 10, type=int)
     term = request.args.get('term', None)
-    return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in typed.search(term, **filters)])
+    artists = []
+    albums = []
+    tracks = []
+    if len(filters) == 0:
+        filters = dict(artists=True, albums=True, tracks=True)
+    if filters['artists']:
+        artists = typed.searchartists(term, skip=skip, limit=limit)
+    if filters['albums']:
+        albums = typed.searchalbums(term, skip=skip, limit=limit)
+    if filters['tracks']:
+        tracks = typed.searchtracks(term, skip=skip, limit=limit)
+    return jsonify(artists=[x.as_dict() for x in artists], albums=[x.as_dict() for x in albums], tracks=[x.as_dict() for x in tracks])
 
 
 @routes.route("/ajax/fileinfo")
