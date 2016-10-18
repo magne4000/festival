@@ -13,6 +13,14 @@ var Services = (function() {
     };
     _class.prototype.on = _class.prototype.addEventListener;
     
+    _class.prototype.removeEventListeners = function(event) {
+      if (!event) {
+        this.listeners = {};
+      } else {
+        this.listeners[event] = [];
+      }
+    };
+    
     _class.prototype.removeEventListener = function(event, callback) {
       if(!(event in this.listeners)) {
         return;
@@ -308,7 +316,7 @@ var Services = (function() {
     this._moreToLoad = true;
     this.skip(0);
     return this;
-  };;
+  };
 
   DisplayMode.prototype.call = function(clean) {
     if (clean) this.clean();
@@ -550,10 +558,42 @@ var Services = (function() {
   Router.prototype.init = function() {
     
     var routes = [
-      { path: '/search/:term/filters/:filters', name: 'searchf', meta: { displayMode: 'search' }, component: ContainerSearchComponent },
-      { path: '/search/:term', name: 'search', meta: { displayMode: 'search' }, component: ContainerSearchComponent },
-      { path: '/lastalbums', name: 'lastalbums', meta: { displayMode: 'lastalbums' }, component: ContainerComponent },
-      { path: '/', name: 'home', meta: { displayMode: 'artists' }, component: ContainerComponent }
+      {
+        path: '/search/:term/filters/:filters',
+        name: 'searchf',
+        meta: {
+          displayMode: 'search',
+          component: 'f-container-search'
+        },
+        component: ContainerSearchComponent
+      },
+      {
+        path: '/search/:term',
+        name: 'search',
+        meta: {
+          displayMode: 'search',
+          component: 'f-container-search'
+        },
+        component: ContainerSearchComponent
+      },
+      {
+        path: '/lastalbums',
+        name: 'lastalbums',
+        meta: {
+          displayMode: 'lastalbums',
+          component: 'f-container'
+        },
+        component: ContainerComponent
+      },
+      {
+        path: '/',
+        name: 'home',
+        meta: {
+          displayMode: 'artists',
+          component: 'f-container'
+        },
+        component: ContainerComponent
+      }
     ];
     
     this.router = new VueRouter({

@@ -561,56 +561,51 @@ noscript > div > span {
 noscript a {
   color: #168DFF; }
 
-/* Header */
-header {
-  flex: 0;
-  height: 82px;
-  box-sizing: border-box;
-  color: white; }
-
 /* Player */
-header .player {
+.player {
   height: 48px;
   box-sizing: border-box;
   display: flex;
   background-color: #222222;
-  border-color: #121212; }
-  header .player .control {
+  border-color: #121212;
+  color: white;
+  flex: 0; }
+  .player .control {
     display: flex;
     height: 48px;
     width: 48px;
     justify-content: center;
     align-items: center;
     text-decoration: none; }
-    header .player .control .material-icons {
+    .player .control .material-icons {
       font-size: 2em; }
-    header .player .control:hover {
+    .player .control:hover {
       color: #239bd6; }
-    header .player .control.active, header .player .control:active {
+    .player .control.active, .player .control:active {
       color: #1c7baa; }
-    header .player .control:hover .material-icons, header .player .control.active .material-icons, header .player .control:active .material-icons {
+    .player .control:hover .material-icons, .player .control.active .material-icons, .player .control:active .material-icons {
       text-shadow: 0 0 3px #239bd6; }
-  header .player .control.loop > span {
+  .player .control.loop > span {
     font-weight: 800; }
-  header .player .panel {
+  .player .panel {
     height: 48px;
     flex: 1; }
-    header .player .panel > .info-panel {
+    .player .panel > .info-panel {
       width: 100%;
       height: 20px;
       display: flex; }
-      header .player .panel > .info-panel .name {
+      .player .panel > .info-panel .name {
         flex: 1;
         text-align: center;
         padding: 2px 0; }
-      header .player .panel > .info-panel .album, header .player .panel > .info-panel .artist {
+      .player .panel > .info-panel .album, .player .panel > .info-panel .artist {
         font-size: 0.8em;
         color: #aaa; }
-        header .player .panel > .info-panel .album:before, header .player .panel > .info-panel .artist:before {
+        .player .panel > .info-panel .album:before, .player .panel > .info-panel .artist:before {
           content: " - "; }
-      header .player .panel > .info-panel .elapsed-time, header .player .panel > .info-panel .total-time {
+      .player .panel > .info-panel .elapsed-time, .player .panel > .info-panel .total-time {
         padding: 2px 4px; }
-      header .player .panel > .info-panel .title.waiting:before {
+      .player .panel > .info-panel .title.waiting:before {
         content: "loading";
         display: inline-block;
         opacity: 0.5;
@@ -649,60 +644,62 @@ header .player {
     z-index: 2; }
 
 /* Toolbar */
-header .toolbar {
+.toolbar {
   height: 34px;
   box-sizing: border-box;
   background-color: #555555;
-  border-color: #121212; }
-  header .toolbar .search, header .toolbar .volume {
+  border-color: #121212;
+  color: white;
+  flex: 0; }
+  .toolbar .search, .toolbar .volume {
     display: inline-block; }
-  header .toolbar .search {
+  .toolbar .search {
     margin-right: 10px;
     width: 500px;
     height: 32px;
     padding-top: 2px; }
-    header .toolbar .search .material-icons {
+    .toolbar .search .material-icons {
       font-size: 1.3em;
       float: left;
       padding: 5px; }
-    header .toolbar .search.hide {
+    .toolbar .search.hide {
       margin-left: -500px; }
-    header .toolbar .search input[type="text"] {
+    .toolbar .search input[type="text"] {
       width: 200px; }
-    header .toolbar .search .filters {
+    .toolbar .search .filters {
       margin-left: 10px;
       top: 5px;
       position: relative; }
-      header .toolbar .search .filters input {
+      .toolbar .search .filters input {
         display: none; }
-      header .toolbar .search .filters label {
+      .toolbar .search .filters label {
         cursor: pointer; }
-      header .toolbar .search .filters .off {
+      .toolbar .search .filters .off {
         opacity: 0.5; }
-        header .toolbar .search .filters .off:hover {
+        .toolbar .search .filters .off:hover {
           opacity: 0.8; }
-  header .toolbar .volume {
+  .toolbar .volume {
     float: right;
     display: flex;
     align-items: center;
     justify-content: center; }
-    header .toolbar .volume .slider {
+    .toolbar .volume .slider {
       width: 100px; }
-    header .toolbar .volume .material-icons {
+    .toolbar .volume .material-icons {
       width: 18px;
       font-size: 1.5em; }
-  header .toolbar .search, header .toolbar .special-actions {
+  .toolbar .search, .toolbar .special-actions {
     float: left; }
-  header .toolbar .leftseparated {
+  .toolbar .leftseparated {
     border-left: 1px solid #999;
     height: 100%;
     padding: 0 7px; }
-  header .toolbar .special-actions {
+  .toolbar .special-actions {
     margin-right: 1px;
     position: relative;
     width: auto;
     height: 100%; }
-  header .toolbar .select-source {
+  .toolbar .select-source {
     float: right;
     display: flex;
     height: 100%;
@@ -711,19 +708,17 @@ header .toolbar {
 /* Main */
 main {
   background-color: whitesmoke;
-  display: block;
-  flex: 1;
-  line-height: 10px;
-  position: relative; }
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column; }
 
 main .container {
-  position: absolute;
+  flex: 1;
   line-height: 1.2em;
-  top: 0;
-  left: 0;
-  right: 20px;
-  bottom: 0;
-  overflow: hidden; }
+  padding-right: 20px;
+  overflow: hidden;
+  position: relative; }
   main .container.search-container {
     overflow: auto; }
   main .container .noresult {
@@ -936,7 +931,7 @@ main .container {
 /* Queue */
 main .queue {
   position: absolute;
-  top: 0;
+  top: 82px;
   right: 0;
   bottom: 0;
   min-width: 20px;

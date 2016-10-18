@@ -11,14 +11,18 @@ var festival = {
     artists: [],
     albums: [],
     tracks: [],
-    selectedArtist: {}
+    selectedArtist: {},
+    loading: {
+      artists: false,
+      albums: false
+    }
   },
-  clean: function() {
+  clean: function clean() {
     this.state.artists = [];
     this.state.albums = [];
     this.state.tracks = [];
   },
-  selectArtist: function(id) {
+  selectArtist: function selectArtist(id) {
     if (this.state.selectedArtist.id === id) return;
     var found = false;
     if (typeof id === 'number') {
@@ -34,6 +38,69 @@ var festival = {
       this.state.selectedArtist = {};
     }
   },
+  loadX: function loadX(fct, clean, filter, params, loadingkey, next) {
+    this.state.loading[loadingkey] = true;
+    var $this = this;
+    fct(filter, params).done(function(data, status) {
+      $this.state.loading[loadingkey] = false;
+      if (clean) {
+        $this.state.albums = [];
+        $this.state.tracks = [];
+        $this.state.artists = data.data;
+      } else {
+        Services.utils.extend($this.state.artists, data.data);
+      }
+      next((data.data.length > 0));
+    }).fail(function(){
+      $this.state.loading[loadingkey] = false;
+      next(false);
+    });
+  },
+  loadArtists: function loadArtists(clean, filter, params, next) {
+    this.loadX(Services.ajax.artists, clean, filter, params, 'artists', next);
+  },
+  loadAlbumsByArtists: function loadAlbumsByArtists(clean, filter, params, next) {
+    this.loadX(Services.ajax.albumsbyartists, clean, filter, params, 'albums', next);
+  },
+  loadLastAlbums: function loadLastAlbums(clean, filter, params, next) {
+    this.loadX(Services.ajax.lastalbums, clean, filter, params, 'artists', next);
+  },
+  loadAlbums: function loadAlbums(artist, params) {
+    Services.Router.selectArtist(artist.id);
+    if (artist.albums && artist.albums.length > 0) {
+      return;
+    }
+    params = params || {};
+    params.type = Services.displayMode.type();
+    var filter = {
+      artist: artist.id
+    };
+    Services.ajax.albumsbyartists(filter, params).done(function(data, status) {
+      if (data.data.length > 0) {
+        artist.albums = data.data[0].albums;
+      }
+    });
+  },
+  search: function(clean, term, filters, params, next) {
+    var $this = this;
+    this.state.loading.artists = true;
+    Services.ajax.search(term, filters, params).done(function(data, status) {
+      $this.state.loading.artists = false;
+      if (clean) {
+        $this.state.artists = data.artists;
+        $this.state.albums = data.albums;
+        $this.state.tracks = data.tracks;
+      } else {
+        $this.state.artists.push.apply($this.state.artists, data.artists);
+        $this.state.albums.push.apply($this.state.albums, data.albums);
+        $this.state.tracks.push.apply($this.state.tracks, data.tracks);
+      }
+      next(false);
+    }).fail(function(){
+      $this.state.loading.artists = false;
+      next(false);
+    });
+  }
 };
 
 function Player(playlist) {
@@ -403,7 +470,7 @@ function Player(playlist) {
   return self;
 }
 
-function Toolbar() {
+function Main() {
   var self = {
     data: {
       value: "",
@@ -439,7 +506,7 @@ function Toolbar() {
     if (oldId !== newId) {
       festival.selectArtist(newId);
       if ((!oldId && newId) || (oldId && !newId)) {
-        Services.utils.animateAlbumsPanel((!oldId && newId) ? 'show' : 'hide', '#container', 'show-albums', 500, function() {
+        Services.utils.animateAlbumsPanel((!oldId && newId) ? 'show' : 'hide', '.container', 'show-albums', 500, function() {
           Services.utils.scrollToArtist(newId || oldId);
         });
       } else {
@@ -450,7 +517,6 @@ function Toolbar() {
   
   self.methods.onRouteChange = function(to, from) {
     var $this = this, refresh = false;
-    
     if (!from) {
       from = {
         query: {},
@@ -493,6 +559,7 @@ function Toolbar() {
         refresh = true;
       }
     }
+
     if (refresh) {
       Services.displayMode.once('after', selectArtistCallback);
       Services.displayMode.call(true);
@@ -560,51 +627,23 @@ function Toolbar() {
     Services.Router.navigateHome();
   };
   
+  self.methods.searchcallback = function(clean, term, params, next) {
+    festival.search(clean, term, this.checkboxFilter, params, next);
+  };
+  
   self.created = function() {
+    var $this = this;
+    Services.displayMode.current('artists', {});
+    Services.displayMode.on('artists', festival.loadArtists.bind(festival));
+    Services.displayMode.on('albumsbyartists', festival.loadAlbumsByArtists.bind(festival));
+    Services.displayMode.on('lastalbums', festival.loadLastAlbums.bind(festival));
+    Services.displayMode.on('search', this.searchcallback.bind(this));
+    Services.displayMode.on('modechanged', function(val) {
+      $this.displayMode = val;
+    });
+    
     this.onRouteChange(this.$route, null);
   };
-  
-  return self;
-}
-
-function Queue(playlist) {
-  var self = {
-    data: {
-      shared: festival.state,
-      tracks: [],
-      show: false
-    },
-    methods: {}
-  };
-  
-  self.methods.updateTracksOnNextTick = function() {
-    Vue.nextTick(this.updateTracks.bind(this));
-  };
-  
-  self.methods.updateTracks = function() {
-    var head = playlist.getHead(), tracks = [];
-    if (head) {
-      var track = head;
-      tracks.push(track);
-      while (track.next && track.next !== head) {
-        tracks.push(track.next);
-        track = track.next;
-      }
-    }
-    this.tracks = tracks;
-  };
-  
-  self.methods.tracktitle = function(track) {
-    return 'Track: ' + track.name + '\nAlbum: ' + track.album_name + '\nArtist: ' + track.artist_name;
-  };
-  
-  self.created = function created() {
-    playlist.addEventListener('update', this.updateTracksOnNextTick.bind(this));
-  };
-  
-  self.methods.empty = playlist.empty.bind(playlist);
-  self.methods.playOrPause = Views.player.playOrPause.bind(Views.player);
-  self.methods.remove = playlist.remove.bind(playlist);
   
   return self;
 }
@@ -643,22 +682,14 @@ Views.player = new Vue({
 Views.init = function() {
   Services.Router.init();
   
-  // container
-  new Vue({
-    el: '#container',
-    template: '<f-container></f-container>',
-    router: Services.Router.router
+  // global
+  var main = Main();
+  main.el = '#app';
+  main.router = Services.Router.router;
+  new Vue(main);
+  
+  $(document).on('keydown', null, 'esc', function(e) {
+    e.preventDefault();
+    Services.Router.selectArtist(null);
   });
-  
-  // toolbar
-  var toolbar = Toolbar();
-  toolbar.el = '#toolbar';
-  toolbar.router = Services.Router.router;
-  new Vue(toolbar);
-  
-  // queue
-  var queue = Queue(Services.playlist);
-  queue.el = '#queue';
-  queue.filters = Filters;
-  new Vue(queue);
 };

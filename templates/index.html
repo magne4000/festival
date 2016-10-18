@@ -17,7 +17,7 @@
         </span>
       </div>
     </noscript>
-    <header>
+    <main id="app">
       <div v-cloak class="player" id="player">
         <a title="Previous track" href="javascript:void(0)" @click="prev(true)" class="control prev">
           <i class="material-icons">skip_previous</i>
@@ -102,11 +102,9 @@
           <dropdown :items="types" default="{[config.DEFAULT_TAGS_SOURCE]}" @select="typechanged"></dropdown>
         </div>
       </div>
-    </header>
-    <main>
-      <div id="container" class="container" v-cloak>
+      <transition>
         <router-view></router-view>
-      </div>
+      </transition>
         <!--<div class="albums-search" v-if="displayMode == 'search'">-->
         <!--  <div v-for="album in albums" :key="album.id" class="album">-->
         <!--    <span class="heading">-->
@@ -154,20 +152,7 @@
         <!--  </div>-->
         <!--</div>-->
       <!--</div>-->
-      <div :class="{show: show}" class="queue" id="queue">
-        <div @click="show = !show" class="handle" :title="show ? 'Hide playlist' : 'Show playlist'">
-          <span class="vertical-playlist-text"> PLAYLIST </span>
-          <i class="material-icons">chevron_left</i>
-        </div>
-        <div class="queue-content">
-          <div class="tracks">
-            <f-track v-for="track in tracks" :track="track" :key="track.id"></f-track>
-          </div>
-          <div class="queue-actions" v-show="tracks.length">
-            <button type="button" @click="empty()">Clear playlist</button>
-          </div>
-        </div>
-      </div>
+      <f-playlist></f-playlist>
     </main>
     <script type='text/javascript' src='static/js/jquery.min.js'></script>
     <script type='text/javascript' src='static/js/vue.js'></script>

@@ -70,21 +70,15 @@ noscript a {
   color: #168DFF;
 }
 
-/* Header */
-header {
-  flex: 0;
-  height: $header-height;
-  box-sizing: border-box;
-  color: white;
-}
-
 /* Player */
-header .player {
+.player {
   height: $player-height;
   box-sizing: border-box;
   display: flex;
   background-color: #222222;
   border-color: #121212;
+  color: white;
+  flex: 0;
 
   .control {
     display: flex;
@@ -195,11 +189,13 @@ header .player {
 }
 
 /* Toolbar */
-header .toolbar {
+.toolbar {
   height: $toolbar-height;
   box-sizing: border-box;
   background-color: #555555;
   border-color: #121212;
+  color: white;
+  flex: 0;
 
   .search, .volume {
     display: inline-block;
@@ -292,19 +288,17 @@ header .toolbar {
 /* Main */
 main {
   background-color: whitesmoke;
-  display: block;
-  flex: 1;
-  line-height: 10px;
-  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
 }
 main .container {
-  position: absolute;
+  flex: 1;
   line-height: $line-height;
-  top: 0;
-  left: 0;
-  right: 20px;
-  bottom: 0;
+  padding-right: 20px;
   overflow: hidden;
+  position: relative;
   
   &.search-container {
     overflow: auto;
@@ -602,7 +596,7 @@ main .container {
 /* Queue */
 main .queue {
   position: absolute;
-  top: 0;
+  top: $header-height;
   right: 0;
   bottom: 0;
   min-width: 20px;
