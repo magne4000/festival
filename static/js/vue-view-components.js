@@ -59,14 +59,8 @@ var ArtistsComponent = Vue.component('f-artists', {
 });
 
 var ArtistComponent = Vue.component('f-artist', {
-  data: function() {
-    return {
-      loading: false
-    };
-  },
   props: ['artist', 'selectedArtist'],
   template: '<div class="artist" :class="{selected: artist.id == selectedArtist.id}" @click="toggleArtistSelection();loadAlbumsAndTracks(false)">' +
-    '<div v-show="loading" class="signal"></div>' +
     '<a :name="\'ar_\'+artist.id" class="anchor"></a>' +
     '<div class="art-container">' +
       '<img v-lazy="\'artistart/\'+artist.id" :alt="artist.name" src="static/images/nocover.png">' +
@@ -89,27 +83,28 @@ var ArtistComponent = Vue.component('f-artist', {
     '</span>' +
   '</div>',
   methods: {
+    empty: Services.playlist.empty.bind(Services.playlist),
     download: function() {
       return 'download/artist/' + this.artist.id + '?type=' + Services.displayMode.type();
     },
     toggleArtistSelection: function() {
       Services.Router.selectArtist(this.selectedArtist === this.artist ? void 0 : this.artist.id);
     },
-    loadAlbumsAndTracks: function(flat, callback) {
+    loadAlbumsAndTracks: function(callback) {
+      var $this = this;
       if (!this.artist.albums) {
         var filter = {artist: this.artist.id};
         var params = {
-          flat: !!flat,
+          flat: false,
           type: Services.displayMode.type()
         };
-        var $this = this;
-        this.loading = true;
+        festival.state.loading.albums = true;
         Services.ajax.tracks(filter, params).done(function(data, status) {
-          $this.loading = false;
+          festival.state.loading.albums = false;
           $this.artist.albums = data.data[0].albums;
           if (typeof callback === "function") callback($this.artist);
         }).fail(function(){
-          $this.loading = true;
+          festival.state.loading.albums = false;
         });
       } else if (typeof callback === "function") {
         setTimeout(function() {
@@ -118,10 +113,10 @@ var ArtistComponent = Vue.component('f-artist', {
       }
     },
     loadAlbumsAndTracksAndAdd: function(autoplay) {
-      this.loadAlbumsAndTracks(this.artist, false, function(artist1) {
+      this.loadAlbumsAndTracks(function(artist1) {
         if (artist1.albums) {
           for (var i=0; i<artist1.albums.length; i++) {
-            Views.player.add(artist1.albums[i].tracks, autoplay);
+            Views.player.$emit('add', artist1.albums[i].tracks, autoplay);
             autoplay = false;
           }
         }
@@ -176,7 +171,9 @@ var AlbumWithTracksComponent = Vue.component('f-album-with-tracks', {
     '</div>' +
   '</div>',
   methods: {
-    empty: Views.player.empty.bind(Views.player),
+    empty: function() {
+      Views.player.$emit('empty');
+    },
     download: function() {
       return 'download/album/' + this.album.id + '?type=' + Services.displayMode.type();
     },
@@ -207,7 +204,7 @@ var AlbumWithTracksComponent = Vue.component('f-album-with-tracks', {
     },
     loadTracksAndAdd: function(autoplay) {
       this.loadTracks(this.artist, this.album, function(artist1, album1) {
-        Views.player.add(album1.tracks, autoplay);
+        Views.player.$emit('add', album1.tracks, autoplay);
       });
     }
   }
@@ -226,9 +223,15 @@ var TrackBase = {
   },
   filters: Filters,
   methods: {
-    playOrPause: Views.player.playOrPause.bind(Views.player),
-    add: Views.player.add.bind(Views.player),
-    empty: Views.player.empty.bind(Views.player),
+    playOrPause: function(track, tracks) {
+      Views.player.$emit('playOrPause', track, tracks);
+    },
+    add: function(tracks, autoplay, idToPlay) {
+      Views.player.$emit('add', tracks, autoplay, idToPlay);
+    },
+    empty: function() {
+      Views.player.$emit('empty');
+    },
     download: function() {
       return 'music/' + this.track.id + '?type=' + Services.displayMode.type();
     }
@@ -299,7 +302,9 @@ var PlaylistComponent = Vue.component('f-playlist', {
       return 'Track: ' + track.name + '\nAlbum: ' + track.album_name + '\nArtist: ' + track.artist_name;
     },
     empty: Services.playlist.empty.bind(Services.playlist),
-    playOrPause: Views.player.playOrPause.bind(Views.player),
+    playOrPause: function(track, tracks) {
+      Views.player.$emit('playOrPause', track, tracks);
+    },
     remove: Services.playlist.remove.bind(Services.playlist),
   },
   created: function() {

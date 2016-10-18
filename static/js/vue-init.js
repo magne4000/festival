@@ -451,6 +451,11 @@ function Player(playlist) {
   
   self.created = function created() {
     var $this = this;
+    
+    this.$on('empty', this.empty.bind(this));
+    this.$on('add', this.add.bind(this));
+    this.$on('playOrPause', this.playOrPause.bind(this));
+    
     $(document).on('keydown', null, 'space', function(e) {
       e.preventDefault();
       $this.togglePlayPause();
