@@ -329,6 +329,8 @@ main .container {
   justify-content: center;
   width: $inline-control-height;
   height: $inline-control-height;
+  color: black;
+  text-decoration: none;
 
   &:after {
     @include fill-absolute;
@@ -451,6 +453,7 @@ main .container {
           align-items: center;
           color: whitesmoke;
           overflow: hidden;
+          text-decoration: none;
 
           &:after {
             @include fill-absolute;

@@ -31,7 +31,7 @@ var ContainerSearchComponent = Vue.component('f-container-search', {
     '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
     '<f-albums :albums="shared.albums"></f-albums>' +
     '<div class="tracks">' +
-      '<f-track v-for="track in shared.tracks" :track="track" :key="track.id"></f-track>' +
+      '<f-track-search v-for="track in shared.tracks" :track="track" :key="track.id"></f-track-search>' +
     '</div>' +
   '<div>'
 });
@@ -59,6 +59,11 @@ var ArtistsComponent = Vue.component('f-artists', {
 });
 
 var ArtistComponent = Vue.component('f-artist', {
+  data: function() {
+    return {
+      config: festival.config,
+    };
+  },
   props: ['artist', 'selectedArtist'],
   template: '<div class="artist" :class="{selected: artist.id == selectedArtist.id}" @click="toggleArtistSelection();loadAlbumsAndTracks(false)">' +
     '<a :name="\'ar_\'+artist.id" class="anchor"></a>' +
@@ -72,7 +77,7 @@ var ArtistComponent = Vue.component('f-artist', {
           '<div title="Add albums to queue" @click="loadAlbumsAndTracksAndAdd(false)" class="control">' +
             '<i class="material-icons">add</i>' +
           '</div>' +
-          '<a title="Download all albums" :href="download()" class="control" download>' +
+          '<a v-if="config.showdlbtn" title="Download all albums" :href="download()" class="control" download>' +
             '<i class="material-icons">file_download</i>' +
           '</a>' +
         '</div>' +
@@ -145,6 +150,11 @@ var AlbumsComponent = Vue.component('f-albums', {
 });
 
 var AlbumWithTracksComponent = Vue.component('f-album-with-tracks', {
+  data: function() {
+    return {
+      config: festival.config,
+    };
+  },
   props: ['album', 'artist'],
   template: '<div class="album">' +
     '<span class="heading">' +
@@ -158,7 +168,7 @@ var AlbumWithTracksComponent = Vue.component('f-album-with-tracks', {
         '<span title="Add tracks to queue" @click="loadTracksAndAdd(false)" class="control">' +
           '<i class="material-icons">add</i>' +
         '</span>' +
-        '<a title="Download album" :href="download()" class="control" download>' +
+        '<a v-if="config.showdlbtn" title="Download album" :href="download()" class="control" download>' +
           '<i class="material-icons">file_download</i>' +
         '</a>' +
       '</span>' +
@@ -178,10 +188,11 @@ var AlbumWithTracksComponent = Vue.component('f-album-with-tracks', {
       return 'download/album/' + this.album.id + '?type=' + Services.displayMode.type();
     },
     loadTracks: function(callback) {
+      var $this = this;
       if (this.album.tracks && this.album.tracks.length > 0) {
         if (typeof callback === "function") {
           setTimeout(function() {
-            callback(this.artist, this.album);
+            callback($this.artist, $this.album);
           }, 0);
         }
       } else {
@@ -190,20 +201,19 @@ var AlbumWithTracksComponent = Vue.component('f-album-with-tracks', {
           flat: true,
           type: Services.displayMode.type()
         };
-        var $this = this;
         this.$emit('loading', true);
         this.loading.albums = true;
         Services.ajax.tracks(filter, params).done(function(data, status) {
-          this.album.tracks = data.data;
+          $this.album.tracks = data.data;
           $this.$emit('loading', false);
-          if (typeof callback === "function") callback(this.artist, this.album);
+          if (typeof callback === "function") callback($this.artist, $this.album);
         }).fail(function(){
           $this.$emit('loading', false);
         });
       }
     },
     loadTracksAndAdd: function(autoplay) {
-      this.loadTracks(this.artist, this.album, function(artist1, album1) {
+      this.loadTracks(function(artist1, album1) {
         Views.player.$emit('add', album1.tracks, autoplay);
       });
     }
@@ -214,6 +224,7 @@ var TrackBase = {
   data: function() {
     return {
       shared: festival.state,
+      config: festival.config,
       internalAlbum: {}
     };
   },
@@ -251,6 +262,27 @@ var TrackComponent = Vue.component('f-track', {
         '<i class="material-icons">{{shared.currentTrack && shared.currentTrack.id == track.id && shared.playing ? "pause" : "play_arrow"}}</i>' +
       '</span>' +
       '<span title="Add to queue" @click="add(track)" class="control">' +
+        '<i class="material-icons">add</i>' +
+      '</span>' +
+      '<a v-if="config.showdlbtn" title="Download album" :href="download()" class="control" download>' +
+        '<i class="material-icons">file_download</i>' +
+      '</a>' +
+    '</span>' +
+    '<span class="duration">{{track.duration | duration}}</span>' +
+  '</div>'
+});
+
+var TrackComponent = Vue.component('f-track-search', {
+  mixins: [TrackBase],
+  template: '<div class="track" :class="{active: shared.currentTrack && shared.currentTrack == track, failed: track.failed, playing: shared.currentTrack && shared.currentTrack.id == track.id && shared.playing}">' +
+    '<span :title="track.name" class="name">{{track.name}}</span>' +
+    '<span :title="track.artist_name" class="name">{{track.artist_name}}</span>' +
+    '<span :title="track.album_name" class="name">{{track.album_name}}</span>' +
+    '<span class="controls inline-controls">' +
+      '<span title="Play" @click="playOrPause(track, album.tracks)" class="control animate">' +
+        '<i class="material-icons">{{shared.currentTrack && shared.currentTrack.id == track.id && shared.playing ? \'pause\' : \'play_arrow\'}}</i>' +
+      '</span>' +
+      '<span title="Add to queue" @click="add(track)" class="control animate">' +
         '<i class="material-icons">add</i>' +
       '</span>' +
       '<a title="Download album" :href="download()" class="control" download>' +
@@ -310,6 +342,10 @@ var PlaylistComponent = Vue.component('f-playlist', {
   created: function() {
     Services.playlist.addEventListener('update', this.updateTracksOnNextTick.bind(this));
   }
+});
+
+Vue.directive('config', function (el, binding) {
+  festival.config = binding.value;
 });
 
 Views.init();

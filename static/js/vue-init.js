@@ -17,6 +17,9 @@ var festival = {
       albums: false
     }
   },
+  config: {
+    
+  },
   clean: function clean() {
     this.state.artists = [];
     this.state.albums = [];
@@ -453,7 +456,9 @@ function Player(playlist) {
     var $this = this;
     
     this.$on('empty', this.empty.bind(this));
+    
     this.$on('add', this.add.bind(this));
+    
     this.$on('playOrPause', this.playOrPause.bind(this));
     
     $(document).on('keydown', null, 'space', function(e) {
@@ -678,6 +683,7 @@ new Vue({
 // player
 Views.player = new Vue({
   el: '#player',
+  created: festival.player.created,
   data: festival.player.data,
   methods: festival.player.methods,
   computed: festival.player.computed,

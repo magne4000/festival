@@ -743,7 +743,9 @@ main .container {
   align-items: center;
   justify-content: center;
   width: 21px;
-  height: 21px; }
+  height: 21px;
+  color: black;
+  text-decoration: none; }
   .inline-controls .control:after {
     position: absolute;
     top: 0;
@@ -839,7 +841,8 @@ main .container {
           justify-content: center;
           align-items: center;
           color: whitesmoke;
-          overflow: hidden; }
+          overflow: hidden;
+          text-decoration: none; }
           main .container .artists .art-overlay .controls .control:after {
             position: absolute;
             top: 0;

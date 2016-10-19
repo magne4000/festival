@@ -17,43 +17,43 @@
         </span>
       </div>
     </noscript>
-    <main id="app">
-      <div v-cloak class="player" id="player">
-        <a title="Previous track" href="javascript:void(0)" @click="prev(true)" class="control prev">
-          <i class="material-icons">skip_previous</i>
-        </a>
-        <a title="Play" href="javascript:void(0)" @click="togglePlayPause()" class="control play">
-          <i class="material-icons">{{shared.playing ? 'pause' : 'play_arrow'}}</i>
-        </a>
-        <a title="Next track" href="javascript:void(0)" @click="next(true, true)" class="control next">
-          <i class="material-icons">skip_next</i>
-        </a>
-        <div class="panel">
-          <div class="info-panel">
-            <span class="elapsed-time">{{progress | duration}}</span>
-            <span v-if="shared.currentTrack" class="name">
-              <span class="title" :class="{waiting: waitingbuf}">{{shared.currentTrack.name}}</span>
-              <span class="artist">{{shared.currentTrack.artist_name}}</span>
-              <span class="album">{{shared.currentTrack.album_name}}</span>
-            </span>
-            <span v-if="!shared.currentTrack" class="name">Waiting for a track</span>
-            <span class="total-time">{{duration | duration}}</span>
-          </div>
-          <div class="slider-panel">
-            <div class="slider">
-              <input type="range" min="0" :max="duration" v-model="progress">
-              <player-progress :progress-value="progressValue" :duration-value="duration"></player-progress>
-              <player-loading :loading-value="buffer" :duration-value="duration" v-for="buffer in buffered"></player-loading>
-            </div>
+    <div v-cloak class="player" id="player">
+      <a title="Previous track" href="javascript:void(0)" @click="prev(true)" class="control prev">
+        <i class="material-icons">skip_previous</i>
+      </a>
+      <a title="Play" href="javascript:void(0)" @click="togglePlayPause()" class="control play">
+        <i class="material-icons">{{shared.playing ? 'pause' : 'play_arrow'}}</i>
+      </a>
+      <a title="Next track" href="javascript:void(0)" @click="next(true, true)" class="control next">
+        <i class="material-icons">skip_next</i>
+      </a>
+      <div class="panel">
+        <div class="info-panel">
+          <span class="elapsed-time">{{progress | duration}}</span>
+          <span v-if="shared.currentTrack" class="name">
+            <span class="title" :class="{waiting: waitingbuf}">{{shared.currentTrack.name}}</span>
+            <span class="artist">{{shared.currentTrack.artist_name}}</span>
+            <span class="album">{{shared.currentTrack.album_name}}</span>
+          </span>
+          <span v-if="!shared.currentTrack" class="name">Waiting for a track</span>
+          <span class="total-time">{{duration | duration}}</span>
+        </div>
+        <div class="slider-panel">
+          <div class="slider">
+            <input type="range" min="0" :max="duration" v-model="progress">
+            <player-progress :progress-value="progressValue" :duration-value="duration"></player-progress>
+            <player-loading :loading-value="buffer" :duration-value="duration" v-for="buffer in buffered"></player-loading>
           </div>
         </div>
-        <a :title="showind(loop, 'Loop (currently off)', 'Loop (currently on)', 'Loop current track')" href="javascript:void(0)" @click="circleLoop()" :class="{active: loop > 0}" class="control loop">
-          <i class="material-icons">{{loop == 2 ? 'repeat_one' : 'repeat'}}</i>
-        </a>
-        <a :title="shuffle?'Shuffle (currently on)':'Shuffle (currently off)'" href="javascript:void(0)" @click="toggleShuffle()" :class="{active: shuffle}" class="control shuffle">
-          <i class="material-icons">shuffle</i>
-        </a>
       </div>
+      <a :title="showind(loop, 'Loop (currently off)', 'Loop (currently on)', 'Loop current track')" href="javascript:void(0)" @click="circleLoop()" :class="{active: loop > 0}" class="control loop">
+        <i class="material-icons">{{loop == 2 ? 'repeat_one' : 'repeat'}}</i>
+      </a>
+      <a :title="shuffle?'Shuffle (currently on)':'Shuffle (currently off)'" href="javascript:void(0)" @click="toggleShuffle()" :class="{active: shuffle}" class="control shuffle">
+        <i class="material-icons">shuffle</i>
+      </a>
+    </div>
+    <main id="app" v-config="{ showdlbtn: {[config.SHOW_DOWNLOAD_BUTTONS|tojson]} }">
       <div v-cloak class="toolbar" id="toolbar">
         <div class="search" :class="{hide: toolbarstate != 'search'}">
           <form @submit.prevent="searchnow()">
@@ -105,53 +105,6 @@
       <transition>
         <router-view></router-view>
       </transition>
-        <!--<div class="albums-search" v-if="displayMode == 'search'">-->
-        <!--  <div v-for="album in albums" :key="album.id" class="album">-->
-        <!--    <span class="heading">-->
-        <!--      <span class="controls inline-controls">-->
-        <!--        <span title="Play tracks" @click="empty();loadTracksAndAdd(selectedArtist, album, true)" class="control animate">-->
-        <!--          <i class="material-icons">play_arrow</i>-->
-        <!--        </span>-->
-        <!--        <span title="Add tracks to queue" @click="loadTracksAndAdd(selectedArtist, album, false)" class="control animate">-->
-        <!--          <i class="material-icons">add</i>-->
-        <!--        </span>-->
-        <!--        {% if config.SHOW_DOWNLOAD_BUTTONS %}-->
-        <!--        <span title="Download album" @click="downloadAlbum(album)" class="control">-->
-        <!--          <i class="material-icons">file_download</i>-->
-        <!--        </span>-->
-        <!--        {% endif %}-->
-        <!--      </span>-->
-        <!--      <h4 class="heading-title">-->
-        <!--        {{album.name}}<span v-if="album.year" class="year">({{album.year}})</span>-->
-        <!--      </h4>-->
-        <!--    </span>-->
-        <!--    <div class="album-container">-->
-        <!--      <img v-lazy="'albumart/'+album.id" :alt="album.name" src="static/images/nocover.png">-->
-        <!--    </div>-->
-        <!--  </div>-->
-        <!--</div>-->
-        <!--<div class="tracks">-->
-        <!--  <div v-for="track in tracks" :key="track.id" class="track">-->
-        <!--    <span :title="track.name" class="name">{{track.name}}</span>-->
-        <!--    <span :title="track.artist_name" class="name">{{track.artist_name}}</span>-->
-        <!--    <span :title="track.album_name" class="name">{{track.album_name}}</span>-->
-        <!--    <span class="controls inline-controls">-->
-        <!--      <span title="Play" @click="playOrPause(track, album.tracks)" class="control animate">-->
-        <!--        <i class="material-icons">{{shared.currentTrack && shared.currentTrack.id == track.id && shared.playing ? 'pause' : 'play_arrow'}}</i>-->
-        <!--      </span>-->
-        <!--      <span title="Add to queue" @click="add(track)" class="control animate">-->
-        <!--        <i class="material-icons">add</i>-->
-        <!--      </span>-->
-        <!--      {% if config.SHOW_DOWNLOAD_BUTTONS %}-->
-        <!--      <span title="Download album" @click="downloadTrack(track)" class="control">-->
-        <!--        <i class="material-icons">file_download</i>-->
-        <!--      </span>-->
-        <!--      {% endif %}-->
-        <!--    </span>-->
-        <!--    <span class="duration">{{track.duration | duration}}</span>-->
-        <!--  </div>-->
-        <!--</div>-->
-      <!--</div>-->
       <f-playlist></f-playlist>
     </main>
     <script type='text/javascript' src='static/js/jquery.min.js'></script>
