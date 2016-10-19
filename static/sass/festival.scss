@@ -474,15 +474,6 @@ main .container {
   }
 
   /* albums */
-  &:not(.search-container) .albums {
-    position: absolute;
-    top: 0;
-    left: 200px;
-    right: 20px;
-    bottom: 0;
-    transform: scaleX(0);
-  }
-  
   .albums {
     display: flex;
     flex-wrap: wrap;
@@ -490,6 +481,12 @@ main .container {
     align-items: stretch;
     transform-origin: right center;
     overflow: auto;
+    position: absolute;
+    top: 0;
+    left: 200px;
+    right: 20px;
+    bottom: 0;
+    transform: scaleX(0);
 
     .album {
       width: auto;
@@ -542,9 +539,21 @@ main .container {
       }
     }
   }
+  
+  &.search-container:not(.show-albums) .albums {
+    position: static;
+    transform: scaleX(1);
+  }
 
   /* show albums */
-  &.show-albums{
+  &.show-albums {
+    
+    &.search-container {
+      > .tracks {
+        display: none;
+      }
+    }
+    
     .heading {
       margin: 5px;
       flex: 1;

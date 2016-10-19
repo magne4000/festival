@@ -242,7 +242,7 @@ def search_(typed):
         albums = typed.searchalbums(term, skip=skip, limit=limit)
     if filters['tracks']:
         tracks = typed.searchtracks(term, skip=skip, limit=limit)
-    return jsonify(artists=[x.as_dict() for x in artists], albums=[x.as_dict() for x in albums], tracks=[x.as_dict() for x in tracks])
+    return jsonify(artists=[x.as_dict() for x in artists], albums=[x.as_dict(tracks=True) for x in albums], tracks=[x.as_dict() for x in tracks])
 
 
 @routes.route("/ajax/fileinfo")

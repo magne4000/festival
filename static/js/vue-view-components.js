@@ -29,7 +29,7 @@ var ContainerSearchComponent = Vue.component('f-container-search', {
   mixins: [mixinContainer],
   template: '<div class="container search-container">' +
     '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
-    '<f-albums :albums="shared.albums"></f-albums>' +
+    '<f-albums :albums="shared.selectedArtist.id ? shared.selectedArtist.albums : shared.albums"></f-albums>' +
     '<div class="tracks">' +
       '<f-track-search v-for="track in shared.tracks" :track="track" :key="track.id"></f-track-search>' +
     '</div>' +

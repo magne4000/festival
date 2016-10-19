@@ -2,7 +2,7 @@ from functools import wraps
 
 from flask import request
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload, contains_eager, attributes
+from sqlalchemy.orm import joinedload, contains_eager, attributes, lazyload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.util import KeyedTuple
 
@@ -173,11 +173,11 @@ class Typed:
 
     def listtracksbyalbums(self, ffilter=None, skip=None, limit=None):
         with self.session_scope() as session:
-            query = session.query(Album).join(Album.tracks).outerjoin(TrackInfo.genre).options(
-                contains_eager(Album.tracks, TrackInfo.album, Album.artist), joinedload(Album.tracks, TrackInfo.genre))
+            query = session.query(Album).join(Album.tracks).options(
+                lazyload(Album.tracks, TrackInfo.album, Album.artist), lazyload(Album.tracks, TrackInfo.genre))
             if ffilter is not None:
                 query = ffilter(query)
-            query = limitoffset(query.order_by(Album.year.desc(), TrackInfo.trackno), skip, limit)
+            query = limitoffset(query.order_by(Album.year.desc()), skip, limit)
             qall = query.all()
             # Force artist population
             for x in qall:
@@ -218,7 +218,7 @@ class Typed:
             ffilter = lambda query: query.filter(Album.name.contains(term))
         else:
             ffilter = lambda query: query
-        return self.listalbums(ffilter, skip, limit)
+        return self.listtracksbyalbums(ffilter, skip, limit)
 
     def searchtracks(self, term, skip=None, limit=None):
         if isinstance(term, str):

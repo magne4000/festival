@@ -562,8 +562,7 @@ var Services = (function() {
         path: '/search/:term/filters/:filters',
         name: 'searchf',
         meta: {
-          displayMode: 'search',
-          component: 'f-container-search'
+          displayMode: 'search'
         },
         component: ContainerSearchComponent
       },
@@ -571,8 +570,7 @@ var Services = (function() {
         path: '/search/:term',
         name: 'search',
         meta: {
-          displayMode: 'search',
-          component: 'f-container-search'
+          displayMode: 'search'
         },
         component: ContainerSearchComponent
       },
@@ -580,8 +578,7 @@ var Services = (function() {
         path: '/lastalbums',
         name: 'lastalbums',
         meta: {
-          displayMode: 'lastalbums',
-          component: 'f-container'
+          displayMode: 'lastalbums'
         },
         component: ContainerComponent
       },
@@ -589,8 +586,7 @@ var Services = (function() {
         path: '/',
         name: 'home',
         meta: {
-          displayMode: 'artists',
-          component: 'f-container'
+          displayMode: 'artists'
         },
         component: ContainerComponent
       }

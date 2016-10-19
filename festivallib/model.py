@@ -178,7 +178,7 @@ class Artist(Base, TypedInfo):
     id = Column(Integer, primary_key=True)
     name = Column(CoerceUTF8(254), nullable=False, index=True)
     albums = relationship("Album", backref="artist", innerjoin=True)
-    tracks = relationship("TrackInfo", backref="artist", innerjoin=True)
+    tracks = relationship("TrackInfo", backref="artist", innerjoin=True, order_by="TrackInfo.trackno")
     art_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
     art = relationship("Cover")
     UniqueConstraint('name', 'type')
@@ -210,7 +210,7 @@ class Album(Base, TypedInfo):
     year = Column(Integer, nullable=True)
     cover_id = Column(Integer, ForeignKey("cover.id"), nullable=True)
     cover = relationship("Cover")
-    tracks = relationship("TrackInfo", backref="album", innerjoin=True)
+    tracks = relationship("TrackInfo", backref="album", innerjoin=True, order_by="TrackInfo.trackno")
     last_updated = Column(DateTime)
     UniqueConstraint('name', 'type')
 
