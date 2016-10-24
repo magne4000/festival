@@ -4,6 +4,8 @@
 /* global Views */
 /* global Filters */
 
+var FestivalComponents = {};
+
 Vue.component('f-audio-effect', {
   template: '<ul class="audioeffect"><li></li><li></li><li></li><li></li><li></li></ul>'
 });
@@ -17,7 +19,7 @@ var mixinContainer = {
   }
 };
 
-var ContainerComponent = Vue.component('f-container', {
+FestivalComponents.Container = Vue.component('f-container', {
   mixins: [mixinContainer],
   template: '<div class="container">' +
     '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
@@ -25,7 +27,7 @@ var ContainerComponent = Vue.component('f-container', {
   '<div>'
 });
 
-var ContainerSearchComponent = Vue.component('f-container-search', {
+FestivalComponents.ContainerSearch = Vue.component('f-container-search', {
   mixins: [mixinContainer],
   template: '<div class="container search-container">' +
     '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
@@ -36,7 +38,7 @@ var ContainerSearchComponent = Vue.component('f-container-search', {
   '<div>'
 });
 
-var ArtistsComponent = Vue.component('f-artists', {
+FestivalComponents.Artists = Vue.component('f-artists', {
   data: function() {
     return {
       shared: festival.state,
@@ -58,7 +60,7 @@ var ArtistsComponent = Vue.component('f-artists', {
   }
 });
 
-var ArtistComponent = Vue.component('f-artist', {
+FestivalComponents.Artist = Vue.component('f-artist', {
   data: function() {
     return {
       config: festival.config,
@@ -130,7 +132,7 @@ var ArtistComponent = Vue.component('f-artist', {
   }
 });
 
-var AlbumsComponent = Vue.component('f-albums', {
+FestivalComponents.Albums = Vue.component('f-albums', {
   data: function() {
     return {
       shared: festival.state,
@@ -149,7 +151,7 @@ var AlbumsComponent = Vue.component('f-albums', {
   }
 });
 
-var AlbumWithTracksComponent = Vue.component('f-album-with-tracks', {
+FestivalComponents.AlbumWithTracks = Vue.component('f-album-with-tracks', {
   data: function() {
     return {
       config: festival.config,
@@ -249,7 +251,7 @@ var TrackBase = {
   }
 };
 
-var TrackComponent = Vue.component('f-track', {
+FestivalComponents.Track = Vue.component('f-track', {
   mixins: [TrackBase],
   template: '<div class="track" :class="{active: shared.currentTrack && shared.currentTrack == track, failed: track.failed, playing: shared.currentTrack && shared.currentTrack.id == track.id && shared.playing}">' +
     '<span v-if="track.trackno" class="trackno">' +
@@ -272,7 +274,7 @@ var TrackComponent = Vue.component('f-track', {
   '</div>'
 });
 
-var TrackComponent = Vue.component('f-track-search', {
+FestivalComponents.TrackSearch = Vue.component('f-track-search', {
   mixins: [TrackBase],
   template: '<div class="track" :class="{active: shared.currentTrack && shared.currentTrack == track, failed: track.failed, playing: shared.currentTrack && shared.currentTrack.id == track.id && shared.playing}">' +
     '<span :title="track.name" class="name">{{track.name}}</span>' +
@@ -293,7 +295,7 @@ var TrackComponent = Vue.component('f-track-search', {
   '</div>'
 });
 
-var PlaylistComponent = Vue.component('f-playlist', {
+FestivalComponents.Playlist = Vue.component('f-playlist', {
   data: function() {
     return {
       tracks: [],

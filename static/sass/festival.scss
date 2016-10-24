@@ -289,26 +289,10 @@ noscript a {
 main {
   background-color: whitesmoke;
   display: flex;
-  height: 100%;
+  height: calc(100% - #{$player-height});
   width: 100%;
   flex-direction: column;
 }
-main .container {
-  flex: 1;
-  line-height: $line-height;
-  padding-right: 20px;
-  overflow: hidden;
-  position: relative;
-  
-  &.search-container {
-    overflow: auto;
-  }
-  
-  .noresult {
-    margin: 10px;
-  }
-}
-
 /* Controls */
 .controls {
   display: flex;
@@ -359,6 +343,20 @@ main .container {
 
 /* Main - artist and album */
 main .container {
+  flex: 1;
+  line-height: $line-height;
+  overflow: hidden;
+  position: relative;
+  padding: 0 20px;
+  
+  &.search-container {
+    overflow: auto;
+  }
+  
+  .noresult {
+    margin: 10px;
+  }
+  
   .heading {
     margin: 5px 0;
     display: flex;
@@ -381,15 +379,8 @@ main .container {
   }
 
   /* artists */
-  &:not(.search-container) .artists {
-    padding-top: 40px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-  }
-  
   .artists {
+    height: calc(100% - 40px);
     width: 100%;
     overflow: auto;
     display: flex;
@@ -397,6 +388,7 @@ main .container {
     justify-content: center;
     align-items: baseline;
     align-content: flex-start;
+    padding-top: 40px;
 
     .artist {
       width: 180px;
@@ -547,6 +539,7 @@ main .container {
 
   /* show albums */
   &.show-albums {
+    padding: 0;
     
     &.search-container {
       > .tracks {
@@ -568,6 +561,7 @@ main .container {
 
     .artists {
       padding-top: 0;
+      height: 100%;
       width: $artists-width;
       
       .signal {

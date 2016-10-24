@@ -1,5 +1,6 @@
 /* global $ */
 /* global VueRouter */
+/* global FestivalComponents */
 
 var Services = (function() {
   function eventify(_class) {
@@ -564,7 +565,7 @@ var Services = (function() {
         meta: {
           displayMode: 'search'
         },
-        component: ContainerSearchComponent
+        component: FestivalComponents.ContainerSearch
       },
       {
         path: '/search/:term',
@@ -572,7 +573,7 @@ var Services = (function() {
         meta: {
           displayMode: 'search'
         },
-        component: ContainerSearchComponent
+        component: FestivalComponents.ContainerSearch
       },
       {
         path: '/lastalbums',
@@ -580,7 +581,7 @@ var Services = (function() {
         meta: {
           displayMode: 'lastalbums'
         },
-        component: ContainerComponent
+        component: FestivalComponents.Container
       },
       {
         path: '/',
@@ -588,7 +589,7 @@ var Services = (function() {
         meta: {
           displayMode: 'artists'
         },
-        component: ContainerComponent
+        component: FestivalComponents.Container
       }
     ];
     
