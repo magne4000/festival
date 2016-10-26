@@ -71,6 +71,8 @@ def init(args):
     logging_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging_level)
     from routes import routes
+    if app.config['SHOW_DOWNLOAD_BUTTONS']:
+        from routes import routesdownload
     from api.subsonic import subsonic
     app.register_blueprint(routes)
     app.register_blueprint(subsonic)

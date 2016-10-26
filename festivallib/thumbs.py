@@ -19,7 +19,7 @@ class Thumb(Data):
         try:
             data = io.BytesIO(fd.data) if hasattr(fd, 'data') else fd
             img = Image.open(data)
-            img.thumbnail((140, 140))
+            img.thumbnail((220, 220))
             img.save(save_to, "JPEG", quality=80, optimize=True, progressive=True)
             return save_to
         except IOError:

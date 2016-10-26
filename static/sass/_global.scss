@@ -1,15 +1,18 @@
 $font-size: 14px;
 $font-family: "Lucida Grande", Helvetica, Arial, sans-serif;
 $line-height: 1.2em;
+$track-line-height: 26px;
 $header-height: 82px;
 $player-height: 48px;
 $toolbar-height: $header-height - $player-height;
 $header-slider-height: 14px;
 $artists-width: 200px;
 $inline-control-height: 21px;
-$art-width: 140px;
+$art-width: 220px;
 $art-width-mini: 20px;
 $queue-width-max: 300px;
+$inline-controls-font-size: 1.5em;
+$inline-controls-font-size-tracks: 2em;
 
 @mixin fill-absolute {
   position: absolute;

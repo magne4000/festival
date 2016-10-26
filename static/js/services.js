@@ -44,7 +44,7 @@ var Services = (function() {
         return;
       }
       var stack = this.listeners[event], args = [].slice.call(arguments, 1);
-      for(var i = 0, l = stack.length; i < l; i++) {
+      for(var i = 0; i < stack.length; i++) {
           stack[i].apply(this, args);
       }
     };
@@ -195,7 +195,8 @@ var Services = (function() {
   }
   
   function Ajax() {
-  
+    var last = null;
+    
     function filterFactory(filter, params) {
       filter = filter || {};
       var ret = {filters: JSON.stringify(filter)};
@@ -208,17 +209,13 @@ var Services = (function() {
     }
   
     function artists(filter, params) {
-      return $.get('ajax/list/artists', filterFactory(filter, params));
-    }
-  
-    function albums(filter, params) {
-      return $.get('ajax/list/albums', filterFactory(filter, params));
+      last = $.get('ajax/list/artists', filterFactory(filter, params));
+      return last;
     }
   
     function lastalbums(filter, params) {
-      params = filterFactory(filter, params);
-      params.la = true;
-      return $.get('ajax/list/albums', params);
+      last = $.get('ajax/list/lastalbums', filterFactory(filter, params));
+      return last;
     }
   
     function albumsbyartists(filter, params) {
@@ -233,16 +230,23 @@ var Services = (function() {
     function search(term, filter, params) {
       params = filterFactory(filter, params);
       params.term = term;
-      return $.get('ajax/list/search', params);
+      last = $.get('ajax/list/search', params);
+      return last;
+    }
+    
+    function abortLast() {
+      if (last) {
+        last.abort();
+      }
     }
   
     return {
       artists: artists,
-      albums: albums,
       lastalbums: lastalbums,
       albumsbyartists: albumsbyartists,
       tracks: tracks,
-      search: search
+      search: search,
+      abortLast: abortLast
     };
   }
   
@@ -255,7 +259,7 @@ var Services = (function() {
         limit: 20
       },
       lastalbums: {
-        limit: 300
+        limit: 20
       },
       search: {
         limit: 10
@@ -263,10 +267,10 @@ var Services = (function() {
     };
     this._skip = 0;
     this._current = 'artists';
-    this._loading = false;
     this._moreToLoad = true;
     this._param = {};
     this._type = 'tags';
+    this._promise = null;
   }
   eventify(DisplayMode);
   
@@ -320,8 +324,18 @@ var Services = (function() {
   };
 
   DisplayMode.prototype.call = function(clean) {
+    var $this = this;
+    clearTimeout(this._promise);
+    this._promise = setTimeout(function() {
+      $this._call(clean);
+    }, 150);
+    return this;
+  };
+  
+  DisplayMode.prototype._call = function(clean) {
     if (clean) this.clean();
-    if (!this._loading && this._moreToLoad) {
+    if (this._moreToLoad) {
+      Services.ajax.abortLast();
       var params = {
         skip: this._skip,
         limit: this.limit(),
@@ -337,7 +351,6 @@ var Services = (function() {
       };
       this.emit('before', current, !!clean);
       this.emit(current + '.before', !!clean);
-      this._loading = true;
       this.emit(current, !!clean, this._param, params, next);
     }
     return this;
@@ -565,7 +578,7 @@ var Services = (function() {
         meta: {
           displayMode: 'search'
         },
-        component: FestivalComponents.ContainerSearch
+        component: FestivalComponents.Container
       },
       {
         path: '/search/:term',
@@ -573,7 +586,7 @@ var Services = (function() {
         meta: {
           displayMode: 'search'
         },
-        component: FestivalComponents.ContainerSearch
+        component: FestivalComponents.Container
       },
       {
         path: '/lastalbums',

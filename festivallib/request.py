@@ -171,13 +171,13 @@ class Typed:
                 query = ffilter(query)
             return query.count()
 
-    def listtracksbyalbums(self, ffilter=None, skip=None, limit=None):
+    def listtracksbyalbums(self, ffilter=None, skip=None, limit=None, order_by=(Album.year.desc(),)):
         with self.session_scope() as session:
-            query = session.query(Album).join(Album.tracks).options(
+            query = session.query(Album).join(Album.artist).options(contains_eager(Album.artist),
                 lazyload(Album.tracks, TrackInfo.album, Album.artist), lazyload(Album.tracks, TrackInfo.genre))
             if ffilter is not None:
                 query = ffilter(query)
-            query = limitoffset(query.order_by(Album.year.desc()), skip, limit)
+            query = limitoffset(query.order_by(*order_by), skip, limit)
             qall = query.all()
             # Force artist population
             for x in qall:

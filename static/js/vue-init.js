@@ -18,7 +18,7 @@ var festival = {
     }
   },
   config: {
-    
+    showdlbtn: false,
   },
   clean: function clean() {
     this.state.artists = [];
@@ -66,7 +66,22 @@ var festival = {
     this.loadX(Services.ajax.albumsbyartists, clean, filter, params, 'albums', next);
   },
   loadLastAlbums: function loadLastAlbums(clean, filter, params, next) {
-    this.loadX(Services.ajax.lastalbums, clean, filter, params, 'artists', next);
+    this.state.loading.artists = true;
+    var $this = this;
+    Services.ajax.lastalbums(filter, params).done(function(data, status) {
+      $this.state.loading.artists = false;
+      if (clean) {
+        $this.state.albums = data.data;
+        $this.state.tracks = [];
+        $this.state.artists = [];
+      } else {
+        Services.utils.extend($this.state.albums, data.data);
+      }
+      next((data.data.length > 0));
+    }).fail(function(){
+      $this.state.loading.artists = false;
+      next(false);
+    });
   },
   loadAlbums: function loadAlbums(artist, params) {
     Services.Router.selectArtist(artist.id);
@@ -492,6 +507,7 @@ function Main() {
         tracks: true
       },
       shared: festival.state,
+      displayMode: 'search',
       toolbarstate: 'search'
     },
     methods: {},
@@ -630,10 +646,12 @@ function Main() {
   };
 
   self.methods.lastalbums = function() {
+    this.toolbarstate = 'lastalbums';
     Services.Router.navigateLastAlbums();
   };
   
   self.methods.home = function() {
+    this.toolbarstate = 'home';
     Services.Router.navigateHome();
   };
   
@@ -650,6 +668,7 @@ function Main() {
     Services.displayMode.on('search', this.searchcallback.bind(this));
     Services.displayMode.on('modechanged', function(val) {
       $this.displayMode = val;
+      $this.toolbarstate = val;
     });
     
     this.onRouteChange(this.$route, null);

@@ -64,15 +64,18 @@ button {
 input[type=text] {
   transition: border-color 0.3s;
 }
+.hoverable, .hoverable:hover {
+  transition: box-shadow .25s;
+}
 
 /* player */
-header .player .control {
+.player .control {
   transition: color 0.2s;
 }
-header .player .control .material-icons {
+.player .control .material-icons {
   transition: text-shadow 0.2s;
 }
-header .slider .progress {
+.slider .progress {
   transition: width 0.1s ease-in-out;
 }
 
@@ -86,16 +89,16 @@ header .slider .progress {
 }
 
 /* toolbar */
-header .toolbar .search {
+.toolbar .search {
   transition: margin-left 0.4s ease-in-out;
 }
-header .toolbar .search .filters .checkbox, header .toolbar .search .filters label.checkbox:before, header .toolbar .search .filters label.checkbox:after {
+.toolbar .search .filters .checkbox, header .toolbar .search .filters label.checkbox:before, header .toolbar .search .filters label.checkbox:after {
   transition: all 0.2s ease 0s;
 }
 
 /* artists */
 main .container .artist {
-  transition: height 1s ease-in-out 0s;
+  transition: height 1s ease-in-out 0s, box-shadow .25s;
 }
 main .container .art-overlay {
   transition: background-color 0.2s ease-in-out 0s;
@@ -115,11 +118,8 @@ main .container img {
 }
 
 /* albums */
-main .container .albums {
-  transition: transform 0.5s ease-in-out 0s;
-}
 main .container .albums .album {
-  transition: border 0.3s, opacity 0.5s, transform 0.5s;
+  transition: opacity 0.5s, transform 0.5s, box-shadow .25s;
 }
 main .container .albums .album.v-enter {
   opacity: 0;

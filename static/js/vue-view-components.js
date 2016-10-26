@@ -10,32 +10,30 @@ Vue.component('f-audio-effect', {
   template: '<ul class="audioeffect"><li></li><li></li><li></li><li></li><li></li></ul>'
 });
 
-var mixinContainer = {
+FestivalComponents.Container = Vue.component('f-container', {
   data: function() {
     return {
-      shared: festival.state,
-      displayMode: 'artists'
+      shared: festival.state
     };
-  }
-};
-
-FestivalComponents.Container = Vue.component('f-container', {
-  mixins: [mixinContainer],
+  },
   template: '<div class="container">' +
+    '<div v-show="showDefaultMessage()" class="noresult">No result matching the search criteria.</div>' +
+    '<template v-if="shared.artists.length">' +
+    '<h3 class="search-title">Artists</h3>' +
     '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
-    '<f-albums :albums="shared.selectedArtist.albums" :artist="shared.selectedArtist"></f-albums>' +
-  '<div>'
-});
-
-FestivalComponents.ContainerSearch = Vue.component('f-container-search', {
-  mixins: [mixinContainer],
-  template: '<div class="container search-container">' +
-    '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
-    '<f-albums :albums="shared.selectedArtist.id ? shared.selectedArtist.albums : shared.albums"></f-albums>' +
-    '<div class="tracks">' +
+    '</template>' +
+    '<h3 class="search-title" v-show="shared.selectedArtist.albums ? shared.selectedArtist.albums.length : shared.albums.length">Albums</h3>' +
+    '<f-albums :albums="shared.selectedArtist.albums ? shared.selectedArtist.albums : shared.albums"></f-albums>' +
+    '<h3 class="search-title" v-show="shared.tracks.length">Tracks</h3>' +
+    '<div class="tracks well hoverable">' +
       '<f-track-search v-for="track in shared.tracks" :track="track" :key="track.id"></f-track-search>' +
     '</div>' +
-  '<div>'
+  '<div>',
+  methods: {
+    showDefaultMessage: function() {
+      return !(this.shared.artists.length || this.shared.albums.length || this.shared.tracks.length || (this.shared.selectedArtist.albums && this.shared.selectedArtist.albums.length));
+    }
+  }
 });
 
 FestivalComponents.Artists = Vue.component('f-artists', {
@@ -48,7 +46,6 @@ FestivalComponents.Artists = Vue.component('f-artists', {
   props: ['artists', 'selectedArtist'],
   template: '<infinite-scroll :infinite-scroll-callback="pageArtists" :infinite-scroll-immediate-check="true" :infinite-scroll-distance="600">' +
     '<div v-show="shared.loading.artists" class="signal"></div>' +
-    '<div v-show="!shared.loading.artists && artists.length == 0" class="noresult">No result matching the search criteria.</div>' +
     '<f-artist :artist="artist" :selected-artist="selectedArtist" v-for="artist in artists" :key="artist.id"></f-artist>' +
   '</infinite-scroll>',
   methods: {
@@ -67,7 +64,7 @@ FestivalComponents.Artist = Vue.component('f-artist', {
     };
   },
   props: ['artist', 'selectedArtist'],
-  template: '<div class="artist" :class="{selected: artist.id == selectedArtist.id}" @click="toggleArtistSelection();loadAlbumsAndTracks(false)">' +
+  template: '<div class="artist well hoverable" :class="{selected: artist.id == selectedArtist.id}" @click="toggleArtistSelection();loadAlbumsAndTracks(false)">' +
     '<a :name="\'ar_\'+artist.id" class="anchor"></a>' +
     '<div class="art-container">' +
       '<img v-lazy="\'artistart/\'+artist.id" :alt="artist.name" src="static/images/nocover.png">' +
@@ -85,9 +82,9 @@ FestivalComponents.Artist = Vue.component('f-artist', {
         '</div>' +
       '</div>' +
     '</div>' +
-    '<span class="heading">' +
+    '<div class="heading">' +
       '<h3>{{artist.name ? artist.name : "Unknown"}}</h3>' +
-    '</span>' +
+    '</div>' +
   '</div>',
   methods: {
     empty: Services.playlist.empty.bind(Services.playlist),
@@ -158,28 +155,33 @@ FestivalComponents.AlbumWithTracks = Vue.component('f-album-with-tracks', {
     };
   },
   props: ['album', 'artist'],
-  template: '<div class="album">' +
-    '<span class="heading">' +
-      '<h4 class="heading-title">' +
+  template: '<div class="album well hoverable">' +
+    '<div class="album-info">' +
+      '<div class="art-container">' +
+        '<img v-lazy="\'albumart/\'+album.id" :alt="album.name" src="static/images/nocover.png">' +
+        '<div class="art-overlay">' +
+          '<div class="controls">' +
+            '<div title="Play tracks" @click="empty();loadTracksAndAdd(true)" class="control">' +
+              '<i class="material-icons">play_arrow</i>' +
+            '</div>' +
+            '<div title="Add tracks to queue" @click="loadTracksAndAdd(false)" class="control">' +
+              '<i class="material-icons">add</i>' +
+            '</div>' +
+            '<a v-if="config.showdlbtn" title="Download album" :href="download()" class="control" download>' +
+              '<i class="material-icons">file_download</i>' +
+            '</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<h4 class="album-name">' +
         '{{album.name}}<span v-if="album.year" class="year">({{album.year}})</span>' +
       '</h4>' +
-      '<span class="controls inline-controls">' +
-        '<span title="Play tracks" @click="empty();loadTracksAndAdd(true)" class="control">' +
-          '<i class="material-icons">play_arrow</i>' +
-        '</span>' +
-        '<span title="Add tracks to queue" @click="loadTracksAndAdd(false)" class="control">' +
-          '<i class="material-icons">add</i>' +
-        '</span>' +
-        '<a v-if="config.showdlbtn" title="Download album" :href="download()" class="control" download>' +
-          '<i class="material-icons">file_download</i>' +
-        '</a>' +
-      '</span>' +
-    '</span>' +
-    '<div class="album-container">' +
-      '<img v-lazy="\'albumart/\'+album.id" :alt="album.name" src="static/images/nocover.png">' +
-      '<div class="tracks">' +
-        '<f-track v-for="track in album.tracks" :track="track" :album="album" :key="track.id"></f-track>' +
-      '</div>' +
+      '<h5 v-if="album.artist" class="artist-name">' +
+        '{{album.artist.name}}' +
+      '</h5>' +
+    '</div>' +
+    '<div class="tracks">' +
+      '<f-track v-for="track in album.tracks" :track="track" :album="album" :key="track.id"></f-track>' +
     '</div>' +
   '</div>',
   methods: {

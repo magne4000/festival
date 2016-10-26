@@ -12,9 +12,11 @@ from flask import Blueprint, jsonify, Response, render_template, json, abort, re
 from festivallib.model import Album, TrackInfo, Artist
 from festivallib.request import typed_fct
 from festivallib.thumbs import Thumb
+from werkzeug.contrib.cache import SimpleCache
 
 routes = Blueprint('routes', __name__, template_folder='templates')
-
+routesdownload = Blueprint('routesdownload', __name__, template_folder='templates')
+cache = SimpleCache()
 
 def ziptracks(tracks, filename):
     def generator():
@@ -132,6 +134,14 @@ def send_file_partial(path, **kwargs):
     return rv
 
 
+def cached(key, fct):
+    rv = cache.get(key)
+    if rv is None:
+        rv = fct()
+        cache.set(key, rv, 300)
+    return rv
+
+
 @routes.route("/")
 def hello():
     return render_template('index.html')
@@ -147,7 +157,7 @@ def music(typed, sid):
         return send_file_partial(tr.path, conditional=True, add_etags=False)
 
 
-@routes.route("/download/artist/<artistid>")
+@routesdownload.route("/download/artist/<artistid>")
 @typed_fct
 def downloada(typed, artistid):
     tracks = typed.listtracks(lambda query: query.filter(Artist.id == artistid))
@@ -156,7 +166,7 @@ def downloada(typed, artistid):
     abort(404)
 
 
-@routes.route("/download/album/<albumid>")
+@routesdownload.route("/download/album/<albumid>")
 @typed_fct
 def downloadaa(typed, albumid):
     tracks = typed.listtracks(lambda query: query.filter(Album.id == albumid))
@@ -188,19 +198,13 @@ def ltracks(typed):
                              typed.listtracksbyalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
 
 
-@routes.route("/ajax/list/albums")
+@routes.route("/ajax/list/lastalbums")
 @typed_fct
 def lalbums(typed):
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
-    la = request.args.get('la', type=json.loads)
-    if la:
-        return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in
-                             typed.listtracksbyalbumsbyartists(skip=skip, limit=limit, order_by=(
-                                 Album.last_updated.desc(), TrackInfo.trackno, TrackInfo.name))])
-    else:
-        return jsonify(data=[x.as_dict(albums=True, tracks=True) for x in
-                             typed.listtracksbyalbumsbyartists(skip=skip, limit=limit)])
+    return cached('ajax-list-lastalbums-{}-{}'.format(skip, limit), lambda: jsonify(data=[x.as_dict(tracks=True, artist=True) for x in
+                         typed.listtracksbyalbums(skip=skip, limit=limit, order_by=(Album.last_updated.desc(),))]))
 
 
 @routes.route("/ajax/list/artists")
@@ -208,7 +212,7 @@ def lalbums(typed):
 def lartists(typed):
     skip = request.args.get('skip', 0, type=int)
     limit = request.args.get('limit', 50, type=int)
-    return jsonify(data=[x.as_dict() for x in typed.listartists(skip=skip, limit=limit)])
+    return cached('ajax-list-artists-{}-{}'.format(skip, limit), lambda: jsonify(data=[x.as_dict() for x in typed.listartists(skip=skip, limit=limit)]))
 
 
 @routes.route("/ajax/list/albumsbyartists")
@@ -220,8 +224,8 @@ def albumsbyartists(typed):
     ffilter = None
     if filters is not None and 'artist' in filters:
         ffilter = lambda query: query.filter(Artist.id == filters['artist'])
-    return jsonify(
-        data=[x.as_dict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)])
+    return cached('ajax-list-albumsbyartists-{}-{}-{}'.format(skip, limit, filters['artist']), lambda: jsonify(
+        data=[x.as_dict(albums=True) for x in typed.listalbumsbyartists(ffilter=ffilter, skip=skip, limit=limit)]))
 
 
 @routes.route("/ajax/list/search")
@@ -234,15 +238,18 @@ def search_(typed):
     artists = []
     albums = []
     tracks = []
+    cache_key = 'ajax-list-search-{}-{}-{}'.format(skip, limit, term)
     if len(filters) == 0:
         filters = dict(artists=True, albums=True, tracks=True)
+    for key in sorted(filters.keys()):
+        cache_key += '-' + key
     if filters['artists']:
         artists = typed.searchartists(term, skip=skip, limit=limit)
     if filters['albums']:
         albums = typed.searchalbums(term, skip=skip, limit=limit)
     if filters['tracks']:
         tracks = typed.searchtracks(term, skip=skip, limit=limit)
-    return jsonify(artists=[x.as_dict() for x in artists], albums=[x.as_dict(tracks=True) for x in albums], tracks=[x.as_dict() for x in tracks])
+    return cached(cache_key, lambda: jsonify(artists=[x.as_dict() for x in artists], albums=[x.as_dict(artist=True, tracks=True) for x in albums], tracks=[x.as_dict() for x in tracks]))
 
 
 @routes.route("/ajax/fileinfo")

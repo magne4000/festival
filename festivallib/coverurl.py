@@ -31,13 +31,18 @@ class CoverURL:
             return None
 
     @staticmethod
-    def _large(jsonobj, key):
+    def _extralarge_or_large(jsonobj, key):
+        large = None
         try:
             for elt in jsonobj[key]['image']:
-                if elt['size'] == 'large' and elt['#text'] != '':
-                    return elt['#text']
+                if elt['#text'] != '':
+                    if elt['size'] == 'extralarge':
+                        return elt['#text']
+                    elif elt['size'] == 'large':
+                        large = elt['#text']
         except KeyError:
             return None
+        return large
 
     def geturl(self, **kwargs):
         params = self.params.copy()
@@ -50,10 +55,11 @@ class CoverURL:
         else:
             key = 'album'
         url = self.geturl(method='%s.getInfo' % key, artist=artist, album=album)
+        print(url)
         try:
             r = self.conn.request('GET', url)
             ojson = json.loads(r.data.decode('utf-8'))
-            return self._mbid(ojson, key), self._large(ojson, key)
+            return self._mbid(ojson, key), self._extralarge_or_large(ojson, key)
         except:
             logger.exception('Error while searching album cover')
             return None, None
