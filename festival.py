@@ -27,7 +27,7 @@ def main():
     myapp, args = simple_main()
     if args.test_regex:
         from scanner import ScannerTestRegex
-        ScannerTestRegex(myapp.config['SCANNER_PATH']).start()
+        ScannerTestRegex(myapp.config).start()
     elif not args.check:
         if args.with_scanner:
             from scanner import Scanner
