@@ -477,8 +477,11 @@ def get_engine(config=None):
     if engine is None:
         if config is None:
             config = current_app.config
+        connect_args = {}
+        if config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
+            connect_args['check_same_thread'] = False
         engine = create_engine(config['SQLALCHEMY_DATABASE_URI'], poolclass=NullPool,
-                               connect_args={'check_same_thread': False})
+                               connect_args=connect_args)
     return engine
 
 
