@@ -128,7 +128,7 @@ def send_file_partial(path, **kwargs):
     rv.headers['Accept-Ranges'] = 'bytes'
     attachment_filename = os.path.basename(path)
     rv.headers.add('Content-Disposition', 'attachment',
-                   filename=attachment_filename.encode('utf-8', 'replace').decode('utf8'))
+                   filename=attachment_filename.encode('latin-1', 'replace').decode('latin-1'))
     return rv
 
 
