@@ -569,7 +569,7 @@ noscript a {
   background-color: #222222;
   border-color: #121212;
   color: white;
-  flex: 0; }
+  flex: 1; }
   .player .control {
     display: flex;
     height: 48px;
