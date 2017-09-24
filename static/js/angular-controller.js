@@ -359,7 +359,7 @@ angular.module('festival')
             $scope.volumeval = val;
             if ($scope.currentSound) {
                 $timeout(function() {
-                    buzz.setVolume(val);
+                    $scope.currentSound.setVolume(val);
                 }, 0);
             }
         }
