@@ -421,7 +421,7 @@ angular.module('festival')
         $ajax.lastalbums(filter, params).success(function(data, status) {
             $rootScope.loading = false;
             next((data.data.length > 0));
-            $utils.extend($rootScope.artists, data.data);
+            $utils.extend($rootScope.artists, data.data, true);
         }).error(function(){
             $rootScope.loading = false;
             next(false);
