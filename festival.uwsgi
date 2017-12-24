@@ -5,5 +5,5 @@ threads = 2
 processes = 4
 callable = app
 wsgi-file = festival.py
-attach-daemon = ./scanner.py
+attach-daemon = ./festival.py --start-scanner
 plugins = python3

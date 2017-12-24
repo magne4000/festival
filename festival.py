@@ -6,6 +6,7 @@ from init import init, check
 
 def handle_args():
     parser = argparse.ArgumentParser(description='Festival')
+    parser.add_argument('--start-scanner', action='store_true', help='Start only the scanner process')
     parser.add_argument('--with-scanner', action='store_true', help='Start the scanner process with the webserver')
     parser.add_argument('-c', '--config', help='Path to configuration file. Default to local settings.cfg file')
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
@@ -28,6 +29,9 @@ def main():
     if args.test_regex:
         from scanner import ScannerTestRegex
         ScannerTestRegex(myapp.config).start()
+    elif args.start_scanner:
+        from scanner import Scanner
+        Scanner(myapp.config, debug=args.debug).start()
     elif not args.check:
         if args.with_scanner:
             from scanner import Scanner
