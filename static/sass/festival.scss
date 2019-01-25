@@ -171,7 +171,7 @@ noscript a {
   background-color: #222222;
   border-color: #121212;
   color: white;
-  flex: 0;
+  flex:1;
 
   .control {
     display: flex;
@@ -192,7 +192,7 @@ noscript a {
     &.active, &:active {
       color: #1c7baa;
     }
-    
+
     &:hover, &.active, &:active {
       .material-icons {
         text-shadow: 0 0 3px #239bd6;
@@ -330,7 +330,7 @@ noscript a {
 
       .off {
         opacity: 0.5;
-        
+
         &:hover {
           opacity: 0.8;
         }
@@ -471,12 +471,16 @@ main {
   line-height: $line-height;
   overflow: auto;
   position: relative;
-  margin: 0 20px;
-  
+  padding: 0 20px;
+
+  &.search-container {
+    overflow: auto;
+  }
+
   .noresult {
     margin: 10px;
   }
-  
+
   .heading {
     margin: 5px 0;
     display: flex;
@@ -628,10 +632,21 @@ main {
     }
   }
 
+  &.search-container:not(.show-albums) .albums {
+    position: static;
+    transform: scaleX(1);
+  }
+
   /* show albums */
   &.show-albums {
     padding: 0;
-    
+
+    &.search-container {
+      > .tracks {
+        display: none;
+      }
+    }
+
     .heading {
       margin: 5px;
       flex: 1;
@@ -641,7 +656,7 @@ main {
       padding: 0;
       height: 100%;
       width: $artists-width;
-      
+
       .signal {
         left: $artists-width / 2;
       }
@@ -668,12 +683,12 @@ main {
       &:hover {
         background-color: #e5e5e5;
       }
-      
+
       > .heading {
         text-align: left;
         font-size: 0.85em;
       }
-      
+
       .anchor {
         align-self: baseline;
       }

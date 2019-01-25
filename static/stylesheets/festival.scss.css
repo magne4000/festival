@@ -639,7 +639,7 @@ noscript a {
   background-color: #222222;
   border-color: #121212;
   color: white;
-  flex: 0; }
+  flex: 1; }
   .player .control {
     display: flex;
     height: 48px;
@@ -846,11 +846,13 @@ main {
   line-height: 1.2em;
   overflow: auto;
   position: relative;
-  margin: 0 20px;
+  padding: 0 20px;
   /* artists */
   /* albums */
   /* art overlay */
   /* show albums */ }
+  .container.search-container {
+    overflow: auto; }
   .container .noresult {
     margin: 10px; }
   .container .heading {
@@ -924,7 +926,7 @@ main {
     height: 220px;
     cursor: pointer;
     z-index: 2;
-    background-color: transparent; }
+    background-color: rgba(0, 0, 0, 0); }
     .container .art-overlay:hover {
       background-color: rgba(0, 0, 0, 0.3); }
     .container .art-overlay .controls {
@@ -963,8 +965,13 @@ main {
           background-color: rgba(250, 250, 250, 0.5); }
     .container .art-overlay:hover .controls {
       transform: scaleX(1); }
+  .container.search-container:not(.show-albums) .albums {
+    position: static;
+    transform: scaleX(1); }
   .container.show-albums {
     padding: 0; }
+    .container.show-albums.search-container > .tracks {
+      display: none; }
     .container.show-albums .heading {
       margin: 5px;
       flex: 1; }
@@ -1069,4 +1076,4 @@ main .queue {
     main .queue.show .vertical-playlist-text {
       opacity: 1; }
 
-/*# sourceMappingURL=../stylesheets/festival.scss.css.map */
+/*# sourceMappingURL=festival.scss.css.map */
