@@ -19,8 +19,8 @@ FestivalComponents.Container = Vue.component('f-container', {
   template: '<div class="container">' +
     '<div v-show="showDefaultMessage()" class="noresult">No result matching the search criteria.</div>' +
     '<template v-if="shared.artists.length">' +
-    '<h3 class="search-title">Artists</h3>' +
-    '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
+      '<h3 class="search-title">Artists</h3>' +
+      '<f-artists :artists="shared.artists" :selected-artist="shared.selectedArtist"></f-artists>' +
     '</template>' +
     '<h3 class="search-title" v-show="shared.selectedArtist.albums ? shared.selectedArtist.albums.length : shared.albums.length">Albums</h3>' +
     '<f-albums :albums="shared.selectedArtist.albums ? shared.selectedArtist.albums : shared.albums"></f-albums>' +
@@ -28,7 +28,7 @@ FestivalComponents.Container = Vue.component('f-container', {
     '<div class="tracks well hoverable">' +
       '<f-track-search v-for="track in shared.tracks" :track="track" :key="track.id"></f-track-search>' +
     '</div>' +
-  '<div>',
+  '</div>',
   methods: {
     showDefaultMessage: function() {
       return !(this.shared.artists.length || this.shared.albums.length || this.shared.tracks.length || (this.shared.selectedArtist.albums && this.shared.selectedArtist.albums.length));

@@ -1,10 +1,10 @@
  // ----------------------------------------------------------------------------
  // Buzz, a Javascript HTML5 Audio library
- // v1.2.0 - Built 2016-05-22 15:16
+ // v1.2.1 - Built 2018-05-10 10:14
  // Licensed under the MIT license.
  // http://buzz.jaysalvat.com/
  // ----------------------------------------------------------------------------
- // Copyright (C) 2010-2016 Jay Salvat
+ // Copyright (C) 2010-2018 Jay Salvat
  // http://jaysalvat.com/
  // ----------------------------------------------------------------------------
 
@@ -31,7 +31,6 @@
             preload: "metadata",
             volume: 80,
             webAudioApi: false,
-            type: null,
             document: window.document
         },
         types: {
@@ -56,7 +55,6 @@
         sound: function(src, options) {
             options = options || {};
             var doc = options.document || buzz.defaults.document;
-            var mimetype = options.type || buzz.defaults.type;
             var pid = 0, events = [], eventsOnce = {}, supported = buzz.isSupported();
             this.load = function() {
                 if (!supported) {
@@ -69,7 +67,7 @@
                 if (!supported) {
                     return this;
                 }
-                this.sound.play();
+                this.sound.play().catch(function() {});
                 return this;
             };
             this.togglePlay = function() {
@@ -77,7 +75,7 @@
                     return this;
                 }
                 if (this.sound.paused) {
-                    this.sound.play();
+                    this.sound.play().catch(function() {});
                 } else {
                     this.sound.pause();
                 }
@@ -100,8 +98,8 @@
                 if (!supported) {
                     return this;
                 }
-                this.setTime(0);
                 this.sound.pause();
+                this.setTime(0);
                 return this;
             };
             this.isEnded = function() {
@@ -489,9 +487,7 @@
             this.addSource = function(src) {
                 var self = this, source = doc.createElement("source");
                 source.src = src;
-                if (mimetype) {
-                    source.type = mimetype;
-                } else if (buzz.types[getExt(src)]) {
+                if (buzz.types[getExt(src)]) {
                     source.type = buzz.types[getExt(src)];
                 }
                 this.sound.appendChild(source);

@@ -42,7 +42,7 @@
           <div class="slider">
             <input type="range" min="0" :max="duration" v-model="progress">
             <player-progress :progress-value="progressValue" :duration-value="duration"></player-progress>
-            <player-loading :loading-value="buffer" :duration-value="duration" v-for="buffer in buffered"></player-loading>
+            <player-loading :key="buffer.start" :loading-value="buffer" :duration-value="duration" v-for="buffer in buffered"></player-loading>
           </div>
         </div>
       </div>
