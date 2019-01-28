@@ -7,7 +7,7 @@ from flask import request, send_file, send_from_directory
 from sqlalchemy import func, desc
 
 from festivallib.model import Artist, Album, TrackInfo
-from festivallib.request import typed_fct
+from festivallib.request import typed_fct, Typed
 from festivallib.thumbs import Thumb
 from . import subsonic_routes as subsonic
 
@@ -208,8 +208,8 @@ def indexes(typed):
 
 
 @subsonic.route('/rest/getMusicDirectory.view', methods=['GET', 'POST'])
-@typed_fct
-def music_directory(typed):
+def music_directory():
+    typed = Typed('folder')
     eid = request.args.get('id')
     cid = clean_id(eid)
     if is_artist_id(eid):
@@ -254,8 +254,8 @@ def artist(typed):
 
 
 @subsonic.route('/rest/getAlbum.view', methods=['GET', 'POST'])
-@typed_fct
-def album(typed):
+def album():
+    typed = Typed('tags')
     eid = request.args.get('id')
     cid = clean_id(eid)
     if not is_album_id(eid):

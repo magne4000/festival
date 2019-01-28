@@ -78,46 +78,22 @@ class FestivalSubsonicApiTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):
         </subsonic-response>'''
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
-        rv = self.app.get('/rest/getMusicDirectory.view?id=AR1')
+        rv = self.app.get('/rest/getMusicDirectory.view?id=AR2')
         subject = b'''<?xml version="1.0" encoding="UTF-8"?>
         <subsonic-response xmlns="http://subsonic.org/restapi" status="ok" version="1.10.1">
-            <directory id="AR1" name="David TMX">
-                <child duration="0" parent="AR1" name="Avant j\'\xc3\xa9tais trappeur" artist="David TMX" artistId="AR1" averageRating="0" coverArt="AL1" id="AL1" title="Avant j\'\xc3\xa9tais trappeur" isDir="true" songCount="0" year="0"/>
+            <directory id="AR2" name="festival">
+                <child id="AL2" name="zics" artist="festival" artistId="AR2" songCount="0" duration="0" year="0" coverArt="AL2" averageRating="0" isDir="true" title="zics" parent="AR2"/>
             </directory>
         </subsonic-response>'''
         self.assertXmlEquivalentOutputs(subject, rv.data)
 
-        rv = self.app.get('/rest/getMusicDirectory.view?id=AL1')
-        subject = b'''<?xml version="1.0" encoding="UTF-8"?>
-        <subsonic-response version="1.10.1" status="ok" xmlns="http://subsonic.org/restapi">
-            <directory id="AL1" name="Avant j\'\xc3\xa9tais trappeur">
-                <child size="5552795" contentType="audio/mpeg" artistId="AR1" title="Avant j\'\xc3\xa9tais trappeur" artist="David TMX" genre="Other" covertArt="AL1" year="0" bitRate="206" type="music" albumId="AL1" track="1" parent="AL1" isDir="false" isVideo="false" id="TR3" duration="213" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="5057761" contentType="audio/mpeg" artistId="AR1" title="La b\xc3\xaate est l\xc3\xa0" artist="David TMX" genre="Rock" covertArt="AL1" year="0" bitRate="234" type="music" albumId="AL1" track="2" parent="AL1" isDir="false" isVideo="false" id="TR10" duration="171" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="3858027" contentType="audio/mpeg" artistId="AR1" title="L\'a\xc3\xa9roplane blind\xc3\xa9" artist="David TMX" genre="Pop" covertArt="AL1" year="0" bitRate="191" type="music" albumId="AL1" track="3" parent="AL1" isDir="false" isVideo="false" id="TR41" duration="159" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="7653499" contentType="audio/mpeg" artistId="AR1" title="Cumshot" artist="David TMX" genre="Rock" covertArt="AL1" year="0" bitRate="218" type="music" albumId="AL1" track="4" parent="AL1" isDir="false" isVideo="false" id="TR14" duration="279" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="4465281" contentType="audio/mpeg" artistId="AR1" title="M\xc3\xa9 j\'suis po un br\xc3\xa9ton !" artist="David TMX" genre="Ska" covertArt="AL1" year="0" bitRate="211" type="music" albumId="AL1" track="5" parent="AL1" isDir="false" isVideo="false" id="TR34" duration="167" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="1821066" contentType="audio/mpeg" artistId="AR1" title="Petit escargot par le 507 rgt de para de Pau" artist="David TMX" genre="Folk" covertArt="AL1" year="0" bitRate="195" type="music" albumId="AL1" track="6" parent="AL1" isDir="false" isVideo="false" id="TR35" duration="72" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="3320782" contentType="audio/mpeg" artistId="AR1" title="Univers lisse" artist="David TMX" genre="Metal" covertArt="AL1" year="0" bitRate="244" type="music" albumId="AL1" track="7" parent="AL1" isDir="false" isVideo="false" id="TR15" duration="107" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="4670390" contentType="audio/mpeg" artistId="AR1" title="Le criterium \xc3\xa0 cran" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="200" type="music" albumId="AL1" track="8" parent="AL1" isDir="false" isVideo="false" id="TR18" duration="185" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="3823048" contentType="audio/mpeg" artistId="AR1" title="Nicht rauchen" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="222" type="music" albumId="AL1" track="9" parent="AL1" isDir="false" isVideo="false" id="TR12" duration="135" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="4848659" contentType="audio/mpeg" artistId="AR1" title="Le g\xc3\xa9nie et le trappeur" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="230" type="music" albumId="AL1" track="10" parent="AL1" isDir="false" isVideo="false" id="TR25" duration="166" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="5986973" contentType="audio/mpeg" artistId="AR1" title="I would like" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="192" type="music" albumId="AL1" track="11" parent="AL1" isDir="false" isVideo="false" id="TR42" duration="247" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="3942757" contentType="audio/mpeg" artistId="AR1" title="Conf\xc3\xa9rie m\xc3\xa9diocritas" artist="David TMX" genre="Metal" covertArt="AL1" year="0" bitRate="233" type="music" albumId="AL1" track="12" parent="AL1" isDir="false" isVideo="false" id="TR7" duration="133" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="2107231" contentType="audio/mpeg" artistId="AR1" title="Les hardcoristes" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="176" type="music" albumId="AL1" track="13" parent="AL1" isDir="false" isVideo="false" id="TR8" duration="93" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="4417715" contentType="audio/mpeg" artistId="AR1" title="TMX, Paris" artist="David TMX" genre="Metal" covertArt="AL1" year="0" bitRate="231" type="music" albumId="AL1" track="14" parent="AL1" isDir="false" isVideo="false" id="TR5" duration="151" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="4804207" contentType="audio/mpeg" artistId="AR1" title="Alava comme j\'te pousse" artist="David TMX" genre="Metal" covertArt="AL1" year="0" bitRate="222" type="music" albumId="AL1" track="15" parent="AL1" isDir="false" isVideo="false" id="TR13" duration="171" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="4811687" contentType="audio/mpeg" artistId="AR1" title="Les maudits m\xc3\xa2les" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="170" type="music" albumId="AL1" track="16" parent="AL1" isDir="false" isVideo="false" id="TR22" duration="224" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="6583031" contentType="audio/mpeg" artistId="AR1" title="Le ridicule ne tue pas" artist="David TMX" genre="Metal" covertArt="AL1" year="0" bitRate="239" type="music" albumId="AL1" track="17" parent="AL1" isDir="false" isVideo="false" id="TR32" duration="218" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="6252810" contentType="audio/mpeg" artistId="AR1" title="4 degr\xc3\xa9s 7" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="219" type="music" albumId="AL1" track="18" parent="AL1" isDir="false" isVideo="false" id="TR30" duration="226" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="2946323" contentType="audio/mpeg" artistId="AR1" title="Bourr\xc3\xa9 de longue date" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="205" type="music" albumId="AL1" track="19" parent="AL1" isDir="false" isVideo="false" id="TR26" duration="113" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="3039485" contentType="audio/mpeg" artistId="AR1" title="L\'envie" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="207" type="music" albumId="AL1" track="20" parent="AL1" isDir="false" isVideo="false" id="TR1" duration="116" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="4145152" contentType="audio/mpeg" artistId="AR1" title="L\'appel de la gazelle" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="215" type="music" albumId="AL1" track="21" parent="AL1" isDir="false" isVideo="false" id="TR17" duration="152" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="5711809" contentType="audio/mpeg" artistId="AR1" title="Pour un monde meilleur" artist="David TMX" genre="Metal" covertArt="AL1" year="0" bitRate="218" type="music" albumId="AL1" track="22" parent="AL1" isDir="false" isVideo="false" id="TR28" duration="207" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="6629954" contentType="audio/mpeg" artistId="AR1" title="John Kaf\xc3\xa9 disjoncte" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="217" type="music" albumId="AL1" track="23" parent="AL1" isDir="false" isVideo="false" id="TR43" duration="242" album="Avant j\'\xc3\xa9tais trappeur"/>
-                <child size="3900332" contentType="audio/mpeg" artistId="AR1" title="L\'aube lunaire" artist="David TMX" genre="Unknown" covertArt="AL1" year="0" bitRate="206" type="music" albumId="AL1" track="24" parent="AL1" isDir="false" isVideo="false" id="TR2" duration="149" album="Avant j\'\xc3\xa9tais trappeur"/>
-            </directory>
-        </subsonic-response>'''
-        self.assertXmlEquivalentOutputs(subject, rv.data)
+        rv = self.app.get('/rest/getMusicDirectory.view?id=AL2')
+
+        root = self.assertXmlDocument(rv.data)
+        self.assertXmlHasAttribute(root, 'status', expected_value='ok')
+        self.assertXmlHasAttribute(root[0], 'id', expected_value='AL2')
+        self.assertEqual(len(root[0]), 43)
+
 
     def test_get_artist(self):
         rv = self.app.get('/rest/getArtist.view?id=AR0')

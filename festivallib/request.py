@@ -184,6 +184,7 @@ class Typed:
                 for y in x.tracks:
                     attributes.set_committed_value(y, 'album', x)
                     attributes.set_committed_value(y, 'artist', x.artist)
+                    attributes.set_committed_value(y, 'genre', y.genre)
             session.expunge_all()
             return qall
 
@@ -203,6 +204,7 @@ class Typed:
                     for z in y.tracks:
                         attributes.set_committed_value(z, 'album', y)
                         attributes.set_committed_value(z, 'artist', x)
+                        attributes.set_committed_value(z, 'genre', z.genre)
             session.expunge_all()
             return qall
 
