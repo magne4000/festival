@@ -5,7 +5,7 @@ import collections
 import xmlunittest
 import re
 
-re_lm = re.compile(b'lastModified="(\d+?)"')
+re_lm = re.compile(b'lastModified="(\\d+?)"')
 
 
 class FestivalSubsonicApiTestCase(unittest.TestCase, xmlunittest.XmlTestMixin):

@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "festival"
+version = "3.0.0"
+description = ""
+authors = ["Joël Charles <joel.charles91@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+Flask = "^1.0.2"
+Pillow = "^5.4.1"
+SQLAlchemy = "^1.2.17"
+certifi = "2018.11.29"
+mutagen = "^1.42.0"
+urllib3 = "^1.24.1"
+xmlunittest = "^0.5.0"
+libsass = "^0.17.0"
+zipstream = "^1.1.4"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

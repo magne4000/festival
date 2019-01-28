@@ -1,0 +1,8 @@
+README.md
+festival.py
+setup.py
+festival.egg-info/PKG-INFO
+festival.egg-info/SOURCES.txt
+festival.egg-info/dependency_links.txt
+festival.egg-info/requires.txt
+festival.egg-info/top_level.txt
